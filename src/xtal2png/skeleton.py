@@ -107,6 +107,28 @@ class Converter:
 
         # unscale values
 
+    @classmethod
+    def structure_to_array(structure: Structure):
+        """Convert pymatgen Structure to scaled 3D array of crystallographic info.
+
+        Parameters
+        ----------
+        structure : Structure
+            _description_
+        """
+        # TODO: add parameters for min/max bounds for various things
+
+    @classmethod
+    def array_to_structure(data: np.ndarray):
+        """Convert scaled 3D crystal (xtal) array to pymatgen Structure.
+
+        Parameters
+        ----------
+        data : np.ndarray
+            3D array containing crystallographic information.
+        """
+        #
+
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
@@ -199,3 +221,37 @@ if __name__ == "__main__":
     #     python -m xtal2png.skeleton 42
     #
     run()
+
+
+# %% Code Graveyard
+# @classmethod
+# def scale_array(data: np.ndarray):
+#     """Scale the 3D xtal array values as preprocessing step for PNG format.
+
+#     Parameters
+#     ----------
+#     data : np.ndarray
+#         Unscaled 3D array of crystallographic information.
+
+#     Returns
+#     -------
+#     _type_
+#         _description_
+#     """
+#     #
+
+# @classmethod
+# def unscale_array(data: np.ndarray):
+#     """Unscale the 3D xtal array values as part of conversion from PNG to Structure.
+
+#     Parameters
+#     ----------
+#     data : np.ndarray
+#         Scaled 3D array of crystallographic information.
+
+#     Returns
+#     -------
+#     _type_
+#         _description_
+#     """
+#     #
