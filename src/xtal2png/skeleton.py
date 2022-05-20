@@ -24,11 +24,12 @@ import argparse
 import logging
 import sys
 from os import PathLike, path
-from typing import Union
+from typing import Sequence, Tuple, Union
 
 import numpy as np
 from PIL import Image
 from pymatgen.core.structure import Structure
+from sklearn.preprocessing import MinMaxScaler
 
 from xtal2png import __version__
 
@@ -60,6 +61,11 @@ _logger = logging.getLogger(__name__)
 #     for _i in range(n - 1):
 #         a, b = b, a + b
 #     return a
+
+
+def ElementWiseScaler(X):
+    X
+    return 1
 
 
 class Converter:
@@ -108,18 +114,56 @@ class Converter:
         # unscale values
 
     @classmethod
-    def structure_to_array(structure: Structure):
+    def structures_to_arrays(
+        S: Sequence[Structure],
+        atom_range: Tuple[int, int] = (1, 118),
+        frac_range: Tuple[float, float] = (0.0, 1.0),
+        abc_range: Tuple[float, float] = (0.0, 10.0),
+        angles_range: Tuple[float, float] = (0.0, 90.0),
+        space_group_range: Tuple[int, int] = (1, 230),
+        distance_range: Tuple[float, float] = (0.0, 25.0),
+    ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         Parameters
         ----------
-        structure : Structure
-            _description_
+        S : Sequence[Structure]
+            Sequence (e.g. list) of pymatgen Structure objects
         """
-        # TODO: add parameters for min/max bounds for various things
+        # extract variables
+        for s in S:
+            atomic_numbers = np.array(s.atomic_numbers)
+            frac_coords = np.array(s.frac_coords)
+            abc = np.array(s._lattice.abc)
+            angles = np.array(s._lattice.angles)
+            space_group = np.array(s.get_space_group_info())
+            distance_matrix = np.array(s.distance_matrix)
+
+        atom_scaler = MinMaxScaler(feature_range=atom_range)
+        frac_scaler = MinMaxScaler(feature_range=frac_range)
+        abc_scaler = MinMaxScaler(feature_range=abc_range)
+        angles_scaler = MinMaxScaler(feature_range=angles_range)
+        space_group_scaler = MinMaxScaler(feature_range=space_group_range)
+        distance_scaler = MinMaxScaler(feature_range=distance_range)
+
+        atom_scaled = atom_scaler.transform(atomic_numbers.reshape(1, -1))
+        frac_scaled = frac_scaler.transform(frac_coords.reshape(1, -1))
+        abc_scaled = abc_scaler.transform(abc.reshape(1, -1))
+        angles_scaled = angles_scaler.transform(angles.reshape(1, -1))
+        space_group_scaled = space_group_scaler.transform(space_group)
+        distance_scaled = distance_scaler.transform(distance_matrix.reshape(1, -1))
+
+        (
+            atom_scaled,
+            frac_scaled,
+            abc_scaled,
+            angles_scaled,
+            space_group_scaled,
+            distance_scaled,
+        )
 
     @classmethod
-    def array_to_structure(data: np.ndarray):
+    def arrays_to_structures(data: np.ndarray):
         """Convert scaled 3D crystal (xtal) array to pymatgen Structure.
 
         Parameters
