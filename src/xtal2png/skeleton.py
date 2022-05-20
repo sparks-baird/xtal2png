@@ -150,7 +150,7 @@ class Converter:
         frac_scaled = frac_scaler.transform(frac_coords.reshape(1, -1))
         abc_scaled = abc_scaler.transform(abc.reshape(1, -1))
         angles_scaled = angles_scaler.transform(angles.reshape(1, -1))
-        space_group_scaled = space_group_scaler.transform(space_group)
+        space_group_scaled = space_group_scaler.transform(space_group.reshape(1, -1))
         distance_scaled = distance_scaler.transform(distance_matrix.reshape(1, -1))
 
         (
