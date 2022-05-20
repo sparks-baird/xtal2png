@@ -23,10 +23,13 @@ References:
 import argparse
 import logging
 import sys
+
+# from itertools import zip_longest
 from os import PathLike, path
-from typing import Sequence, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.structure import Structure
 from sklearn.preprocessing import MinMaxScaler
@@ -68,9 +71,10 @@ def ElementWiseScaler(X):
     return 1
 
 
-class Converter:
+class XtalConverter:
     @classmethod
     def xtal2png(
+        cls,
         structure: Union[Structure, str, PathLike[str]],
         savedir: Union[str, PathLike[str]] = path.join("data", "interim"),
         savename: str = "tmp",
@@ -101,7 +105,7 @@ class Converter:
         return savepath
 
     @classmethod
-    def png2xtal(image: Union[Image.Image, PathLike]):
+    def png2xtal(cls, image: Union[Image.Image, PathLike]):
         if isinstance(image, str):
             # load image from file
             with Image.open(image) as im:
@@ -115,7 +119,8 @@ class Converter:
 
     @classmethod
     def structures_to_arrays(
-        S: Sequence[Structure],
+        cls,
+        structures: Sequence[Structure],
         atom_range: Tuple[int, int] = (1, 118),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         abc_range: Tuple[float, float] = (0.0, 10.0),
@@ -130,14 +135,37 @@ class Converter:
         S : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure objects
         """
-        # extract variables
-        for s in S:
-            atomic_numbers = np.array(s.atomic_numbers)
-            frac_coords = np.array(s.frac_coords)
-            abc = np.array(s._lattice.abc)
-            angles = np.array(s._lattice.angles)
-            space_group = np.array(s.get_space_group_info())
-            distance_matrix = np.array(s.distance_matrix)
+
+        # extract crystallographic information
+        # atomic_numbers: NDArray[np.int_] = np.array([])
+        # frac_coords: NDArray[np.float] = np.array([])
+        # abc: NDArray[np.float] = np.array([])
+        # angles: NDArray[np.float] = np.array([])
+        # space_group: NDArray[np.int_] = np.array([])
+        # distance_matrix: NDArray[np.float] = np.array([])
+
+        atomic_numbers: List[List[int]] = []
+        frac_coords: List[NDArray[np.float]] = []
+        abc: List[List[float]] = []
+        angles: List[List[float]] = []
+        space_group: List[int] = []
+        distance_matrix: List[NDArray[np.float]] = []
+
+        max_sites = 52
+
+        for s in structures:
+            atomic_numbers.append(
+                np.pad(
+                    list(s.atomic_numbers), (0, max_sites - len(s.atomic_numbers))
+                ).tolist()
+            )
+            frac_coords.append(s.frac_coords)
+            abc.append(list(s._lattice.abc))
+            angles.append(list(s._lattice.angles))
+            space_group.append(s.get_space_group_info()[1])
+            distance_matrix.append(s.distance_matrix)
+
+        # atomic_numbers = list(zip_longest(*atomic_numbers, fillvalue=0))
 
         atom_scaler = MinMaxScaler(feature_range=atom_range)
         frac_scaler = MinMaxScaler(feature_range=frac_range)
@@ -146,12 +174,12 @@ class Converter:
         space_group_scaler = MinMaxScaler(feature_range=space_group_range)
         distance_scaler = MinMaxScaler(feature_range=distance_range)
 
-        atom_scaled = atom_scaler.transform(atomic_numbers.reshape(1, -1))
-        frac_scaled = frac_scaler.transform(frac_coords.reshape(1, -1))
-        abc_scaled = abc_scaler.transform(abc.reshape(1, -1))
-        angles_scaled = angles_scaler.transform(angles.reshape(1, -1))
-        space_group_scaled = space_group_scaler.transform(space_group.reshape(1, -1))
-        distance_scaled = distance_scaler.transform(distance_matrix.reshape(1, -1))
+        atom_scaled = atom_scaler.fit_transform(atomic_numbers)
+        frac_scaled = frac_scaler.fit_transform(frac_coords)
+        abc_scaled = abc_scaler.fit_transform(abc)
+        angles_scaled = angles_scaler.fit_transform(angles)
+        space_group_scaled = space_group_scaler.fit_transform(space_group)
+        distance_scaled = distance_scaler.fit_transform(distance_matrix)
 
         (
             atom_scaled,
@@ -163,7 +191,7 @@ class Converter:
         )
 
     @classmethod
-    def arrays_to_structures(data: np.ndarray):
+    def arrays_to_structures(cls, data: np.ndarray):
         """Convert scaled 3D crystal (xtal) array to pymatgen Structure.
 
         Parameters
@@ -241,7 +269,7 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Beginning conversion to PNG format")
-    print(f"The PNG file is saved at {Converter.xtal2png(args.fpath)}")
+    print(f"The PNG file is saved at {XtalConverter.xtal2png(args.fpath)}")
     _logger.info("Script ends here")
 
 
