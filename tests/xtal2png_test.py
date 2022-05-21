@@ -28,7 +28,7 @@ def test_structures_to_arrays_single():
 
 def test_xtal2png():
     xc = XtalConverter()
-    imgs = xc.xtal2png(S, show=False, save=True)
+    imgs = xc.xtal2png(S, show=True, save=True)
     return imgs
 
 
@@ -37,5 +37,7 @@ def test_xtal2png_single():
     imgs = xc.xtal2png([S[0]], show=False, save=True)
     return imgs
 
+
+imgs = test_xtal2png()
 
 1 + 1
