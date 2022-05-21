@@ -178,8 +178,6 @@ class XtalConverter:
     def png2xtal(cls, image: Union[Image.Image, PathLike]):
         """_summary_
 
-
-
         Parameters
         ----------
         image : Union[Image.Image, PathLike]
@@ -236,11 +234,13 @@ class XtalConverter:
                     list(s.atomic_numbers), (0, max_sites - len(s.atomic_numbers))
                 ).tolist()
             )
-            frac_coords = np.append(frac_coords, s.frac_coords, axis=1)
+            frac_coords.append(s.frac_coords)
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
             space_group.append(s.get_space_group_info()[1])
             distance_matrix.append(s.distance_matrix)
+
+        frac_coords = np.concatenate(frac_coords)
 
         atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
         frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
