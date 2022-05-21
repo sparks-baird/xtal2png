@@ -134,10 +134,12 @@ def rgb_scaler(
     Examples
     --------
     >>> rgb_scaler([[1, 2], [3, 4]], data_range=[0, 8])
+    array([[ 32,  64],
+        [ 96, 128]])
     """
     rgb_range = [0, 255]
     X_scaled = element_wise_scaler(X, data_range=data_range, feature_range=rgb_range)
-    X_scaled = np.round(X_scaled)
+    X_scaled = np.round(X_scaled).astype(np.uint8)
     return X_scaled
 
 
@@ -206,7 +208,7 @@ class XtalConverter:
         atom_range: Tuple[int, int] = (0, 117),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         abc_range: Tuple[float, float] = (0.0, 10.0),
-        angles_range: Tuple[float, float] = (0.0, 90.0),
+        angles_range: Tuple[float, float] = (0.0, 180.0),
         space_group_range: Tuple[int, int] = (1, 230),
         distance_range: Tuple[float, float] = (0.0, 25.0),
     ):
@@ -217,14 +219,13 @@ class XtalConverter:
         S : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure objects
         """
-
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
-        frac_coords: List[NDArray[np.float64]] = []
+        frac_coords_tmp: List[NDArray] = []
         abc: List[List[float]] = []
         angles: List[List[float]] = []
         space_group: List[int] = []
-        distance_matrix: List[NDArray[np.float64]] = []
+        distance_matrix_tmp: List[NDArray[np.float64]] = []
 
         max_sites = 52
 
@@ -234,24 +235,31 @@ class XtalConverter:
                     list(s.atomic_numbers), (0, max_sites - len(s.atomic_numbers))
                 ).tolist()
             )
-            frac_coords.append(s.frac_coords)
+            frac_coords_tmp.append(s.frac_coords)
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
             space_group.append(s.get_space_group_info()[1])
-            distance_matrix.append(s.distance_matrix)
+            # assumes that distance matrix is square
+            padwidth = (0, max_sites - s.distance_matrix.shape[0])
+            distance_matrix_tmp.append(np.pad(s.distance_matrix, padwidth))
 
-        frac_coords = np.concatenate(frac_coords)
+        frac_coords = np.concatenate(frac_coords_tmp)
+        distance_matrix = np.stack(distance_matrix_tmp)
 
         atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
         frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
+        abc_scaled = rgb_scaler(abc, data_range=abc_range)
+        angles_scaled = rgb_scaler(angles, data_range=angles_range)
+        space_group_scaled = rgb_scaler(space_group, data_range=space_group_range)
+        distance_scaled = rgb_scaler(distance_matrix, data_range=distance_range)
 
         (
             atom_scaled,
             frac_scaled,
-            # abc_scaled,
-            # angles_scaled,
-            # space_group_scaled,
-            # distance_scaled,
+            abc_scaled,
+            angles_scaled,
+            space_group_scaled,
+            distance_scaled,
         )
 
     @classmethod
@@ -273,7 +281,7 @@ class XtalConverter:
 
 
 def parse_args(args):
-    """Parse command line parameters
+    """Parse command line parameters.
 
     Args:
       args (List[str]): command line parameters as list of strings
