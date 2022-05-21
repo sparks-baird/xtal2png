@@ -205,7 +205,7 @@ class XtalConverter:
     def structures_to_arrays(
         cls,
         structures: Sequence[Structure],
-        atom_range: Tuple[int, int] = (1, 118),
+        atom_range: Tuple[int, int] = (0, 117),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         abc_range: Tuple[float, float] = (0.0, 10.0),
         angles_range: Tuple[float, float] = (0.0, 90.0),
@@ -221,13 +221,6 @@ class XtalConverter:
         """
 
         # extract crystallographic information
-        # atomic_numbers: NDArray[np.int_] = np.array([])
-        # frac_coords: NDArray[np.float] = np.array([])
-        # abc: NDArray[np.float] = np.array([])
-        # angles: NDArray[np.float] = np.array([])
-        # space_group: NDArray[np.int_] = np.array([])
-        # distance_matrix: NDArray[np.float] = np.array([])
-
         atomic_numbers: List[List[int]] = []
         frac_coords: List[NDArray[np.float64]] = []
         abc: List[List[float]] = []
@@ -243,33 +236,18 @@ class XtalConverter:
                     list(s.atomic_numbers), (0, max_sites - len(s.atomic_numbers))
                 ).tolist()
             )
-            frac_coords.append(s.frac_coords)
+            frac_coords = np.append(frac_coords, s.frac_coords, axis=1)
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
             space_group.append(s.get_space_group_info()[1])
             distance_matrix.append(s.distance_matrix)
 
-        # atomic_numbers = list(zip_longest(*atomic_numbers, fillvalue=0))
-
-        # atom_scaler = MinMaxScaler(feature_range=atom_range)
-        # frac_scaler = MinMaxScaler(feature_range=frac_range)
-        # abc_scaler = MinMaxScaler(feature_range=abc_range)
-        # angles_scaler = MinMaxScaler(feature_range=angles_range)
-        # space_group_scaler = MinMaxScaler(feature_range=space_group_range)
-        # distance_scaler = MinMaxScaler(feature_range=distance_range)
-
-        # atom_scaled = atom_scaler.fit_transform(atomic_numbers)
-        # frac_scaled = frac_scaler.fit_transform(frac_coords)
-        # abc_scaled = abc_scaler.fit_transform(abc)
-        # angles_scaled = angles_scaler.fit_transform(angles)
-        # space_group_scaled = space_group_scaler.fit_transform(space_group)
-        # distance_scaled = distance_scaler.fit_transform(distance_matrix)
-
         atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
+        frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
 
         (
             atom_scaled,
-            # frac_scaled,
+            frac_scaled,
             # abc_scaled,
             # angles_scaled,
             # space_group_scaled,
@@ -413,3 +391,26 @@ if __name__ == "__main__":
 #         _description_
 #     """
 #     #
+
+# atomic_numbers = list(zip_longest(*atomic_numbers, fillvalue=0))
+
+# atom_scaler = MinMaxScaler(feature_range=atom_range)
+# frac_scaler = MinMaxScaler(feature_range=frac_range)
+# abc_scaler = MinMaxScaler(feature_range=abc_range)
+# angles_scaler = MinMaxScaler(feature_range=angles_range)
+# space_group_scaler = MinMaxScaler(feature_range=space_group_range)
+# distance_scaler = MinMaxScaler(feature_range=distance_range)
+
+# atom_scaled = atom_scaler.fit_transform(atomic_numbers)
+# frac_scaled = frac_scaler.fit_transform(frac_coords)
+# abc_scaled = abc_scaler.fit_transform(abc)
+# angles_scaled = angles_scaler.fit_transform(angles)
+# space_group_scaled = space_group_scaler.fit_transform(space_group)
+# distance_scaled = distance_scaler.fit_transform(distance_matrix)
+
+# atomic_numbers: NDArray[np.int_] = np.array([])
+# frac_coords: NDArray[np.float] = np.array([])
+# abc: NDArray[np.float] = np.array([])
+# angles: NDArray[np.float] = np.array([])
+# space_group: NDArray[np.int_] = np.array([])
+# distance_matrix: NDArray[np.float] = np.array([])
