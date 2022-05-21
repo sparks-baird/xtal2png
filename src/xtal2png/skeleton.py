@@ -211,14 +211,21 @@ class XtalConverter:
         angles_range: Tuple[float, float] = (0.0, 180.0),
         space_group_range: Tuple[int, int] = (1, 230),
         distance_range: Tuple[float, float] = (0.0, 25.0),
+        max_sites: int = 52,
     ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
+
+        ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
+        as these depend on the number of sites in the structure.
 
         Parameters
         ----------
         S : Sequence[Structure]
-            Sequence (e.g. list) of pymatgen Structure objects
+            Sequence (e.g. list) of pymatgen Structure object(s)
         """
+        if isinstance(structures, Structure):
+            raise ValueError("`structures` should be a list of pymatgen Structure(s)")
+
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
@@ -227,30 +234,50 @@ class XtalConverter:
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
-        max_sites = 52
-
         for s in structures:
+            n_sites = len(s.atomic_numbers)
+            if n_sites > max_sites:
+                raise ValueError(
+                    "crystal supplied with {n_sites} sites, which is more than {max_sites} sites. Remove crystal or increase `max_sites`."  # noqa
+                )
             atomic_numbers.append(
                 np.pad(
-                    list(s.atomic_numbers), (0, max_sites - len(s.atomic_numbers))
-                ).tolist()
+                    list(s.atomic_numbers),
+                    (0, max(0, max_sites - n_sites)),
+                )[0:max_sites].tolist()
             )
             frac_coords_tmp.append(s.frac_coords)
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
             space_group.append(s.get_space_group_info()[1])
-            # assumes that distance matrix is square
-            padwidth = (0, max_sites - s.distance_matrix.shape[0])
+
+            if n_sites != s.distance_matrix.shape[0]:
+                raise ValueError(
+                    f"len(atomic_numbers) {n_sites} and distance_matrix.shape[0] {s.distance_matrix.shape[0]} do not match"  # noqa
+                )  # noqa
+
+            # assume that distance matrix is square
+            padwidth = (0, max(0, max_sites - n_sites))
             distance_matrix_tmp.append(np.pad(s.distance_matrix, padwidth))
+            # [0:max_sites, 0:max_sites]
 
         frac_coords = np.concatenate(frac_coords_tmp)
         distance_matrix = np.stack(distance_matrix_tmp)
 
+        # REVIEW: consider using modified pettifor scale instead of atomic numbers
+        # REVIEW: consider using feature_range=atom_range or 2*atom_range
+        # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
         atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
         frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
         abc_scaled = rgb_scaler(abc, data_range=abc_range)
         angles_scaled = rgb_scaler(angles, data_range=angles_range)
         space_group_scaled = rgb_scaler(space_group, data_range=space_group_range)
+        # NOTE: max_distance could be added as another (repeated) value/row to infer
+        # NOTE: kind of like frac_distance_matrix, not sure if would be effective
+        # NOTE: Or could normalize distance_matix by cell volume
+        # NOTE: and possibly include cell volume as a (repeated) value/row to infer
+        # NOTE: It's possible extra info like this isn't so bad, instilling the physics
+        # NOTE: but it could also just be extraneous work to predict/infer
         distance_scaled = rgb_scaler(distance_matrix, data_range=distance_range)
 
         (
