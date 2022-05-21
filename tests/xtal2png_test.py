@@ -3,17 +3,20 @@
 
 from os import path
 
+import pandas as pd
 from pymatgen.core.structure import Structure
 
 from xtal2png.skeleton import XtalConverter as xc
 
 EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
-S = []
-for cif in EXAMPLE_CIFS:
-    fpath = path.join("data", "external", cif)
-    S.append(Structure.from_file(fpath))
+fpaths = [path.join("data", "external", cif) for cif in EXAMPLE_CIFS]
+S = [Structure.from_file(fpath) for fpath in fpaths]
 
-xc.structures_to_arrays(S)
+data = xc.structures_to_arrays(S)
+
+for i, fpath in enumerate(fpaths):
+    savepath = path.splitext(fpath)[0] + ".csv"
+    pd.DataFrame(data[i]).to_csv(savepath)
 
 xc.structures_to_arrays([S[0]])
 
