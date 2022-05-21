@@ -14,8 +14,9 @@ S = [Structure.from_file(fpath) for fpath in fpaths]
 
 data = xc.structures_to_arrays(S)
 
-for i, fpath in enumerate(fpaths):
-    savepath = path.splitext(fpath)[0] + ".csv"
+savepaths = [path.join("data", "interim", cif) for cif in EXAMPLE_CIFS]
+for i, savepath in enumerate(savepaths):
+    savepath = path.splitext(savepath)[0] + ".csv"
     pd.DataFrame(data[i]).to_csv(savepath)
 
 xc.structures_to_arrays([S[0]])
