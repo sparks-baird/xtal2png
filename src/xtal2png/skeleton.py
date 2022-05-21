@@ -85,6 +85,10 @@ def element_wise_scaler(
     ----------
     X : ArrayLike
         Features to be scaled element-wise.
+    feature_range : Sequence
+        The scaled values will span the range of ``feature_range``
+    data_range : Sequence
+        Expected bounds for the data, e.g. 0 to 117 for periodic elements
 
     Returns
     -------
@@ -105,6 +109,47 @@ def element_wise_scaler(
     X_std = (X - data_min) / (data_max - data_min)
     X_scaled = X_std * (feature_max - feature_min) + feature_min
     return X_scaled
+
+
+def element_wise_unscaler(
+    X_scaled: ArrayLike,
+    feature_range: Sequence,
+    data_range: Sequence,
+):
+    """Scale parameters according to a prespecified min and max (``data_range``).
+
+    ``feature_range`` is preserved from MinMaxScaler
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Element-wise scaled values.
+    feature_range : Sequence
+        The scaled values will span the range of ``feature_range``
+    data_range : Sequence
+        Expected bounds for the data, e.g. 0 to 117 for periodic elements
+
+    Returns
+    -------
+    X
+        Element-wise unscaled values.
+    """
+    if not isinstance(X_scaled, np.ndarray):
+        X_scaled = np.array(X_scaled)
+
+    data_min, data_max = data_range
+    feature_min, feature_max = feature_range
+    # following modified from:
+    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
+
+    # inverse transform, checked against Mathematica
+    X_std = (X_scaled - feature_min) / (feature_max - feature_min)
+    X = data_min + (data_max - data_min) * X_std
+    return X
 
 
 def rgb_scaler(
@@ -209,6 +254,7 @@ class XtalConverter:
         frac_range: Tuple[float, float] = (0.0, 1.0),
         abc_range: Tuple[float, float] = (0.0, 10.0),
         angles_range: Tuple[float, float] = (0.0, 180.0),
+        volume_range: Tuple[float, float] = (0.0, 1000.0),
         space_group_range: Tuple[int, int] = (1, 230),
         distance_range: Tuple[float, float] = (0.0, 25.0),
         max_sites: int = 52,
@@ -231,6 +277,7 @@ class XtalConverter:
         frac_coords_tmp: List[NDArray] = []
         abc: List[List[float]] = []
         angles: List[List[float]] = []
+        volume: List[float] = []
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
@@ -243,12 +290,15 @@ class XtalConverter:
             atomic_numbers.append(
                 np.pad(
                     list(s.atomic_numbers),
-                    (0, max(0, max_sites - n_sites)),
+                    (0, max_sites - n_sites),
                 )[0:max_sites].tolist()
             )
-            frac_coords_tmp.append(s.frac_coords)
+            frac_coords_tmp.append(
+                np.pad(s.frac_coords, ((0, max_sites - n_sites), (0, 0)))
+            )
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
+            volume.append(s.volume)
             space_group.append(s.get_space_group_info()[1])
 
             if n_sites != s.distance_matrix.shape[0]:
@@ -257,11 +307,11 @@ class XtalConverter:
                 )  # noqa
 
             # assume that distance matrix is square
-            padwidth = (0, max(0, max_sites - n_sites))
+            padwidth = (0, max_sites - n_sites)
             distance_matrix_tmp.append(np.pad(s.distance_matrix, padwidth))
             # [0:max_sites, 0:max_sites]
 
-        frac_coords = np.concatenate(frac_coords_tmp)
+        frac_coords = np.stack(frac_coords_tmp)
         distance_matrix = np.stack(distance_matrix_tmp)
 
         # REVIEW: consider using modified pettifor scale instead of atomic numbers
@@ -271,6 +321,7 @@ class XtalConverter:
         frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
         abc_scaled = rgb_scaler(abc, data_range=abc_range)
         angles_scaled = rgb_scaler(angles, data_range=angles_range)
+        volume_scaled = rgb_scaler(volume, data_range=volume_range)
         space_group_scaled = rgb_scaler(space_group, data_range=space_group_range)
         # NOTE: max_distance could be added as another (repeated) value/row to infer
         # NOTE: kind of like frac_distance_matrix, not sure if would be effective
@@ -280,14 +331,48 @@ class XtalConverter:
         # NOTE: but it could also just be extraneous work to predict/infer
         distance_scaled = rgb_scaler(distance_matrix, data_range=distance_range)
 
-        (
-            atom_scaled,
-            frac_scaled,
-            abc_scaled,
-            angles_scaled,
-            space_group_scaled,
-            distance_scaled,
+        atom_scaled = np.array(atomic_numbers)
+        frac_scaled = frac_coords
+        abc_scaled = np.array(abc)
+        angles_scaled = np.array(angles)
+        volume_scaled = np.array(volume)
+        space_group_scaled = np.array(space_group)
+        distance_scaled = distance_matrix
+
+        zero = np.zeros((2, 12, 12), dtype=np.uint8)
+
+        atom_arr = np.expand_dims(atom_scaled, 2)
+        frac_arr = frac_scaled
+        abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), max_sites, axis=1)
+        angles_arr = np.repeat(np.expand_dims(angles_scaled, 1), max_sites, axis=1)
+        volume_arr = np.repeat(np.expand_dims(volume_scaled, (1, 2)), max_sites, axis=1)
+        space_group_arr = np.repeat(
+            np.expand_dims(space_group_scaled, (1, 2)), max_sites, axis=1
         )
+        distance_arr = distance_scaled
+
+        vertical_arr = np.block(
+            [
+                [zero],
+                [
+                    atom_arr,
+                    frac_arr,
+                    abc_arr,
+                    angles_arr,
+                    volume_arr,
+                    space_group_arr,
+                ],
+            ]
+        )
+        horizontal_arr = np.block(
+            [atom_arr, frac_arr, abc_arr, angles_arr, volume_arr, space_group_arr]
+        )
+        horizontal_arr = np.moveaxis(horizontal_arr, 1, 2)
+        left_arr = vertical_arr
+        right_arr = np.block([[horizontal_arr], [distance_arr]])
+        data = np.block([left_arr, right_arr])
+
+        return data
 
     @classmethod
     def arrays_to_structures(cls, data: np.ndarray):
@@ -298,7 +383,6 @@ class XtalConverter:
         data : np.ndarray
             3D array containing crystallographic information.
         """
-        #
 
 
 # ---- CLI ----
@@ -449,3 +533,12 @@ if __name__ == "__main__":
 # angles: NDArray[np.float] = np.array([])
 # space_group: NDArray[np.int_] = np.array([])
 # distance_matrix: NDArray[np.float] = np.array([])
+
+# (
+#     atom_scaled,
+#     frac_scaled,
+#     abc_scaled,
+#     angles_scaled,
+#     space_group_scaled,
+#     distance_scaled,
+# )
