@@ -27,6 +27,7 @@ import sys
 # from itertools import zip_longest
 from os import PathLike, path
 from typing import List, Optional, Sequence, Tuple, Union
+from uuid import uuid4
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -189,39 +190,140 @@ def rgb_scaler(
 
 
 class XtalConverter:
-    @classmethod
-    def xtal2png(
-        cls,
-        structure: Union[Structure, str, PathLike[str]],
-        savedir: Union[str, PathLike[str]] = path.join("data", "interim"),
-        savename: str = "tmp",
-        show: bool = False,
+    """Convert between pymatgen Structure object and PNG-encoded representation."""
+
+    def __init__(
+        self,
+        atom_range: Tuple[int, int] = (0, 117),
+        frac_range: Tuple[float, float] = (0.0, 1.0),
+        abc_range: Tuple[float, float] = (0.0, 10.0),
+        angles_range: Tuple[float, float] = (0.0, 180.0),
+        volume_range: Tuple[float, float] = (0.0, 1000.0),
+        space_group_range: Tuple[int, int] = (1, 230),
+        distance_range: Tuple[float, float] = (0.0, 25.0),
+        max_sites: int = 52,
+        save_dir: Union[str, PathLike[str]] = path.join("data", "preprocessed"),
     ):
-        if isinstance(structure, str) or isinstance(structure, PathLike):
-            # load the CIF and convert to a pymatgen Structure
-            S = Structure.from_file(structure)
-        elif isinstance(structure, Structure):
-            S = structure
-        else:
-            raise ValueError(
-                f"structure should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)}"  # noqa
-            )
+        """Instantiate an XtalConverter object with desired ranges and ``max_sites``.
 
-        # convert `S` to 3D NumPy Matrix
-        data = np.random.rand(64, 64, 3)
+        Parameters
+        ----------
+        atom_range : Tuple[int, int], optional
+            Expected range for atomic number, by default (0, 117)
+        frac_range : Tuple[float, float], optional
+            Expected range for fractional coordinates, by default (0.0, 1.0)
+        abc_range : Tuple[float, float], optional
+            Expected range for lattice parameter lengths, by default (0.0, 10.0)
+        angles_range : Tuple[float, float], optional
+            Expected range for lattice parameter angles, by default (0.0, 180.0)
+        volume_range : Tuple[float, float], optional
+            Expected range for unit cell volumes, by default (0.0, 1000.0)
+        space_group_range : Tuple[int, int], optional
+            Expected range for space group numbers, by default (1, 230)
+        distance_range : Tuple[float, float], optional
+            Expected range for pairwise distances between sites, by default (0.0, 25.0)
+        max_sites : int, optional
+            Maximum number of sites to accomodate in encoding, by default 52
+        save_dir : Union[str, PathLike[str]]
+            Directory to save PNG files, by default path.join("data", "interim")
+        """
+        self.atom_range = atom_range
+        self.frac_range = frac_range
+        self.abc_range = abc_range
+        self.angles_range = angles_range
+        self.volume_range = volume_range
+        self.space_group_range = space_group_range
+        self.distance_range = distance_range
+        self.max_sites = max_sites
+        self.save_dir = save_dir
 
-        # scale values
+    def xtal2png(
+        self,
+        structures: List[Union[Structure, str, PathLike[str]]],
+        show: bool = False,
+        save: bool = True,
+    ):
+        """Encode crystal (via CIF filepath or Structure object) as PNG file.
 
-        # convert to a PNG image and save
-        img = Image.fromarray(data, mode="RGB")
-        savepath = path.join(savedir, savename + ".png")
-        img.save(savepath)
-        if show:
-            img.show()
+        Parameters
+        ----------
+        structures : List[Union[Structure, str, PathLike[str]]]
+            pymatgen Structure objects or path to CIF files.
+        show : bool, optional
+            Whether to display the PNG-encoded file, by default False
+        save : bool, optional
+            Whether to save the PNG-encoded file, by default True
 
-        return savepath
+        Returns
+        -------
+        imgs : List[Image.Image]
+            PIL images that (approximately) encode the supplied crystal structures.
 
-    @classmethod
+        Raises
+        ------
+        ValueError
+            structures should be of same datatype
+        ValueError
+            structures should be of same datatype
+        ValueError
+            structures should be of type `str`, `os.PathLike` or
+            `pymatgen.core.structure.Structure`
+
+        Examples
+        --------
+        >>> coords = [[0, 0, 0], [0.75,0.5,0.75]]
+        >>> lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120,
+                                        beta=90, gamma=60)
+        >>> structures = [Structure(lattice, ["Si", "Si"], coords),
+        ... Structure(lattice, ["Ni", "Ni"], coords)]
+        >>> xtal2png(structures, show=False, save=True)
+
+        """
+        save_names: List[str] = []
+        S: List[Structure] = []
+        first_is_structure = isinstance(structures[0], Structure)
+        for i, s in enumerate(S):
+            if isinstance(s, str) or isinstance(s, PathLike):
+                if first_is_structure:
+                    raise ValueError(
+                        f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
+                    )
+
+                # load the CIF and convert to a pymatgen Structure
+                S.append(Structure.from_file(s))
+                save_names.append(s)
+
+            elif isinstance(s, Structure):
+                if not first_is_structure:
+                    raise ValueError(
+                        f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
+                    )
+
+                S.append(s)
+                save_names.append(
+                    f"{s.formula},volume={s.volume},uid={str(uuid4())[0:4]}"
+                )
+            else:
+                raise ValueError(
+                    f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
+                )
+
+        # convert structures to 3D NumPy Matrices
+        data = self.structures_to_arrays(S)
+
+        # convert to PNG images. Save and/or show, if applicable
+        imgs: List[Image.Image] = []
+        for d, save_name in zip(data, save_names):
+            img = Image.fromarray(d, mode="RGB")
+            imgs.append(img)
+            if save:
+                savepath = path.join(self.save_dir, save_name + ".png")
+                img.save(savepath)
+            if show:
+                img.show()
+
+        return imgs
+
     def png2xtal(cls, image: Union[Image.Image, PathLike]):
         """_summary_
 
@@ -246,19 +348,7 @@ class XtalConverter:
 
         # unscale values
 
-    @classmethod
-    def structures_to_arrays(
-        cls,
-        structures: Sequence[Structure],
-        atom_range: Tuple[int, int] = (0, 117),
-        frac_range: Tuple[float, float] = (0.0, 1.0),
-        abc_range: Tuple[float, float] = (0.0, 10.0),
-        angles_range: Tuple[float, float] = (0.0, 180.0),
-        volume_range: Tuple[float, float] = (0.0, 1000.0),
-        space_group_range: Tuple[int, int] = (1, 230),
-        distance_range: Tuple[float, float] = (0.0, 25.0),
-        max_sites: int = 52,
-    ):
+    def structures_to_arrays(self, structures: Sequence[Structure]):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
@@ -283,18 +373,18 @@ class XtalConverter:
 
         for s in structures:
             n_sites = len(s.atomic_numbers)
-            if n_sites > max_sites:
+            if n_sites > self.max_sites:
                 raise ValueError(
                     "crystal supplied with {n_sites} sites, which is more than {max_sites} sites. Remove crystal or increase `max_sites`."  # noqa
                 )
             atomic_numbers.append(
                 np.pad(
                     list(s.atomic_numbers),
-                    (0, max_sites - n_sites),
-                )[0:max_sites].tolist()
+                    (0, self.max_sites - n_sites),
+                ).tolist()
             )
             frac_coords_tmp.append(
-                np.pad(s.frac_coords, ((0, max_sites - n_sites), (0, 0)))
+                np.pad(s.frac_coords, ((0, self.max_sites - n_sites), (0, 0)))
             )
             abc.append(list(s._lattice.abc))
             angles.append(list(s._lattice.angles))
@@ -307,7 +397,7 @@ class XtalConverter:
                 )  # noqa
 
             # assume that distance matrix is square
-            padwidth = (0, max_sites - n_sites)
+            padwidth = (0, self.max_sites - n_sites)
             distance_matrix_tmp.append(np.pad(s.distance_matrix, padwidth))
             # [0:max_sites, 0:max_sites]
 
@@ -317,19 +407,19 @@ class XtalConverter:
         # REVIEW: consider using modified pettifor scale instead of atomic numbers
         # REVIEW: consider using feature_range=atom_range or 2*atom_range
         # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
-        atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
-        frac_scaled = rgb_scaler(frac_coords, data_range=frac_range)
-        abc_scaled = rgb_scaler(abc, data_range=abc_range)
-        angles_scaled = rgb_scaler(angles, data_range=angles_range)
-        volume_scaled = rgb_scaler(volume, data_range=volume_range)
-        space_group_scaled = rgb_scaler(space_group, data_range=space_group_range)
+        atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
+        frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
+        abc_scaled = rgb_scaler(abc, data_range=self.abc_range)
+        angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
+        volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
+        space_group_scaled = rgb_scaler(space_group, data_range=self.space_group_range)
         # NOTE: max_distance could be added as another (repeated) value/row to infer
         # NOTE: kind of like frac_distance_matrix, not sure if would be effective
         # NOTE: Or could normalize distance_matix by cell volume
         # NOTE: and possibly include cell volume as a (repeated) value/row to infer
         # NOTE: It's possible extra info like this isn't so bad, instilling the physics
         # NOTE: but it could also just be extraneous work to predict/infer
-        distance_scaled = rgb_scaler(distance_matrix, data_range=distance_range)
+        distance_scaled = rgb_scaler(distance_matrix, data_range=self.distance_range)
 
         atom_scaled = np.array(atomic_numbers)
         frac_scaled = frac_coords
@@ -343,11 +433,13 @@ class XtalConverter:
 
         atom_arr = np.expand_dims(atom_scaled, 2)
         frac_arr = frac_scaled
-        abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), max_sites, axis=1)
-        angles_arr = np.repeat(np.expand_dims(angles_scaled, 1), max_sites, axis=1)
-        volume_arr = np.repeat(np.expand_dims(volume_scaled, (1, 2)), max_sites, axis=1)
+        abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), self.max_sites, axis=1)
+        angles_arr = np.repeat(np.expand_dims(angles_scaled, 1), self.max_sites, axis=1)
+        volume_arr = np.repeat(
+            np.expand_dims(volume_scaled, (1, 2)), self.max_sites, axis=1
+        )
         space_group_arr = np.repeat(
-            np.expand_dims(space_group_scaled, (1, 2)), max_sites, axis=1
+            np.expand_dims(space_group_scaled, (1, 2)), self.max_sites, axis=1
         )
         distance_arr = distance_scaled
 
@@ -374,7 +466,6 @@ class XtalConverter:
 
         return data
 
-    @classmethod
     def arrays_to_structures(cls, data: np.ndarray):
         """Convert scaled 3D crystal (xtal) array to pymatgen Structure.
 
