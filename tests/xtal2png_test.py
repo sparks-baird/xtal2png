@@ -6,19 +6,36 @@ from os import path
 import pandas as pd
 from pymatgen.core.structure import Structure
 
-from xtal2png.skeleton import XtalConverter as xc
+from xtal2png.skeleton import XtalConverter
 
 EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
-fpaths = [path.join("data", "external", cif) for cif in EXAMPLE_CIFS]
-S = [Structure.from_file(fpath) for fpath in fpaths]
+S = []
+for cif in EXAMPLE_CIFS:
+    fpath = path.join("..", "data", "external", cif)
+    S.append(Structure.from_file(fpath))
 
-data = xc.structures_to_arrays(S)
+def test_structures_to_arrays():
+    xc = XtalConverter()
+    data = xc.structures_to_arrays(S)
+    return data
 
-savepaths = [path.join("data", "interim", cif) for cif in EXAMPLE_CIFS]
-for i, savepath in enumerate(savepaths):
-    savepath = path.splitext(savepath)[0] + ".csv"
-    pd.DataFrame(data[i]).to_csv(savepath)
 
-xc.structures_to_arrays([S[0]])
+def test_structures_to_arrays_single():
+    xc = XtalConverter()
+    data = xc.structures_to_arrays([S[0]])
+    return data
+
+
+def test_xtal2png():
+    xc = XtalConverter()
+    imgs = xc.xtal2png(S, show=False, save=True)
+    return imgs
+
+
+def test_xtal2png_single():
+    xc = XtalConverter()
+    imgs = xc.xtal2png([S[0]], show=False, save=True)
+    return imgs
+
 
 1 + 1
