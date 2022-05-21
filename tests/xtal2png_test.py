@@ -8,9 +8,10 @@ from pymatgen.core.structure import Structure
 from xtal2png.skeleton import XtalConverter
 
 EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
+
 S = []
 for cif in EXAMPLE_CIFS:
-    fpath = path.join("..", "data", "external", cif)
+    fpath = path.join("data", "external", cif)
     S.append(Structure.from_file(fpath))
 
 
@@ -38,6 +39,7 @@ def test_xtal2png_single():
     return imgs
 
 
-imgs = test_xtal2png()
+if __name__ == "__main__":
+    imgs = test_xtal2png()
 
 1 + 1
