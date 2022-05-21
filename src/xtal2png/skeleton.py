@@ -302,7 +302,7 @@ class XtalConverter:
 
                 S.append(s)
                 save_names.append(
-                    f"{s.formula},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa
+                    f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa
                 )
             else:
                 raise ValueError(
