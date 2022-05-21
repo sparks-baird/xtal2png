@@ -15,6 +15,6 @@ for cif in EXAMPLE_CIFS:
 
 xc.structures_to_arrays(S)
 
-xc.structures_to_arrays(S[0])
+xc.structures_to_arrays([S[0]])
 
 1 + 1
