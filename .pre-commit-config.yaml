@@ -44,7 +44,13 @@ repos:
   rev: v1.12.1
   hooks:
   - id: blacken-docs
+    name: blacken-docs
+    description: Run `black` on python code blocks in documentation files
     additional_dependencies: [black]
+    entry: blacken-docs
+    language: python
+    language_version: python3
+    files: '\.(rst|md|markdown|py|tex)$'
 
 - repo: https://github.com/PyCQA/flake8
   rev: 4.0.1
