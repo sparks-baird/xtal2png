@@ -302,7 +302,7 @@ class XtalConverter:
 
                 S.append(s)
                 save_names.append(
-                    f"{s.formula},volume={s.volume},uid={str(uuid4())[0:4]}"
+                    f"{s.formula},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa
                 )
             else:
                 raise ValueError(
@@ -335,7 +335,7 @@ class XtalConverter:
 
         Examples
         --------
-        >>> png2xtal(image, , )
+        >>> png2xtal(image)
         OUTPUT
         """
         if isinstance(image, str):
