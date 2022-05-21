@@ -283,7 +283,7 @@ class XtalConverter:
         save_names: List[str] = []
         S: List[Structure] = []
         first_is_structure = isinstance(structures[0], Structure)
-        for i, s in enumerate(S):
+        for i, s in enumerate(structures):
             if isinstance(s, str) or isinstance(s, PathLike):
                 if first_is_structure:
                     raise ValueError(
@@ -315,7 +315,7 @@ class XtalConverter:
         # convert to PNG images. Save and/or show, if applicable
         imgs: List[Image.Image] = []
         for d, save_name in zip(data, save_names):
-            img = Image.fromarray(d, mode="RGB")
+            img = Image.fromarray(d, mode="L")
             imgs.append(img)
             if save:
                 savepath = path.join(self.save_dir, save_name + ".png")
@@ -422,13 +422,13 @@ class XtalConverter:
         # NOTE: but it could also just be extraneous work to predict/infer
         distance_scaled = rgb_scaler(distance_matrix, data_range=self.distance_range)
 
-        atom_scaled = np.array(atomic_numbers)
-        frac_scaled = frac_coords
-        abc_scaled = np.array(abc)
-        angles_scaled = np.array(angles)
-        volume_scaled = np.array(volume)
-        space_group_scaled = np.array(space_group)
-        distance_scaled = distance_matrix
+        # atom_scaled = np.array(atomic_numbers)
+        # frac_scaled = frac_coords
+        # abc_scaled = np.array(abc)
+        # angles_scaled = np.array(angles)
+        # volume_scaled = np.array(volume)
+        # space_group_scaled = np.array(space_group)
+        # distance_scaled = distance_matrix
 
         zero = np.zeros((2, 12, 12), dtype=np.uint8)
 
