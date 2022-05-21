@@ -26,15 +26,17 @@ import sys
 
 # from itertools import zip_longest
 from os import PathLike, path
-from typing import List, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from PIL import Image
 from pymatgen.core.structure import Structure
-from sklearn.preprocessing import MinMaxScaler
 
 from xtal2png import __version__
+
+# from sklearn.preprocessing import MinMaxScaler
+
 
 __author__ = "sgbaird"
 __copyright__ = "sgbaird"
@@ -66,9 +68,77 @@ _logger = logging.getLogger(__name__)
 #     return a
 
 
-def ElementWiseScaler(X):
-    X
-    return 1
+def element_wise_scaler(
+    X: ArrayLike,
+    feature_range: Optional[Sequence] = None,
+    data_range: Optional[Sequence] = None,
+):
+    """Scale parameters according to a prespecified min and max (``data_range``).
+
+    ``feature_range`` is preserved from MinMaxScaler
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Features to be scaled element-wise.
+
+    Returns
+    -------
+    X_scaled
+        Element-wise scaled values.
+    """
+    if not isinstance(X, np.ndarray):
+        X = np.array(X)
+    if data_range is None:
+        data_range = [np.min(X), np.max(X)]
+    if feature_range is None:
+        feature_range = [np.min(X), np.max(X)]
+
+    data_min, data_max = data_range
+    feature_min, feature_max = feature_range
+    # following modified from:
+    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
+    X_std = (X - data_min) / (data_max - data_min)
+    X_scaled = X_std * (feature_max - feature_min) + feature_min
+    return X_scaled
+
+
+def rgb_scaler(
+    X: ArrayLike,
+    data_range: Optional[Sequence] = None,
+):
+    """Scale parameters according to RGB scale (0 to 255).
+
+    ``feature_range`` is fixed to [0, 255], ``data_range`` is either specified
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Features to be scaled element-wise.
+    data_range : Optional[Sequence]
+        Range to use in place of np.min(X) and np.max(X) as in ``MinMaxScaler``.
+
+    Returns
+    -------
+    X_scaled
+        Element-wise scaled values.
+
+    Examples
+    --------
+    >>> rgb_scaler([[1, 2], [3, 4]], data_range=[0, 8])
+    """
+    rgb_range = [0, 255]
+    X_scaled = element_wise_scaler(X, data_range=data_range, feature_range=rgb_range)
+    X_scaled = np.round(X_scaled)
+    return X_scaled
 
 
 class XtalConverter:
@@ -106,6 +176,20 @@ class XtalConverter:
 
     @classmethod
     def png2xtal(cls, image: Union[Image.Image, PathLike]):
+        """_summary_
+
+
+
+        Parameters
+        ----------
+        image : Union[Image.Image, PathLike]
+            _description_
+
+        Examples
+        --------
+        >>> png2xtal(image, , )
+        OUTPUT
+        """
         if isinstance(image, str):
             # load image from file
             with Image.open(image) as im:
@@ -145,11 +229,11 @@ class XtalConverter:
         # distance_matrix: NDArray[np.float] = np.array([])
 
         atomic_numbers: List[List[int]] = []
-        frac_coords: List[NDArray[np.float]] = []
+        frac_coords: List[NDArray[np.float64]] = []
         abc: List[List[float]] = []
         angles: List[List[float]] = []
         space_group: List[int] = []
-        distance_matrix: List[NDArray[np.float]] = []
+        distance_matrix: List[NDArray[np.float64]] = []
 
         max_sites = 52
 
@@ -167,27 +251,29 @@ class XtalConverter:
 
         # atomic_numbers = list(zip_longest(*atomic_numbers, fillvalue=0))
 
-        atom_scaler = MinMaxScaler(feature_range=atom_range)
-        frac_scaler = MinMaxScaler(feature_range=frac_range)
-        abc_scaler = MinMaxScaler(feature_range=abc_range)
-        angles_scaler = MinMaxScaler(feature_range=angles_range)
-        space_group_scaler = MinMaxScaler(feature_range=space_group_range)
-        distance_scaler = MinMaxScaler(feature_range=distance_range)
+        # atom_scaler = MinMaxScaler(feature_range=atom_range)
+        # frac_scaler = MinMaxScaler(feature_range=frac_range)
+        # abc_scaler = MinMaxScaler(feature_range=abc_range)
+        # angles_scaler = MinMaxScaler(feature_range=angles_range)
+        # space_group_scaler = MinMaxScaler(feature_range=space_group_range)
+        # distance_scaler = MinMaxScaler(feature_range=distance_range)
 
-        atom_scaled = atom_scaler.fit_transform(atomic_numbers)
-        frac_scaled = frac_scaler.fit_transform(frac_coords)
-        abc_scaled = abc_scaler.fit_transform(abc)
-        angles_scaled = angles_scaler.fit_transform(angles)
-        space_group_scaled = space_group_scaler.fit_transform(space_group)
-        distance_scaled = distance_scaler.fit_transform(distance_matrix)
+        # atom_scaled = atom_scaler.fit_transform(atomic_numbers)
+        # frac_scaled = frac_scaler.fit_transform(frac_coords)
+        # abc_scaled = abc_scaler.fit_transform(abc)
+        # angles_scaled = angles_scaler.fit_transform(angles)
+        # space_group_scaled = space_group_scaler.fit_transform(space_group)
+        # distance_scaled = distance_scaler.fit_transform(distance_matrix)
+
+        atom_scaled = rgb_scaler(atomic_numbers, data_range=atom_range)
 
         (
             atom_scaled,
-            frac_scaled,
-            abc_scaled,
-            angles_scaled,
-            space_group_scaled,
-            distance_scaled,
+            # frac_scaled,
+            # abc_scaled,
+            # angles_scaled,
+            # space_group_scaled,
+            # distance_scaled,
         )
 
     @classmethod
