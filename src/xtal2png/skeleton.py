@@ -225,7 +225,8 @@ class XtalConverter:
         max_sites : int, optional
             Maximum number of sites to accomodate in encoding, by default 52
         save_dir : Union[str, PathLike[str]]
-            Directory to save PNG files, by default path.join("data", "interim")
+            Directory to save PNG files via ``func:xtal2png``,
+            by default path.join("data", "interim")
         """
         self.atom_range = atom_range
         self.frac_range = frac_range
@@ -272,12 +273,12 @@ class XtalConverter:
         Examples
         --------
         >>> coords = [[0, 0, 0], [0.75,0.5,0.75]]
-        >>> lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120,
-                                        beta=90, gamma=60)
+        >>> lattice = Lattice.from_parameters(
+        ...     a=3.84, b=3.84, c=3.84, alpha=120, beta=90, gamma=60
+        ... )
         >>> structures = [Structure(lattice, ["Si", "Si"], coords),
         ... Structure(lattice, ["Ni", "Ni"], coords)]
         >>> xtal2png(structures, show=False, save=True)
-
         """
         save_names: List[str] = []
         S: List[Structure] = []
