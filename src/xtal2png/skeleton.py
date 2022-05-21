@@ -292,7 +292,7 @@ class XtalConverter:
 
                 # load the CIF and convert to a pymatgen Structure
                 S.append(Structure.from_file(s))
-                save_names.append(s)
+                save_names.append(str(s))
 
             elif isinstance(s, Structure):
                 if not first_is_structure:
