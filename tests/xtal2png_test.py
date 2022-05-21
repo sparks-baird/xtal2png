@@ -5,15 +5,16 @@ from os import path
 
 from pymatgen.core.structure import Structure
 
-EXAMPLE_CIF = "Zn2B2PbO6.cif"
-fpath = path.join("data", "external", EXAMPLE_CIF)
-S = Structure.from_file(fpath)
+from xtal2png.skeleton import XtalConverter as xc
 
-S.atomic_numbers  # atom
-S.frac_coords  # xyz
-S._lattice.abc  # abc
-S._lattice.angles  # angles
-S.get_space_group_info()  # space group
-S.distance_matrix  # distance matrix
+EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
+S = []
+for cif in EXAMPLE_CIFS:
+    fpath = path.join("data", "external", cif)
+    S.append(Structure.from_file(fpath))
+
+xc.structures_to_arrays(S)
+
+xc.structures_to_arrays(S[0])
 
 1 + 1
