@@ -326,7 +326,7 @@ class XtalConverter:
 
         return imgs
 
-    def png2xtal(cls, images: List[Union[Image.Image, PathLike]]):
+    def png2xtal(self, images: List[Union[Image.Image, PathLike]], save: bool = False):
         """_summary_
 
         Parameters
@@ -339,15 +339,24 @@ class XtalConverter:
         >>> png2xtal(images)
         OUTPUT
         """
+        data_tmp = []
         for img in images:
             if isinstance(img, str):
                 # load image from file
                 with Image.open(img) as im:
-                    data = np.asarray(im)
+                    data_tmp.append(np.asarray(im))
             elif isinstance(img, Image.Image):
-                data = np.asarray(img)
+                data_tmp.append(np.asarray(img))
 
-        data
+        data = np.stack(data_tmp, axis=2)
+
+        S = self.arrays_to_structures(data)
+
+        if save:
+            # save new CIF files
+            1 + 1
+
+        return S
 
         # unscale values
 
@@ -477,6 +486,13 @@ class XtalConverter:
         data : np.ndarray
             3D array containing crystallographic information.
         """
+        # round fractional coordinates to nearest multiple?
+
+        # extract individual parts (opposite of np.block)
+
+        # average repeated values
+
+        # build Structure-s
 
 
 # ---- CLI ----
