@@ -189,6 +189,42 @@ def rgb_scaler(
     return X_scaled
 
 
+def rgb_unscaler(
+    X: ArrayLike,
+    data_range: Optional[Sequence] = None,
+):
+    """Unscale parameters from their RGB scale (0 to 255).
+
+    ``feature_range`` is fixed to [0, 255], ``data_range`` is either specified or
+    calculated based on min and max.
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Element-wise scaled values.
+    data_range : Optional[Sequence]
+        Range to use in place of np.min(X) and np.max(X) as in ``class:MinMaxScaler``.
+
+    Returns
+    -------
+    X
+        Unscaled features.
+
+    Examples
+    --------
+    >>> rgb_unscaler([[32, 64], [96, 128]], data_range=[0, 8])
+    array([[1, 2],
+          [3, 4]])
+    """
+    rgb_range = [0, 255]
+    X_scaled = element_wise_unscaler(X, data_range=data_range, feature_range=rgb_range)
+    return X_scaled
+
+
 class XtalConverter:
     """Convert between pymatgen Structure object and PNG-encoded representation."""
 
@@ -243,6 +279,8 @@ class XtalConverter:
         structures: List[Union[Structure, str, PathLike[str]]],
         show: bool = False,
         save: bool = True,
+        gen_mask: bool = False,
+        comp_mask: bool = False,
     ):
         """Encode crystal (via CIF filepath or Structure object) as PNG file.
 
@@ -281,6 +319,29 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
+        save_names, S = self.process_filepaths(structures)
+
+        # convert structures to 3D NumPy Matrices
+        self.data, self.id_data, self.id_keys = self.structures_to_arrays(S)
+
+        if gen_mask:
+
+            self.data[self.id_data == self.id_keys]
+
+        # convert to PNG images. Save and/or show, if applicable
+        imgs: List[Image.Image] = []
+        for d, save_name in zip(self.data, save_names):
+            img = Image.fromarray(d, mode="L")
+            imgs.append(img)
+            if save:
+                savepath = path.join(self.save_dir, save_name + ".png")
+                img.save(savepath)
+            if show:
+                img.show()
+
+        return imgs
+
+    def process_filepaths(self, structures):
         save_names: List[str] = []
         S: List[Structure] = []
         first_is_structure = isinstance(structures[0], Structure)
@@ -310,21 +371,7 @@ class XtalConverter:
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
                 )
 
-        # convert structures to 3D NumPy Matrices
-        data = self.structures_to_arrays(S)
-
-        # convert to PNG images. Save and/or show, if applicable
-        imgs: List[Image.Image] = []
-        for d, save_name in zip(data, save_names):
-            img = Image.fromarray(d, mode="L")
-            imgs.append(img)
-            if save:
-                savepath = path.join(self.save_dir, save_name + ".png")
-                img.save(savepath)
-            if show:
-                img.show()
-
-        return imgs
+        return save_names, S
 
     def png2xtal(self, images: List[Union[Image.Image, PathLike]], save: bool = False):
         """_summary_
@@ -441,8 +488,6 @@ class XtalConverter:
         # space_group_scaled = np.array(space_group)
         # distance_scaled = distance_matrix
 
-        zero = np.zeros((2, 12, 12), dtype=np.uint8)
-
         atom_arr = np.expand_dims(atom_scaled, 2)
         frac_arr = frac_scaled
         abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), self.max_sites, axis=1)
@@ -454,6 +499,67 @@ class XtalConverter:
             np.expand_dims(space_group_scaled, (1, 2)), self.max_sites, axis=1
         )
         distance_arr = distance_scaled
+
+        data = self.assemble_blocks(
+            atom_arr,
+            frac_arr,
+            abc_arr,
+            angles_arr,
+            volume_arr,
+            space_group_arr,
+            distance_arr,
+        )
+
+        ATOM_ID = 0
+        FRAC_ID = 1
+        ABC_ID = 2
+        ANGLES_ID = 3
+        VOLUME_ID = 4
+        SPACE_GROUP_ID = 5
+        DISTANCE_ID = 6
+
+        id_keys = dict(
+            atom=ATOM_ID,
+            frac=FRAC_ID,
+            abc=ABC_ID,
+            angles=ANGLES_ID,
+            volume=VOLUME_ID,
+            space_group=SPACE_GROUP_ID,
+            distance=DISTANCE_ID,
+        )
+        id_blocks = [
+            np.ones_like(atom_arr) * ATOM_ID,
+            np.ones_like(frac_arr) * FRAC_ID,
+            np.ones_like(abc_arr) * ABC_ID,
+            np.ones_like(angles_arr) * ANGLES_ID,
+            np.ones_like(volume_arr) * VOLUME_ID,
+            np.ones_like(space_group_arr) * SPACE_GROUP_ID,
+            np.ones_like(distance_arr) * DISTANCE_ID,
+        ]
+        id_data = self.assemble_blocks(*id_blocks)
+
+        return data, id_data, id_keys
+
+    def assemble_blocks(
+        self,
+        atom_arr,
+        frac_arr,
+        abc_arr,
+        angles_arr,
+        volume_arr,
+        space_group_arr,
+        distance_arr,
+    ):
+        arrays = [
+            atom_arr,
+            frac_arr,
+            abc_arr,
+            angles_arr,
+            volume_arr,
+            space_group_arr,
+        ]
+        zero_pad = sum([arr.shape[2] for arr in arrays])
+        zero = np.zeros((2, zero_pad, zero_pad), dtype=np.uint8)
 
         vertical_arr = np.block(
             [
@@ -475,7 +581,6 @@ class XtalConverter:
         left_arr = vertical_arr
         right_arr = np.block([[horizontal_arr], [distance_arr]])
         data = np.block([left_arr, right_arr])
-
         return data
 
     def arrays_to_structures(cls, data: np.ndarray):
@@ -486,9 +591,10 @@ class XtalConverter:
         data : np.ndarray
             3D array containing crystallographic information.
         """
+        for d in data:
+            1
+            # extract individual parts (opposite of np.block)
         # round fractional coordinates to nearest multiple?
-
-        # extract individual parts (opposite of np.block)
 
         # average repeated values
 
@@ -652,3 +758,4 @@ if __name__ == "__main__":
 #     space_group_scaled,
 #     distance_scaled,
 # )
+# id_blocks = [b * i for i, b in enumerate(id_blocks)]
