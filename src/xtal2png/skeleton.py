@@ -278,7 +278,8 @@ class XtalConverter:
         ... )
         >>> structures = [Structure(lattice, ["Si", "Si"], coords),
         ... Structure(lattice, ["Ni", "Ni"], coords)]
-        >>> xtal2png(structures, show=False, save=True)
+        >>> xc = XtalConverter()
+        >>> xc.xtal2png(structures, show=False, save=True)
         """
         save_names: List[str] = []
         S: List[Structure] = []
@@ -325,25 +326,26 @@ class XtalConverter:
 
         return imgs
 
-    def png2xtal(cls, image: Union[Image.Image, PathLike]):
+    def png2xtal(cls, images: List[Union[Image.Image, PathLike]]):
         """_summary_
 
         Parameters
         ----------
-        image : Union[Image.Image, PathLike]
-            _description_
+        images : List[Union[Image.Image, PathLike]]
+            PIL images that (approximately) encode crystal structures.
 
         Examples
         --------
-        >>> png2xtal(image)
+        >>> png2xtal(images)
         OUTPUT
         """
-        if isinstance(image, str):
-            # load image from file
-            with Image.open(image) as im:
-                data = np.asarray(im)
-        elif isinstance(image, Image.Image):
-            data = np.asarray(image)
+        for img in images:
+            if isinstance(img, str):
+                # load image from file
+                with Image.open(img) as im:
+                    data = np.asarray(im)
+            elif isinstance(img, Image.Image):
+                data = np.asarray(img)
 
         data
 
