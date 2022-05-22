@@ -23,13 +23,20 @@ def test_structures_to_arrays():
 
 def test_structures_to_arrays_single():
     xc = XtalConverter()
-    data = xc.structures_to_arrays([S[0]])
+    data, _, _ = xc.structures_to_arrays([S[0]])
     return data
+
+
+def test_arrays_to_structures():
+    xc = XtalConverter()
+    data, _, _ = xc.structures_to_arrays(S)
+    structures = xc.arrays_to_structures(data)
+    return structures
 
 
 def test_xtal2png():
     xc = XtalConverter()
-    imgs = xc.xtal2png(S, show=True, save=True)
+    imgs = xc.xtal2png(S, show=False, save=True)
     return imgs
 
 
@@ -40,6 +47,7 @@ def test_xtal2png_single():
 
 
 if __name__ == "__main__":
+    structures = test_arrays_to_structures()
     imgs = test_xtal2png()
 
 1 + 1
