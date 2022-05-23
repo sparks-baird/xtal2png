@@ -102,7 +102,7 @@ class XtalConverter:
         space_group_range: Tuple[int, int] = (1, 230),
         distance_range: Tuple[float, float] = (0.0, 25.0),
         max_sites: int = 52,
-        save_dir: Union[str, PathLike[str]] = path.join("data", "preprocessed"),
+        save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``.
 
@@ -124,7 +124,7 @@ class XtalConverter:
             Expected range for pairwise distances between sites, by default (0.0, 25.0)
         max_sites : int, optional
             Maximum number of sites to accomodate in encoding, by default 52
-        save_dir : Union[str, PathLike[str]]
+        save_dir : Union[str, 'PathLike[str]']
             Directory to save PNG files via ``func:xtal2png``,
             by default path.join("data", "interim")
         """
@@ -140,7 +140,7 @@ class XtalConverter:
 
     def xtal2png(
         self,
-        structures: List[Union[Structure, str, PathLike[str]]],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
         show: bool = False,
         save: bool = True,
     ):
@@ -245,12 +245,14 @@ class XtalConverter:
 
         return save_names, S
 
-    def png2xtal(self, images: List[Union[Image.Image, PathLike]], save: bool = False):
+    def png2xtal(
+        self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
+    ):
         """_summary_
 
         Parameters
         ----------
-        images : List[Union[Image.Image, PathLike]]
+        images : List[Union[Image.Image, 'PathLike']]
             PIL images that (approximately) encode crystal structures.
 
         Examples
@@ -416,7 +418,8 @@ class XtalConverter:
             space_group_arr,
         ]
         zero_pad = sum([arr.shape[2] for arr in arrays])
-        zero = np.zeros((2, zero_pad, zero_pad), dtype=int)
+        n_structures = atom_arr.shape[0]
+        zero = np.zeros((n_structures, zero_pad, zero_pad), dtype=int)
 
         vertical_arr = np.block(
             [
