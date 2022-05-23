@@ -14,6 +14,8 @@ dependencies:
   - tqdm
   - click
   - ipython
+  - pillow
+  - pymatgen
   # VISUALIZATION
   - matplotlib
   - ipympl  # interactive matplotlib plots
