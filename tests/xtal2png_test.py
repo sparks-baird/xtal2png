@@ -133,5 +133,7 @@ if __name__ == "__main__":
     test_rgb_scaler_unscaler()
     structures = test_arrays_to_structures()
     imgs = test_xtal2png()
+    test_structures_to_arrays_single()
+    test_xtal2png_single()
 
 1 + 1
