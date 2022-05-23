@@ -418,7 +418,8 @@ class XtalConverter:
             space_group_arr,
         ]
         zero_pad = sum([arr.shape[2] for arr in arrays])
-        zero = np.zeros((2, zero_pad, zero_pad), dtype=int)
+        n_structures = atom_arr.shape[0]
+        zero = np.zeros((n_structures, zero_pad, zero_pad), dtype=int)
 
         vertical_arr = np.block(
             [
