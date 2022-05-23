@@ -28,15 +28,16 @@ import sys
 from os import PathLike, path
 from typing import List, Optional, Sequence, Tuple, Union
 from uuid import uuid4
+from warnings import warn
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 
 from xtal2png import __version__
-from xtal2png.utils.data import dummy_structures
+from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
 
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -88,162 +89,6 @@ SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
 
 
-def element_wise_scaler(
-    X: ArrayLike,
-    feature_range: Optional[Sequence] = None,
-    data_range: Optional[Sequence] = None,
-):
-    """Scale parameters according to a prespecified min and max (``data_range``).
-
-    ``feature_range`` is preserved from MinMaxScaler
-
-    See Also
-    --------
-    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
-
-    Parameters
-    ----------
-    X : ArrayLike
-        Features to be scaled element-wise.
-    feature_range : Sequence
-        The scaled values will span the range of ``feature_range``
-    data_range : Sequence
-        Expected bounds for the data, e.g. 0 to 117 for periodic elements
-
-    Returns
-    -------
-    X_scaled
-        Element-wise scaled values.
-    """
-    if not isinstance(X, np.ndarray):
-        X = np.array(X)
-    if data_range is None:
-        data_range = [np.min(X), np.max(X)]
-    if feature_range is None:
-        feature_range = [np.min(X), np.max(X)]
-
-    data_min, data_max = data_range
-    feature_min, feature_max = feature_range
-    # following modified from:
-    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
-    X_std = (X - data_min) / (data_max - data_min)
-    X_scaled = X_std * (feature_max - feature_min) + feature_min
-    return X_scaled
-
-
-def element_wise_unscaler(
-    X_scaled: ArrayLike,
-    feature_range: Sequence,
-    data_range: Sequence,
-):
-    """Scale parameters according to a prespecified min and max (``data_range``).
-
-    ``feature_range`` is preserved from MinMaxScaler
-
-    See Also
-    --------
-    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
-
-    Parameters
-    ----------
-    X : ArrayLike
-        Element-wise scaled values.
-    feature_range : Sequence
-        The scaled values will span the range of ``feature_range``
-    data_range : Sequence
-        Expected bounds for the data, e.g. 0 to 117 for periodic elements
-
-    Returns
-    -------
-    X
-        Element-wise unscaled values.
-    """
-    if not isinstance(X_scaled, np.ndarray):
-        X_scaled = np.array(X_scaled)
-
-    data_min, data_max = data_range
-    feature_min, feature_max = feature_range
-    # following modified from:
-    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
-
-    # inverse transform, checked against Mathematica
-    X_std = (X_scaled - feature_min) / (feature_max - feature_min)
-    X = data_min + (data_max - data_min) * X_std
-    return X
-
-
-def rgb_scaler(
-    X: ArrayLike,
-    data_range: Optional[Sequence] = None,
-):
-    """Scale parameters according to RGB scale (0 to 255).
-
-    ``feature_range`` is fixed to [0, 255], ``data_range`` is either specified
-
-    See Also
-    --------
-    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
-
-    Parameters
-    ----------
-    X : ArrayLike
-        Features to be scaled element-wise.
-    data_range : Optional[Sequence]
-        Range to use in place of np.min(X) and np.max(X) as in ``MinMaxScaler``.
-
-    Returns
-    -------
-    X_scaled
-        Element-wise scaled values.
-
-    Examples
-    --------
-    >>> rgb_scaler([[1, 2], [3, 4]], data_range=[0, 8])
-    array([[ 32,  64],
-        [ 96, 128]])
-    """
-    rgb_range = [0, 255]
-    X_scaled = element_wise_scaler(X, data_range=data_range, feature_range=rgb_range)
-    X_scaled = np.round(X_scaled).astype(np.uint8)
-    return X_scaled
-
-
-def rgb_unscaler(
-    X: ArrayLike,
-    data_range: Sequence,
-):
-    """Unscale parameters from their RGB scale (0 to 255).
-
-    ``feature_range`` is fixed to [0, 255], ``data_range`` is either specified or
-    calculated based on min and max.
-
-    See Also
-    --------
-    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
-
-    Parameters
-    ----------
-    X : ArrayLike
-        Element-wise scaled values.
-    data_range : Optional[Sequence]
-        Range to use in place of np.min(X) and np.max(X) as in ``class:MinMaxScaler``.
-
-    Returns
-    -------
-    X
-        Unscaled features.
-
-    Examples
-    --------
-    >>> rgb_unscaler([[32, 64], [96, 128]], data_range=[0, 8])
-    array([[1, 2],
-          [3, 4]])
-    """
-    rgb_range = [0, 255]
-    X_scaled = element_wise_unscaler(X, data_range=data_range, feature_range=rgb_range)
-    return X_scaled
-
-
 class XtalConverter:
     """Convert between pymatgen Structure object and PNG-encoded representation."""
 
@@ -251,7 +96,7 @@ class XtalConverter:
         self,
         atom_range: Tuple[int, int] = (0, 117),
         frac_range: Tuple[float, float] = (0.0, 1.0),
-        abc_range: Tuple[float, float] = (0.0, 10.0),
+        abc_range: Tuple[float, float] = (0.0, 15.0),
         angles_range: Tuple[float, float] = (0.0, 180.0),
         volume_range: Tuple[float, float] = (0.0, 1000.0),
         space_group_range: Tuple[int, int] = (1, 230),
@@ -340,6 +185,20 @@ class XtalConverter:
 
         # convert structures to 3D NumPy Matrices
         self.data, self.id_data, self.id_keys = self.structures_to_arrays(S)
+        mn, mx = self.data.min(), self.data.max()
+        if mn < 0:
+            warn(
+                f"lower RGB value(s) OOB ({mn} less than 0). thresholding to 0.. may throw off crystal structure parameters (e.g. if lattice parameters are thresholded)"  # noqa: E501
+            )  # noqa
+            self.data[self.data < 0] = 0
+
+        if mx > 255:
+            warn(
+                f"upper RGB value(s) OOB ({mx} greater than 255). thresholding to 255.. may throw off crystal structure parameters (e.g. if lattice parameters are thresholded)"  # noqa: E501
+            )  # noqa
+            self.data[self.data > 255] = 255
+
+        self.data = self.data.astype(np.uint8)
 
         # convert to PNG images. Save and/or show, if applicable
         imgs: List[Image.Image] = []
@@ -557,7 +416,7 @@ class XtalConverter:
             space_group_arr,
         ]
         zero_pad = sum([arr.shape[2] for arr in arrays])
-        zero = np.zeros((2, zero_pad, zero_pad), dtype=np.uint8)
+        zero = np.zeros((2, zero_pad, zero_pad), dtype=int)
 
         vertical_arr = np.block(
             [
@@ -668,7 +527,9 @@ class XtalConverter:
         abc_scaled = np.mean(abc_scaled_tmp, axis=1, where=abc_scaled_tmp != 0)
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
         volume_scaled = np.mean(volume_scaled_tmp, axis=1)
-        space_group_scaled = np.mean(space_group_scaled_tmp, axis=1).astype(int)
+        space_group_scaled = np.round(np.mean(space_group_scaled_tmp, axis=1)).astype(
+            int
+        )
 
         atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
         frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
@@ -684,9 +545,11 @@ class XtalConverter:
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
-        atomic_numbers = atomic_numbers.astype(int)
+        atomic_numbers = np.round(atomic_numbers).astype(int)
 
         # REVIEW: round fractional coordinates to nearest multiple?
+
+        # TODO: tweak lattice parameters to match predicted space group rules
 
         # build Structure-s
         S: List[Structure] = []
