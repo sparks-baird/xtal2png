@@ -24,9 +24,8 @@ conda activate xtal2png
 
 ### Example
 ```python
-from xtal2png.data import (
-    example_structures,
-)  # a list of `pymatgen.core.structure.Structure` objects
+# a list of `pymatgen.core.structure.Structure` objects
+from xtal2png.utils.data import example_structures
 from xtal2png.core import XtalConverter
 
 xc = XtalConverter()
@@ -38,7 +37,8 @@ decoded_structures = xc.png2xtal(data, save=False)
 ```python
 print(example_structures[0], decoded_structures[0])
 ```
-<!-- > ```python
+<!--
+> ```python
 > Structure Summary
 > Lattice
 >     abc : 5.033788 11.523021 10.74117
@@ -62,7 +62,8 @@ print(example_structures[0], decoded_structures[0])
 > PeriodicSite: Zn (0.8767, 5.7871, 9.1193) [0.1804, 0.5020, 0.8510]
 > PeriodicSite: Zn (4.1106, 5.7419, 1.5432) [0.8196, 0.4980, 0.1490]
 > ...
-> ``` -->
+> ```
+> -->
 
 <table>
 <tr>
