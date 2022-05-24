@@ -52,6 +52,7 @@ repos:
     language: python
     language_version: python3
     files: '\.(rst|md|markdown|py|tex)$'
+    args: ["--skip-errors"]
 
 - repo: https://github.com/PyCQA/flake8
   rev: 4.0.1
