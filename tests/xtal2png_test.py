@@ -6,7 +6,7 @@ from os import path
 from numpy.testing import assert_allclose
 from pymatgen.core.structure import Structure
 
-from xtal2png.skeleton import XtalConverter
+from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
     element_wise_scaler,
     element_wise_unscaler,
