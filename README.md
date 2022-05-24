@@ -153,9 +153,9 @@ In order to set up the necessary environment:
    conda activate xtal2png
    ```
 
-3. perform an editable installation in the current directory (`.`):
+3. perform an editable (`-e`) installation in the current directory (`.`):
    ```bash
-   pip install --editable . # or more commonly `pip install -e .`
+   pip install -e .
    ```
 
 > **_NOTE:_**  Some changes, e.g. in `setup.cfg`, might require you to run `pip install -e .` again.
