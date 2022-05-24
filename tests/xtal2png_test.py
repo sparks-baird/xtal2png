@@ -1,47 +1,39 @@
 # convert between a fixed crystal Structure to numeric representation (test), to PNG
 # (test), and back to crystal Structure (test)
 
-from os import path
 
 from numpy.testing import assert_allclose
-from pymatgen.core.structure import Structure
 
-from xtal2png.skeleton import XtalConverter
+from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
     element_wise_scaler,
     element_wise_unscaler,
+    example_structures,
     rgb_scaler,
     rgb_unscaler,
 )
 
-EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
-
 rgb_tol = 1 / 255
 rgb_loose_tol = 1.5 / 255
-
-S = []
-for cif in EXAMPLE_CIFS:
-    fpath = path.join("data", "external", cif)
-    S.append(Structure.from_file(fpath))
 
 
 def test_structures_to_arrays():
     xc = XtalConverter()
-    data = xc.structures_to_arrays(S)
+    data = xc.structures_to_arrays(example_structures)
     return data
 
 
 def test_structures_to_arrays_single():
     xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays([S[0]])
+    data, _, _ = xc.structures_to_arrays([example_structures[0]])
     return data
 
 
 def test_arrays_to_structures():
     xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays(S)
+    data, _, _ = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data)
-    for s, structure in zip(S, structures):
+    for s, structure in zip(example_structures, structures):
         abc_check = s._lattice.abc
         angles_check = s._lattice.angles
         atomic_numbers_check = s.atomic_numbers
@@ -85,13 +77,13 @@ def test_arrays_to_structures():
 
 def test_xtal2png():
     xc = XtalConverter()
-    imgs = xc.xtal2png(S, show=False, save=True)
+    imgs = xc.xtal2png(example_structures, show=False, save=True)
     return imgs
 
 
 def test_xtal2png_single():
     xc = XtalConverter()
-    imgs = xc.xtal2png([S[0]], show=False, save=True)
+    imgs = xc.xtal2png([example_structures[0]], show=False, save=True)
     return imgs
 
 
