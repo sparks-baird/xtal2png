@@ -1,4 +1,4 @@
-from os import path
+from importlib.resources import read_text
 from typing import Optional, Sequence
 
 import numpy as np
@@ -16,8 +16,8 @@ dummy_structures = [
 EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
 example_structures = []
 for cif in EXAMPLE_CIFS:
-    fpath = path.join("data", "external", cif)
-    example_structures.append(Structure.from_file(fpath))
+    cif_str = read_text("xtal2png.utils", cif)
+    example_structures.append(Structure.from_str(cif_str, "cif"))
 
 
 def element_wise_scaler(
