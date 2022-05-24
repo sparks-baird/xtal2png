@@ -1,35 +1,161 @@
 [![Project generated with PyScaffold](https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold)](https://pyscaffold.org/)
-<!-- These are examples of badges you might also want to add to your README. Update the URLs accordingly.
-[![Built Status](https://api.cirrus-ci.com/github/<USER>/xtal2png.svg?branch=main)](https://cirrus-ci.com/github/<USER>/xtal2png)
 [![ReadTheDocs](https://readthedocs.org/projects/xtal2png/badge/?version=latest)](https://xtal2png.readthedocs.io/en/stable/)
-[![Coveralls](https://img.shields.io/coveralls/github/<USER>/xtal2png/main.svg)](https://coveralls.io/r/<USER>/xtal2png)
+[![Coveralls](https://img.shields.io/coveralls/github/sparks-baird/xtal2png/main.svg)](https://coveralls.io/r/sparks-baird/xtal2png)
 [![PyPI-Server](https://img.shields.io/pypi/v/xtal2png.svg)](https://pypi.org/project/xtal2png/)
 [![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/xtal2png.svg)](https://anaconda.org/conda-forge/xtal2png)
-[![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter)](https://twitter.com/xtal2png)
+<!-- These are examples of badges you might also want to add to your README. Update the URLs accordingly.
+[![Built Status](https://api.cirrus-ci.com/github/<USER>/xtal2png.svg?branch=main)](https://cirrus-ci.com/github/<USER>/xtal2png)
+[![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
 # xtal2png
 
-> Add a short description here!
+> Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
 
-A longer description of your project goes here...
+The latest advances in machine learning are often in natural language (e.g. LSTMs, transformers) or image processing (e.g. GANs, VAEs, guided diffusion models). Encoding/decoding crystal structures via grayscale PNG images (sort of like a QR code for crystal structures) allows materials informatics practitioners to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. What this means is that a user simply needs to follow the directions of an image-based repository for a custom image dataset to get preliminary domain-specific results prior to the higher-cost/higher-expertise task of modifying the codebase to take a custom numerical representation.
+
+## Quick Start
+### Installation
+```bash
+conda env create -n xtal2png -c conda-forge xtal2png
+conda activate xtal2png
+```
+
+### Example
+```python
+from xtal2png.data import example_structures # a list of `pymatgen.core.structure.Structure` objects
+from xtal2png.core import XtalConverter
+xc = XtalConverter()
+data = xc.xtal2png(example_structures, show=True, save=True)
+decoded_structures = xc.png2xtal(data, save=False)
+```
+
+### Output
+```python
+print(example_structures[0], decoded_structures[0])
+```
+<!-- > ```python
+> Structure Summary
+> Lattice
+>     abc : 5.033788 11.523021 10.74117
+>  angles : 90.0 90.0 90.0
+>  volume : 623.0356027127609
+>       A : 5.033788 0.0 3.0823061808931787e-16
+>       B : 1.8530431062799525e-15 11.523021 7.055815392078867e-16
+>       C : 0.0 0.0 10.74117
+> PeriodicSite: Zn2+ (0.9120, 5.7699, 9.1255) [0.1812, 0.5007, 0.8496]
+> PeriodicSite: Zn2+ (4.1218, 5.7531, 1.6156) [0.8188, 0.4993, 0.1504]
+> ...
+> 
+> Structure Summary
+> Lattice
+>     abc : 5.058823529411765 11.52941176470588 10.764705882352942
+>  angles : 90.35294117647058 90.35294117647058 90.35294117647058
+>  volume : 627.8183805766784
+>       A : 5.05872755011709 0.0 -0.031162082992936293
+>       B : -0.07145939988143561 11.528971561860502 -0.07102056123971526
+>       C : 0.0 0.0 10.764705882352942
+> PeriodicSite: Zn (0.8767, 5.7871, 9.1193) [0.1804, 0.5020, 0.8510]
+> PeriodicSite: Zn (4.1106, 5.7419, 1.5432) [0.8196, 0.4980, 0.1490]
+> ...
+> ``` -->
+
+<table>
+<tr>
+<th> Original </th>
+<th> Decoded </th>
+</tr>
+<tr>
+<td>
+
+```python
+Structure Summary
+Lattice
+    abc : 5.033788 11.523021 10.74117
+ angles : 90.0 90.0 90.0
+ volume : 623.0356027127609
+      A : 5.033788 0.0 3.082306e-16
+      B : 1.853043e-15 11.523021 7.055815e-16
+      C : 0.0 0.0 10.74117
+PeriodicSite: Zn2+ (0.912, 5.770, 9.126) [0.181, 0.501, 0.850]
+PeriodicSite: Zn2+ (4.122, 5.753, 1.616) [0.8188, 0.499, 0.150]
+...
+```
+
+</td>
+<td>
+
+```python
+Structure Summary
+Lattice
+    abc : 5.058824 11.529412 10.764706
+ angles : 90.352941 90.352941 90.352941
+ volume : 627.818381
+      A : 5.058728 0.0 -0.031162
+      B : -0.071459 11.528972 -0.071021
+      C : 0.0 0.0 10.764706
+PeriodicSite: Zn (0.877, 5.787, 9.119) [0.180, 0.502, 0.851]
+PeriodicSite: Zn (4.111, 5.742, 1.543) [0.820, 0.498, 0.149]
+...
+```
+
+</td>
+</tr>
+</table>
+
+The before and after structures match within an expected tolerance; note the round-off error due to encoding numerical data as RGB images which has a coarse resolution of approximately `1/255 = `0.00392`. Note also that the decoded version lacks charge states. The QR-code-like intermediate PNG image is also provided in original size and a scaled version for a better viewing experience:
+| 64x64 pixels | Scaled for Better Viewing ([tool credit](https://lospec.com/pixel-art-scaler/)) | Legend |
+| --- | --- | --- |
+| ![Zn8B8Pb4O24,volume=623,uid=bc2d](https://user-images.githubusercontent.com/45469701/169936372-e14a8bba-698a-4fc9-9d4b-fc5e1de7d67f.png) | <img src=https://user-images.githubusercontent.com/45469701/169936297-57f5afb6-c4ae-4d8a-8cbb-33dcaf190b98.png width=400> | <img src=https://user-images.githubusercontent.com/45469701/169937021-f6f60169-6965-4db1-9bbd-e8744521d570.png width=400> |
 
 ## Installation
 
+### Anaconda (`conda`) installation (recommended)
+(2022-05-23, conda-forge installation still pending, fallback to `pip install xtal2png` as separate command)
+
+Create and activate a new `conda` environment named `xtal2png` (`-n`) that will search for and install the `xtal2png` package from the `conda-forge` Anaconda channel (`-c`).
+```bash
+conda env create -n xtal2png -c conda-forge xtal2png
+conda activate xtal2png
+```
+
+Alternatively, in an already activated environment:
+```bash
+conda install -c conda-forge xtal2png
+```
+
+If you run into conflicts with packages you are integrating with `xtal2png`, please try installing all packages in a single line of code (or two if mixing `conda` and `pip` packages in the same environment) and/or installing with `mamba` ([source](https://stackoverflow.com/a/69137255/13697228)).
+
+### PyPI (`pip`) installation
+Create and activate a new `conda` environment named `xtal2png` (`-n`) with `python==3.9.*` or your preferred Python version, then install `xtal2png` via `pip`.
+```bash
+conda env create -n xtal2png python==3.9.*
+conda activate xtal2png
+pip install xtal2png
+```
+
+## Editable installation
 In order to set up the necessary environment:
 
-1. review and uncomment what you need in `environment.yml` and create an environment `xtal2png` with the help of [conda]:
+1. clone and enter the repository via:
+   ```bash
+   git clone https://github.com/sparks-baird/xtal2png.git
+   cd xtal2png
    ```
-   conda env create -f environment.yml
-   ```
-2. activate the new environment with:
-   ```
+   
+2. create and activate a new conda environment (optional, but recommended)
+   ```bash
+   conda env create --name xtal2png python==3.9.*
    conda activate xtal2png
    ```
+   
+3. perform an editable installation in the current directory (`.`):
+   ```bash
+   pip install --editable . # or more commonly `pip install -e .`
+   ```
 
-> **_NOTE:_**  The conda environment will have xtal2png installed in editable mode.
-> Some changes, e.g. in `setup.cfg`, might require you to run `pip install -e .` again.
+> **_NOTE:_**  Some changes, e.g. in `setup.cfg`, might require you to run `pip install -e .` again.
 
 
 Optional and needed only once after `git clone`:
@@ -52,7 +178,7 @@ Optional and needed only once after `git clone`:
 
 Then take a look into the `scripts` and `notebooks` folders.
 
-## Dependency Management & Reproducibility
+<!-- ## Dependency Management & Reproducibility
 
 1. Always keep your abstract (unpinned) dependencies updated in `environment.yml` and eventually
    in `setup.cfg` if you want to ship and install your package via `pip` later on.
@@ -65,7 +191,7 @@ Then take a look into the `scripts` and `notebooks` folders.
 3. Update your current environment with respect to a new `environment.lock.yml` using:
    ```bash
    conda env update -f environment.lock.yml --prune
-   ```
+   ``` -->
 ## Project Organization
 
 ```
@@ -79,7 +205,7 @@ Then take a look into the `scripts` and `notebooks` folders.
 ├── data
 │   ├── external            <- Data from third party sources.
 │   ├── interim             <- Intermediate data that has been transformed.
-│   ├── processed           <- The final, canonical data sets for modeling.
+│   ├── preprocessed        <- The final, canonical data sets for modeling.
 │   └── raw                 <- The original, immutable data dump.
 ├── docs                    <- Directory for Sphinx documentation in rst or md.
 ├── environment.yml         <- The conda environment file for reproducibility.
