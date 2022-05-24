@@ -645,7 +645,7 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Beginning conversion to PNG format")
-    print(f"The PNG file is saved at {XtalConverter.xtal2png(args.fpath)}")
+    print(f"The PNG file is saved at {XtalConverter().xtal2png(args.fpath)}")
     _logger.info("Script ends here")
 
 
