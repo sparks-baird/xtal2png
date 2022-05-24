@@ -13,7 +13,7 @@ from xtal2png.utils.data import (
     rgb_unscaler,
 )
 
-rgb_tol = 1 / 255
+rgb_tol = 1 / 255  # should this be 256?
 rgb_loose_tol = 1.5 / 255
 
 
