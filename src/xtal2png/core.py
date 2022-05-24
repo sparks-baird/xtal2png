@@ -23,9 +23,11 @@ References:
 import argparse
 import logging
 import sys
+from glob import glob
 
 # from itertools import zip_longest
 from os import PathLike, path
+from pathlib import Path
 from typing import List, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from warnings import warn
@@ -600,7 +602,12 @@ def parse_args(args):
         action="version",
         version="xtal2png {ver}".format(ver=__version__),
     )
-    parser.add_argument(dest="fpath", help="CIF filepath", type=str, metavar="STRING")
+    parser.add_argument(
+        dest="fpath",
+        help="Crystallographic information file (CIF) filepath (extension must be .cif or .CIF) or path to directory containing .cif files.",  # noqa: E501
+        type=str,
+        metavar="STRING",
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -645,7 +652,16 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Beginning conversion to PNG format")
-    print(f"The PNG file is saved at {XtalConverter.xtal2png(args.fpath)}")
+    if Path(args.fpath).suffix in [".cif", ".CIF"]:
+        fpaths = [args.fpath]
+    elif path.isdir(args.fpath):
+        fpaths = glob(path.join(args.fpath, "*.cif"))
+    else:
+        raise ValueError(
+            f"Input should be a path to a single .cif file or a path to a directory containing cif file(s). Received: {args.fpath}"  # noqa: E501
+        )
+
+    XtalConverter().xtal2png(fpaths)
     _logger.info("Script ends here")
 
 
