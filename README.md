@@ -24,8 +24,11 @@ conda activate xtal2png
 
 ### Example
 ```python
-from xtal2png.data import example_structures # a list of `pymatgen.core.structure.Structure` objects
+from xtal2png.data import (
+    example_structures,
+)  # a list of `pymatgen.core.structure.Structure` objects
 from xtal2png.core import XtalConverter
+
 xc = XtalConverter()
 data = xc.xtal2png(example_structures, show=True, save=True)
 decoded_structures = xc.png2xtal(data, save=False)
@@ -47,7 +50,7 @@ print(example_structures[0], decoded_structures[0])
 > PeriodicSite: Zn2+ (0.9120, 5.7699, 9.1255) [0.1812, 0.5007, 0.8496]
 > PeriodicSite: Zn2+ (4.1218, 5.7531, 1.6156) [0.8188, 0.4993, 0.1504]
 > ...
-> 
+>
 > Structure Summary
 > Lattice
 >     abc : 5.058823529411765 11.52941176470588 10.764705882352942
@@ -143,13 +146,13 @@ In order to set up the necessary environment:
    git clone https://github.com/sparks-baird/xtal2png.git
    cd xtal2png
    ```
-   
+
 2. create and activate a new conda environment (optional, but recommended)
    ```bash
    conda env create --name xtal2png python==3.9.*
    conda activate xtal2png
    ```
-   
+
 3. perform an editable installation in the current directory (`.`):
    ```bash
    pip install --editable . # or more commonly `pip install -e .`
