@@ -10,6 +10,9 @@ from souschef.recipe import Recipe
 
 import xtal2png as module
 
+# from packaging.version import VERSION_PATTERN
+
+
 name, version = module.__name__, module.__version__
 
 src_dirname = "src"
@@ -18,9 +21,15 @@ if basename(normpath(getcwd())) != src_dirname:
         f"`meta.yaml` will be saved to {join(getcwd(), name)} instead of {join(src_dirname, name)}. If this is not the desired behavior, delete {join(getcwd(), name)}, `cd` to {src_dirname}, and rerun."  # noqa: E501
     )
 
-if version == "unknown":
-    version = os.popen("git describe --abbrev=0 --tags").read().replace("\n", "")
-    warn("version is 'unknown', falling back to {version} via git tag")
+# Regex to match PEP440 compliant version strings
+# https://stackoverflow.com/a/38020327/13697228
+# _regex = re.compile(r"^\s*" + VERSION_PATTERN + r"\s*$", re.VERBOSE | re.IGNORECASE)
+
+# if bool(_regex.match(version)):
+
+version = os.popen("git describe --abbrev=0 --tags").read().replace("\n", "")
+
+# warn("version is 'unknown', falling back to {version} via git tag")
 
 os.system(f"grayskull pypi {name}=={version}")
 
