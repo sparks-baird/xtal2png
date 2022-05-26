@@ -9,6 +9,8 @@
 [![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
+> :warning: Codebase and Documentation under construction (2022-05-25) :warning:
+
 # xtal2png
 
 > Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
