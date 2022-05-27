@@ -140,6 +140,8 @@ class XtalConverter:
         self.max_sites = max_sites
         self.save_dir = save_dir
 
+        Path(save_dir).mkdir(exist_ok=True, parents=True)
+
     def xtal2png(
         self,
         structures: List[Union[Structure, str, "PathLike[str]"]],
