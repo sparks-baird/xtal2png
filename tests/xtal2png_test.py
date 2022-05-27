@@ -17,22 +17,7 @@ rgb_tol = 1 / 255  # should this be 256?
 rgb_loose_tol = 1.5 / 255
 
 
-def test_structures_to_arrays():
-    xc = XtalConverter()
-    data = xc.structures_to_arrays(example_structures)
-    return data
-
-
-def test_structures_to_arrays_single():
-    xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays([example_structures[0]])
-    return data
-
-
-def test_arrays_to_structures():
-    xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays(example_structures)
-    structures = xc.arrays_to_structures(data)
+def assert_structures_approximate_match(example_structures, structures):
     for s, structure in zip(example_structures, structures):
         abc_check = s._lattice.abc
         angles_check = s._lattice.angles
@@ -72,6 +57,25 @@ def test_arrays_to_structures():
             atol=rgb_tol,
             err_msg="atomic numbers not all close",
         )
+
+
+def test_structures_to_arrays():
+    xc = XtalConverter()
+    data = xc.structures_to_arrays(example_structures)
+    return data
+
+
+def test_structures_to_arrays_single():
+    xc = XtalConverter()
+    data, _, _ = xc.structures_to_arrays([example_structures[0]])
+    return data
+
+
+def test_arrays_to_structures():
+    xc = XtalConverter()
+    data, _, _ = xc.structures_to_arrays(example_structures)
+    structures = xc.arrays_to_structures(data)
+    assert_structures_approximate_match(example_structures, structures)
     return structures
 
 
@@ -89,15 +93,15 @@ def test_xtal2png_single():
 
 def test_png2xtal():
     xc = XtalConverter()
-    data = xc.xtal2png(example_structures, show=True, save=True)
-    decoded_structures = xc.png2xtal(data, save=False)
-    return decoded_structures
+    imgs = xc.xtal2png(example_structures, show=True, save=True)
+    structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(example_structures, structures)
 
 
 def test_png2xtal_single():
     xc = XtalConverter()
-    data = xc.xtal2png([example_structures[0]], show=True, save=True)
-    decoded_structures = xc.png2xtal(data, save=False)
+    imgs = xc.xtal2png([example_structures[0]], show=True, save=True)
+    decoded_structures = xc.png2xtal(imgs, save=False)
     return decoded_structures
 
 
@@ -139,9 +143,16 @@ if __name__ == "__main__":
     test_rgb_scaler_unscaler()
     structures = test_arrays_to_structures()
     imgs = test_xtal2png()
+    imgs = test_xtal2png_single()
     decoded_structures = test_png2xtal()
     decoded_structures = test_png2xtal_single()
     test_structures_to_arrays_single()
     test_xtal2png_single()
 
 1 + 1
+
+# %% Code Graveyard
+#     xc = XtalConverter()
+#     data = xc.xtal2png(example_structures, show=True, save=True)
+#     decoded_structures = xc.png2xtal(data, save=False)
+#     return decoded_structures
