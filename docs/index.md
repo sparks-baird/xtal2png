@@ -1,17 +1,6 @@
 # xtal2png
 
-Add a short description here!
-
-
-## Note
-
-> This is the main page of your project's [Sphinx] documentation. It is
-> formatted in [Markdown]. Add additional pages by creating md-files in
-> `docs` or rst-files (formatted in [reStructuredText]) and adding links to
-> them in the `Contents` section below.
->
-> Please check [Sphinx] and [MyST] for more information
-> about how to document your project and how to configure your preferences.
+Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette].
 
 
 ## Contents
@@ -37,3 +26,4 @@ Module Reference <api/modules>
 [Markdown]: https://daringfireball.net/projects/markdown/
 [reStructuredText]: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 [MyST]: https://myst-parser.readthedocs.io/en/latest/
+[Palette]: https://iterative-refinement.github.io/palette/
