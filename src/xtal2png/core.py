@@ -273,7 +273,7 @@ class XtalConverter:
             elif isinstance(img, Image.Image):
                 data_tmp.append(np.asarray(img))
 
-        data = np.stack(data_tmp, axis=2)
+        data = np.stack(data_tmp, axis=0)
 
         S = self.arrays_to_structures(data)
 
