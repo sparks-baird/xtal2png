@@ -273,7 +273,7 @@ class XtalConverter:
             elif isinstance(img, Image.Image):
                 data_tmp.append(np.asarray(img))
 
-        data = np.stack(data_tmp, axis=2)
+        data = np.stack(data_tmp, axis=0)
 
         S = self.arrays_to_structures(data)
 
@@ -529,10 +529,11 @@ class XtalConverter:
             volume_scaled_tmp,
             space_group_scaled_tmp,
             distance_scaled,
-        ) = [np.squeeze(arr) for arr in arrays]
+        ) = [np.squeeze(arr, axis=2) if arr.shape[2] == 1 else arr for arr in arrays]
 
         abc_scaled = np.mean(abc_scaled_tmp, axis=1, where=abc_scaled_tmp != 0)
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
+
         volume_scaled = np.mean(volume_scaled_tmp, axis=1)
         space_group_scaled = np.round(np.mean(space_group_scaled_tmp, axis=1)).astype(
             int
