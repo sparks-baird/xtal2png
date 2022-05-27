@@ -9,7 +9,7 @@
 [![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
-> :warning: Codebase and Documentation under construction (2022-05-26) :warning:
+> :warning: Codebase and Documentation under construction, conda-forge release coming soon (2022-05-26) :warning:
 
 # xtal2png
 
@@ -112,7 +112,7 @@ PeriodicSite: Zn (4.111, 5.742, 1.543) [0.820, 0.498, 0.149]
 </tr>
 </table>
 
-The before and after structures match within an expected tolerance; note the round-off error due to encoding numerical data as RGB images which has a coarse resolution of approximately `1/255 = `0.00392`. Note also that the decoded version lacks charge states. The QR-code-like intermediate PNG image is also provided in original size and a scaled version for a better viewing experience:
+The before and after structures match within an expected tolerance; note the round-off error due to encoding numerical data as RGB images which has a coarse resolution of approximately `1/255 = 0.00392`. Note also that the decoded version lacks charge states. The QR-code-like intermediate PNG image is also provided in original size and a scaled version for a better viewing experience:
 | 64x64 pixels | Scaled for Better Viewing ([tool credit](https://lospec.com/pixel-art-scaler/)) | Legend |
 | --- | --- | --- |
 | ![Zn8B8Pb4O24,volume=623,uid=bc2d](https://user-images.githubusercontent.com/45469701/169936372-e14a8bba-698a-4fc9-9d4b-fc5e1de7d67f.png) | <img src=https://user-images.githubusercontent.com/45469701/169936297-57f5afb6-c4ae-4d8a-8cbb-33dcaf190b98.png width=400> | <img src=https://user-images.githubusercontent.com/45469701/169937021-f6f60169-6965-4db1-9bbd-e8744521d570.png width=400> |
