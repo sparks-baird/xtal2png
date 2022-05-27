@@ -46,10 +46,32 @@ my_recipe = Recipe(load_file=fpath)
 my_recipe["build"].add_section("noarch")
 my_recipe["build"]["noarch"] = "python"
 try:
+    del my_recipe["build"]["skip"]
+except Exception as e:
+    print(e)
+    warn("Could not delete build: skip section (probably because it didn't exist)")
+
+try:
     del my_recipe["requirements"]["build"]
 except Exception as e:
     print(e)
     warn("Could not delete build section (probably because it didn't exist)")
+
+min_py_ver = "3.6"
+my_recipe["requirements"]["host"].remove("python")
+my_recipe["requirements"]["host"].append(f"python >={min_py_ver}")
+
+my_recipe["requirements"]["run"].remove("python")
+my_recipe["requirements"]["run"].append(f"python >={min_py_ver}")
+
+# remove the `# [py<38]` selector comment
+run_section = my_recipe["requirements"]["run"]
+idx = run_section.index("importlib-metadata")
+my_recipe["requirements"]["run"].remove("importlib-metadata")
+my_recipe["requirements"]["run"].append("importlib-metadata")
+
+# NOTE: how to add a doc_url?
+# my_recipe["about"].insert(0, "key", "value")
 
 # # sometimes package names differ between PyPI and Anaconda (e.g. `kaleido`)
 # my_recipe["requirements"]["run"].replace("kaleido", "python-kaleido")
