@@ -9,13 +9,15 @@
 [![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
-> :warning: Codebase and Documentation under construction (2022-05-25) :warning:
+> :warning: Codebase and Documentation under construction (2022-05-26) :warning:
 
 # xtal2png
 
 > Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
 
-The latest advances in machine learning are often in natural language (e.g. LSTMs, transformers) or image processing (e.g. GANs, VAEs, guided diffusion models). Encoding/decoding crystal structures via grayscale PNG images (sort of like a QR code for crystal structures) allows materials informatics practitioners to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. What this means is that a user simply needs to follow the directions of an image-based repository for a custom image dataset to get preliminary domain-specific results prior to the higher-cost/higher-expertise task of modifying the codebase to take a custom numerical representation.
+The latest advances in machine learning are often in natural language such as with LSTMs and transformers or image processing such as with GANs, VAEs, and guided diffusion models. Encoding/decoding crystal structures via grayscale PNG images (sort of like a QR code for crystal structures) allows you as a materials informatics practitioner to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. Let's take [Google's image-to-image diffusion model, Palette](https://iterative-refinement.github.io/palette/). Rather than dig into the code spending hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the developers before you can (maybe) get preliminary results, `xtal2png` lets you get those results using the default instructions on the repository.
+
+After getting preliminary results, you get to decide whether it's worth it to you to take on the higher-cost/higher-expertise task of modifying the codebase and using a more customized approach. Or, you can stick with the results of `xtal2png`. It's up to you!
 
 ## Quick Start
 ### Installation
