@@ -53,3 +53,4 @@ MANIFEST
 .conda*/
 .python-version
 src/xtal2png/meta.yaml
+xtal2png/meta.yaml
