@@ -312,7 +312,7 @@ class XtalConverter:
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
-                    "crystal supplied with {n_sites} sites, which is more than {max_sites} sites. Remove crystal or increase `max_sites`."  # noqa
+                    f"crystal supplied with {n_sites} sites, which is more than {max_sites} sites. Remove crystal or increase `max_sites`."  # noqa
                 )
             atomic_numbers.append(
                 np.pad(
