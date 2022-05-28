@@ -1,5 +1,4 @@
 """Crystal to PNG conversion core functions and scripts."""
-
 import argparse
 import logging
 import sys
