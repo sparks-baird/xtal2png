@@ -190,7 +190,7 @@ html_theme_options = {"sidebar_width": "300px", "page_width": "1200px"}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "../data/preprocessed/Zn8B8Pb4O24,volume=623,uid=b62a.png"
+html_logo = "logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
