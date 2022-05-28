@@ -1,7 +1,8 @@
 # xtal2png
 
-Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette].
+Encode/decode a crystal structure to/from a grayscale PNG image for direct use with image-based machine learning models such as [Palette].
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sparks-baird/xtal2png/blob/main/notebooks/xtal2png_test_pypi.ipynb)
 
 ## Contents
 
