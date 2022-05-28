@@ -200,6 +200,76 @@ Then take a look into the `scripts` and `notebooks` folders.
    ```bash
    conda env update -f environment.lock.yml --prune
    ``` -->
+
+
+## Command Line Interface (CLI)
+
+Make sure to install the package first per the installation instructions above. Here is
+how to access the help for the CLI and a few examples to get you started.
+
+### Help
+
+You can see the usage information of the `xtal2png` CLI script via:
+
+```bash
+(xtal2png) PS C:\Users\sterg\Documents\GitHub\sparks-baird\xtal2png> xtal2png --help
+```
+
+> ```bash
+> usage: xtal2png [-h] [--version] [-p STRING] [-s STRING] [--encode] [--decode] [-v] [-vv]
+>
+> Crystal to PNG encoder/decoder.
+>
+> optional arguments:
+>   -h, --help            show this help message and exit
+>   --version             show program's version number and exit
+>   -p STRING, --path STRING
+>                         Crystallographic information file (CIF) filepath
+>                         (extension must be .cif or .CIF) or path to directory
+>                         containing .cif files or processed PNG filepath or path
+>                         to directory containing processed .png files (extension
+>                         must be .png or .PNG). Assumes CIFs if --encode flag is
+>                         used. Assumes PNGs if --decode flag is used.
+>   -s STRING, --save-dir STRING
+>                         Directory to save processed PNG files or decoded CIFs to.
+>   --encode              Encode CIF files as PNG images.
+>   --decode              Decode PNG images as CIF files.
+>   -v, --verbose         set loglevel to INFO
+>   -vv, --very-verbose   set loglevel to DEBUG
+> ```
+
+### Examples
+
+To encode a single CIF file located at `src/xtal2png/utils/Zn2B2PbO6.cif` as a PNG and save the PNG to the `tmp` directory:
+
+```bash
+xtal2png --encode --path src/xtal2png/utils/Zn2B2PbO6.cif --save-dir tmp
+```
+
+To encode all CIF files contained in the `src/xtal2png/utils` directory as a PNG and
+save corresponding PNGs to the `tmp` directory:
+
+```bash
+xtal2png --encode --path src/xtal2png/utils --save-dir tmp
+```
+
+To decode a single structure-encoded PNG file located at
+`data/preprocessed/Zn8B8Pb4O24,volume=623,uid=b62a.png` as a CIF file and save the CIF
+file to the `tmp` directory:
+
+```bash
+xtal2png --decode --path data/preprocessed/Zn8B8Pb4O24,volume=623,uid=b62a.png --save-dir tmp
+```
+
+To decode all structure-encoded PNG file contained in the `data/preprocessed` directory as CIFs and save the CIFs to the `tmp` directory:
+
+```bash
+xtal2png --decode --path data/preprocessed --save-dir tmp
+```
+
+Note that the save directory (e.g. `tmp`) including any parents (e.g. `ab/cd/tmp`) will
+be created automatically if the directory does not already exist.
+
 ## Project Organization
 
 ```
