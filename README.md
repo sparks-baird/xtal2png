@@ -9,7 +9,7 @@
 [![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
-> :warning: Codebase and Documentation under construction, conda-forge release coming soon (2022-05-26) :warning:
+> ⚠️ Codebase and Documentation under construction, conda-forge release coming soon (2022-05-26) ⚠️
 
 # xtal2png
 
