@@ -11,6 +11,8 @@ import os
 import sys
 import shutil
 
+import sphinx_rtd_theme  # noqa
+
 # -- Path setup --------------------------------------------------------------
 
 __location__ = os.path.dirname(__file__)
@@ -72,6 +74,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
