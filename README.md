@@ -13,7 +13,7 @@
 
 # xtal2png
 
-> Encode(/decode) a crystal structure as(/from) a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
+> Encode/decode a crystal structure to/from a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
 
 The latest advances in machine learning are often in natural language such as with LSTMs and transformers or image processing such as with GANs, VAEs, and guided diffusion models. Encoding/decoding crystal structures via grayscale PNG images is akin to making/reading a QR code for crystal structures. This allows you, as a materials informatics practitioner, to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. Let's take [Google's image-to-image diffusion model, Palette](https://iterative-refinement.github.io/palette/). Rather than dig into the code spending hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the developers before you can (maybe) get preliminary results, `xtal2png` lets you get those results using the default instructions on the repository.
 
