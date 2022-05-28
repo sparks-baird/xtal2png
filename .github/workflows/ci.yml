@@ -121,7 +121,7 @@ jobs:
       - name: "✏️ Generate release changelog" # updates CHANGELOG.md
         uses: heinrichreimer/github-changelog-generator-action@v2.3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish Package
         env:
           # - https://pypi.org/help/#apitoken
