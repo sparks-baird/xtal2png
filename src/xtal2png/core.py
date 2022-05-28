@@ -1,24 +1,4 @@
-"""
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-``[options.entry_points]`` section in ``setup.cfg``::
-
-    console_scripts =
-         fibonacci = xtal2png.skeleton:run
-
-Then run ``pip install .`` (or ``pip install -e .`` for editable mode)
-which will install the command ``fibonacci`` inside your current environment.
-
-Besides console scripts, the header (i.e. until ``_logger``...) of this file can
-also be used as template for Python modules.
-
-Note:
-    This skeleton file can be safely removed if not needed!
-
-References:
-    - https://setuptools.pypa.io/en/latest/userguide/entry_point.html
-    - https://pip.pypa.io/en/stable/reference/pip_install
-"""
+"""Crystal to PNG conversion core functions and scripts."""
 
 import argparse
 import logging
@@ -37,6 +17,7 @@ from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
+from pymatgen.io.cif import CifWriter
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
@@ -53,25 +34,8 @@ _logger = logging.getLogger(__name__)
 
 # ---- Python API ----
 # The functions defined in this section can be imported by users in their
-# Python scripts/interactive interpreter, e.g. via
-# `from xtal2png.skeleton import fib`,
-# when using this Python module as a library.
-
-
-# def fib(n):
-#     """Fibonacci example function
-
-#     Args:
-#       n (int): integer
-
-#     Returns:
-#       int: n-th Fibonacci number
-#     """
-#     assert n > 0
-#     a, b = 1, 1
-#     for _i in range(n - 1):
-#         a, b = b, a + b
-#     return a
+# Python scripts/interactive interpreter, e.g. via `from xtal2png.core import
+# XtalConverter`, when using this Python module as a library.
 
 
 ATOM_ID = 1
@@ -89,6 +53,11 @@ ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
+
+
+def construct_save_name(s: Structure):
+    save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
+    return save_name
 
 
 class XtalConverter:
@@ -144,7 +113,9 @@ class XtalConverter:
 
     def xtal2png(
         self,
-        structures: List[Union[Structure, str, "PathLike[str]"]],
+        structures: Union[
+            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
+        ],
         show: bool = False,
         save: bool = True,
     ):
@@ -153,7 +124,8 @@ class XtalConverter:
         Parameters
         ----------
         structures : List[Union[Structure, str, PathLike[str]]]
-            pymatgen Structure objects or path to CIF files.
+            pymatgen Structure objects or path to CIF files or path to directory
+            containing CIF files.
         show : bool, optional
             Whether to display the PNG-encoded file, by default False
         save : bool, optional
@@ -230,7 +202,7 @@ class XtalConverter:
 
                 # load the CIF and convert to a pymatgen Structure
                 S.append(Structure.from_file(s))
-                save_names.append(str(s))
+                save_names.append(Path(str(s)).stem)
 
             elif isinstance(s, Structure):
                 if not first_is_structure:
@@ -239,9 +211,7 @@ class XtalConverter:
                     )
 
                 S.append(s)
-                save_names.append(
-                    f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa
-                )
+                save_names.append(construct_save_name(s))
             else:
                 raise ValueError(
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
@@ -278,8 +248,9 @@ class XtalConverter:
         S = self.arrays_to_structures(data)
 
         if save:
-            # save new CIF files
-            1 + 1
+            for s in S:
+                fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
+                CifWriter(s).write_file(fpath)
 
         return S
 
@@ -599,17 +570,38 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description="Crystal to PNG converter.")
+    parser = argparse.ArgumentParser(description="Crystal to PNG encoder/decoder.")
     parser.add_argument(
         "--version",
         action="version",
         version="xtal2png {ver}".format(ver=__version__),
     )
     parser.add_argument(
+        "-p",
+        "--path",
         dest="fpath",
-        help="Crystallographic information file (CIF) filepath (extension must be .cif or .CIF) or path to directory containing .cif files.",  # noqa: E501
+        help="Crystallographic information file (CIF) filepath (extension must be .cif or .CIF) or path to directory containing .cif files or processed PNG filepath or path to directory containing processed .png files (extension must be .png or .PNG). Assumes CIFs if --encode flag is used. Assumes PNGs if --decode flag is used.",  # noqa: E501
         type=str,
         metavar="STRING",
+    )
+    parser.add_argument(
+        "-s",
+        "--save-dir",
+        dest="save_dir",
+        default=".",
+        help="Directory to save processed PNG files or decoded CIFs to.",
+        type=str,
+        metavar="STRING",
+    )
+    parser.add_argument(
+        "--encode",
+        action="store_true",
+        help="Encode CIF files as PNG images.",
+    )
+    parser.add_argument(
+        "--decode",
+        action="store_true",
+        help="Decode PNG images as CIF files.",
     )
     parser.add_argument(
         "-v",
@@ -643,28 +635,46 @@ def setup_logging(loglevel):
 
 
 def main(args):
-    """Wrapper allowing :func:`fib` to be called with string arguments in a CLI fashion
-
-    Instead of returning the value from :func:`fib`, it prints the result to the
-    ``stdout`` in a nicely formatted message.
+    """Wrapper allowing :func:`XtalConverter()` :func:`xtal2png()` and
+    :func:`png2xtal()` methods to be called with string arguments in a CLI fashion.
 
     Args:
       args (List[str]): command line parameters as list of strings
-          (for example  ``["--verbose", "42"]``).
+          (for example  ``["--verbose", "example.cif"]``).
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Beginning conversion to PNG format")
-    if Path(args.fpath).suffix in [".cif", ".CIF"]:
+
+    if args.encode and args.decode:
+        raise ValueError("Specify --encode or --decode, not both.")
+
+    if args.encode:
+        ext = ".cif"
+    elif args.decode:
+        ext = ".png"
+    else:
+        raise ValueError("Specify at least one of --encode or --decode")
+
+    if Path(args.fpath).suffix in [ext, ext.upper()]:
         fpaths = [args.fpath]
     elif path.isdir(args.fpath):
-        fpaths = glob(path.join(args.fpath, "*.cif"))
+        fpaths = glob(path.join(args.fpath, f"*{ext}"))
+        if fpaths == []:
+            raise ValueError(
+                f"Assuming --path input is directory to files. No files of type {ext} present in {args.fpath}"  # noqa: E501
+            )
     else:
         raise ValueError(
-            f"Input should be a path to a single .cif file or a path to a directory containing cif file(s). Received: {args.fpath}"  # noqa: E501
+            f"Input should be a path to a single {ext} file or a path to a directory containing {ext} file(s). Received: {args.fpath}"  # noqa: E501
         )
 
-    XtalConverter().xtal2png(fpaths)
+    xc = XtalConverter(save_dir=args.save_dir)
+    if args.encode:
+        xc.xtal2png(fpaths, save=True)
+    elif args.decode:
+        xc.png2xtal(fpaths, save=True)
+
     _logger.info("Script ends here")
 
 
@@ -685,7 +695,7 @@ if __name__ == "__main__":
     # After installing your project with pip, users can also run your Python
     # modules as scripts via the ``-m`` flag, as defined in PEP 338::
     #
-    #     python -m xtal2png.skeleton 42
+    #     python -m xtal2png.core example.cif
     #
     run()
 
