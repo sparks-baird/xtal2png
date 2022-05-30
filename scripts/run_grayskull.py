@@ -1,5 +1,6 @@
 """Touch up the conda recipe from grayskull using conda-souschef."""
 import os
+from copy import deepcopy
 from os import getcwd
 from os.path import basename, dirname, join, normpath
 from pathlib import Path
@@ -43,8 +44,14 @@ if personal_conda_channel:
     Path(dirname(fpath2)).mkdir(exist_ok=True)
 
 my_recipe = Recipe(load_file=fpath)
-my_recipe["build"].add_section("noarch")
-my_recipe["build"]["noarch"] = "python"
+
+bld = my_recipe["build"]
+bld.add_section({"noarch": "python"})
+blank_line = deepcopy(bld.value[bld.value.index("")])
+bld.value[bld.value.index("")].remove()
+# how to add blank_line back in? Following doesn't seem to work:
+bld.value = bld.value + [blank_line]
+
 try:
     del my_recipe["build"]["skip"]
 except Exception as e:
@@ -87,3 +94,8 @@ my_recipe.save(fpath)
 if personal_conda_channel:
     my_recipe.save(fpath2)
     copyfile("LICENSE.txt", join(dirname(fpath2), "LICENSE.txt"))
+
+# %% Code Graveyard
+# blank_id = bld.value.index("")
+# last_id = len(bld.value) - 1
+# bld.value[blank_id], bld.value[last_id] = bld.value[last_id], bld.value[blank_id]
