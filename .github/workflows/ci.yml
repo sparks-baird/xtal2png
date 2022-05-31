@@ -105,23 +105,23 @@ jobs:
       - name: Retrieve pre-built distribution files
         uses: actions/download-artifact@v2
         with: {name: python-distribution-files, path: dist/}
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref }}
-          name: ${{ github.ref }}
-          body: ${{steps.github_release.outputs.changelog}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: "✏️ Generate release changelog" # updates CHANGELOG.md
-        uses: heinrichreimer/github-changelog-generator-action@v2.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Build Changelog
+#         id: github_release
+#         uses: mikepenz/release-changelog-builder-action@v3
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Create Release
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           tag_name: ${{ github.ref }}
+#           name: ${{ github.ref }}
+#           body: ${{steps.github_release.outputs.changelog}}
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: "✏️ Generate release changelog" # updates CHANGELOG.md
+#         uses: heinrichreimer/github-changelog-generator-action@v2.3
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish Package
         env:
           # - https://pypi.org/help/#apitoken
