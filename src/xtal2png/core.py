@@ -39,15 +39,19 @@ _logger = logging.getLogger(__name__)
 
 ATOM_ID = 1
 FRAC_ID = 2
-ABC_ID = 3
-ANGLES_ID = 4
-VOLUME_ID = 5
-SPACE_GROUP_ID = 6
-DISTANCE_ID = 7
+A_ID = 3
+B_ID = 4
+C_ID = 5
+ANGLES_ID = 6
+VOLUME_ID = 7
+SPACE_GROUP_ID = 8
+DISTANCE_ID = 9
 
 ATOM_KEY = "atom"
 FRAC_KEY = "frac"
-ABC_KEY = "abc"
+A_KEY = "latt_a"
+B_KEY = "latt_b"
+C_KEY = "latt_c"
 ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
@@ -66,11 +70,13 @@ class XtalConverter:
         self,
         atom_range: Tuple[int, int] = (0, 117),
         frac_range: Tuple[float, float] = (0.0, 1.0),
-        abc_range: Tuple[float, float] = (0.0, 15.0),
+        a_range: Tuple[float, float] = (2.0, 15.3),
+        b_range: Tuple[float, float] = (2.0, 15.0),
+        c_range: Tuple[float, float] = (2.0, 36.0),
         angles_range: Tuple[float, float] = (0.0, 180.0),
-        volume_range: Tuple[float, float] = (0.0, 1000.0),
+        volume_range: Tuple[float, float] = (0.0, 1500.0),
         space_group_range: Tuple[int, int] = (1, 230),
-        distance_range: Tuple[float, float] = (0.0, 25.0),
+        distance_range: Tuple[float, float] = (0.0, 18.0),
         max_sites: int = 52,
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
     ):
@@ -82,8 +88,12 @@ class XtalConverter:
             Expected range for atomic number, by default (0, 117)
         frac_range : Tuple[float, float], optional
             Expected range for fractional coordinates, by default (0.0, 1.0)
-        abc_range : Tuple[float, float], optional
-            Expected range for lattice parameter lengths, by default (0.0, 10.0)
+        a_range : Tuple[float, float], optional
+            Expected range for lattice parameter length a, by default (2.0, 15.3)
+        b_range : Tuple[float, float], optional
+            Expected range for lattice parameter length b, by default (2.0, 15.0)
+        c_range : Tuple[float, float], optional
+            Expected range for lattice parameter length c, by default (2.0, 36.0)
         angles_range : Tuple[float, float], optional
             Expected range for lattice parameter angles, by default (0.0, 180.0)
         volume_range : Tuple[float, float], optional
@@ -100,7 +110,9 @@ class XtalConverter:
         """
         self.atom_range = atom_range
         self.frac_range = frac_range
-        self.abc_range = abc_range
+        self.a_range = a_range
+        self.b_range = b_range
+        self.c_range = c_range
         self.angles_range = angles_range
         self.volume_range = volume_range
         self.space_group_range = space_group_range
@@ -272,7 +284,9 @@ class XtalConverter:
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
-        abc: List[List[float]] = []
+        latt_a: List[List[float]] = []
+        latt_b: List[List[float]] = []
+        latt_c: List[List[float]] = []
         angles: List[List[float]] = []
         volume: List[float] = []
         space_group: List[int] = []
@@ -293,7 +307,9 @@ class XtalConverter:
             frac_coords_tmp.append(
                 np.pad(s.frac_coords, ((0, self.max_sites - n_sites), (0, 0)))
             )
-            abc.append(list(s._lattice.abc))
+            latt_a.append(s._lattice.a)
+            latt_b.append(s._lattice.b)
+            latt_c.append(s._lattice.c)
             angles.append(list(s._lattice.angles))
             volume.append(s.volume)
             space_group.append(s.get_space_group_info()[1])
@@ -316,7 +332,9 @@ class XtalConverter:
         # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
         atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
         frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
-        abc_scaled = rgb_scaler(abc, data_range=self.abc_range)
+        a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
+        b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
+        c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
         angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
         volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
         space_group_scaled = rgb_scaler(space_group, data_range=self.space_group_range)
@@ -330,7 +348,9 @@ class XtalConverter:
 
         atom_arr = np.expand_dims(atom_scaled, 2)
         frac_arr = frac_scaled
-        abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), self.max_sites, axis=1)
+        a_arr = np.repeat(np.expand_dims(a_scaled, (1, 2)), self.max_sites, axis=1)
+        b_arr = np.repeat(np.expand_dims(b_scaled, (1, 2)), self.max_sites, axis=1)
+        c_arr = np.repeat(np.expand_dims(c_scaled, (1, 2)), self.max_sites, axis=1)
         angles_arr = np.repeat(np.expand_dims(angles_scaled, 1), self.max_sites, axis=1)
         volume_arr = np.repeat(
             np.expand_dims(volume_scaled, (1, 2)), self.max_sites, axis=1
@@ -343,7 +363,9 @@ class XtalConverter:
         data = self.assemble_blocks(
             atom_arr,
             frac_arr,
-            abc_arr,
+            a_arr,
+            b_arr,
+            c_arr,
             angles_arr,
             volume_arr,
             space_group_arr,
@@ -353,7 +375,9 @@ class XtalConverter:
         id_mapper = {
             ATOM_KEY: ATOM_ID,
             FRAC_KEY: FRAC_ID,
-            ABC_KEY: ABC_ID,
+            A_KEY: A_ID,
+            B_KEY: B_ID,
+            C_KEY: C_ID,
             ANGLES_KEY: ANGLES_ID,
             VOLUME_KEY: VOLUME_ID,
             SPACE_GROUP_KEY: SPACE_GROUP_ID,
@@ -363,7 +387,9 @@ class XtalConverter:
         id_blocks = [
             np.ones_like(atom_arr) * ATOM_ID,
             np.ones_like(frac_arr) * FRAC_ID,
-            np.ones_like(abc_arr) * ABC_ID,
+            np.ones_like(a_arr) * A_ID,
+            np.ones_like(b_arr) * B_ID,
+            np.ones_like(c_arr) * C_ID,
             np.ones_like(angles_arr) * ANGLES_ID,
             np.ones_like(volume_arr) * VOLUME_ID,
             np.ones_like(space_group_arr) * SPACE_GROUP_ID,
@@ -377,7 +403,9 @@ class XtalConverter:
         self,
         atom_arr,
         frac_arr,
-        abc_arr,
+        a_arr,
+        b_arr,
+        c_arr,
         angles_arr,
         volume_arr,
         space_group_arr,
@@ -386,7 +414,9 @@ class XtalConverter:
         arrays = [
             atom_arr,
             frac_arr,
-            abc_arr,
+            a_arr,
+            b_arr,
+            c_arr,
             angles_arr,
             volume_arr,
             space_group_arr,
@@ -401,7 +431,9 @@ class XtalConverter:
                 [
                     atom_arr,
                     frac_arr,
-                    abc_arr,
+                    a_arr,
+                    b_arr,
+                    c_arr,
                     angles_arr,
                     volume_arr,
                     space_group_arr,
@@ -409,7 +441,16 @@ class XtalConverter:
             ]
         )
         horizontal_arr = np.block(
-            [atom_arr, frac_arr, abc_arr, angles_arr, volume_arr, space_group_arr]
+            [
+                atom_arr,
+                frac_arr,
+                a_arr,
+                b_arr,
+                c_arr,
+                angles_arr,
+                volume_arr,
+                space_group_arr,
+            ]
         )
         horizontal_arr = np.moveaxis(horizontal_arr, 1, 2)
         left_arr = vertical_arr
@@ -434,7 +475,9 @@ class XtalConverter:
         # keys = [
         #     ATOM_KEY,
         #     FRAC_KEY,
-        #     ABC_KEY,
+        #     A_KEY,
+        #     B_KEY,
+        #     C_KEY,
         #     ANGLES_KEY,
         #     VOLUME_KEY,
         #     SPACE_GROUP_KEY,
@@ -447,12 +490,14 @@ class XtalConverter:
         left_arr, right_arr = np.array_split(data, [zero_pad], axis=1)
         _, bottom_left = np.array_split(left_arr, [zero_pad], axis=2)
 
-        verts = np.array_split(bottom_left, np.cumsum([1, 3, 3, 3, 1]), axis=1)
+        lengths = [1, 3, 1, 1, 1, 3, 1]
+
+        verts = np.array_split(bottom_left, np.cumsum(lengths), axis=1)
 
         top_right, bottom_right = np.array_split(right_arr, [zero_pad], axis=2)
         distance_arr = bottom_right
 
-        horzs = np.array_split(top_right, np.cumsum([1, 3, 3, 3, 1]), axis=2)
+        horzs = np.array_split(top_right, np.cumsum(lengths), axis=2)
 
         def average_vert_horz(vert, horz):
             vert = np.float64(vert)
@@ -465,7 +510,9 @@ class XtalConverter:
         (
             atom_arr,
             frac_arr,
-            abc_arr,
+            a_arr,
+            b_arr,
+            c_arr,
             angles_arr,
             volume_arr,
             space_group_arr,
@@ -474,7 +521,9 @@ class XtalConverter:
         return (
             atom_arr,
             frac_arr,
-            abc_arr,
+            a_arr,
+            b_arr,
+            c_arr,
             angles_arr,
             volume_arr,
             space_group_arr,
@@ -494,14 +543,18 @@ class XtalConverter:
         (
             atom_scaled,
             frac_scaled,
-            abc_scaled_tmp,
+            a_scaled_tmp,
+            b_scaled_tmp,
+            c_scaled_tmp,
             angles_scaled_tmp,
             volume_scaled_tmp,
             space_group_scaled_tmp,
             distance_scaled,
         ) = [np.squeeze(arr, axis=2) if arr.shape[2] == 1 else arr for arr in arrays]
 
-        abc_scaled = np.mean(abc_scaled_tmp, axis=1, where=abc_scaled_tmp != 0)
+        a_scaled = np.mean(a_scaled_tmp, axis=1, where=a_scaled_tmp != 0)
+        b_scaled = np.mean(b_scaled_tmp, axis=1, where=b_scaled_tmp != 0)
+        c_scaled = np.mean(c_scaled_tmp, axis=1, where=c_scaled_tmp != 0)
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
 
         volume_scaled = np.mean(volume_scaled_tmp, axis=1)
@@ -511,7 +564,9 @@ class XtalConverter:
 
         atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
         frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
-        abc = rgb_unscaler(abc_scaled, data_range=self.abc_range)
+        latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
+        latt_b = rgb_unscaler(b_scaled, data_range=self.b_range)
+        latt_c = rgb_unscaler(c_scaled, data_range=self.c_range)
         angles = rgb_unscaler(angles_scaled, data_range=self.angles_range)
 
         # # volume, space_group, distance_matrix unecessary for making Structure
@@ -541,7 +596,7 @@ class XtalConverter:
             fr = fr[site_ids]
             # di_cropped = di[site_ids[0]][:, site_ids[0]]
 
-            a, b, c = abc[i]
+            a, b, c = latt_a[i], latt_b[i], latt_c[i]
             alpha, beta, gamma = angles[i]
 
             lattice = Lattice.from_parameters(
@@ -854,3 +909,5 @@ if __name__ == "__main__":
 # volume.append(volume_tmp[i])
 # space_group.append(space_group_tmp[i])
 # distance_matrix.append(di_cropped)
+
+# abc: List[List[float]] = []
