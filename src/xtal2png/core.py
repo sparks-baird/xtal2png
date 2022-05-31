@@ -284,7 +284,6 @@ class XtalConverter:
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
-        # abc: List[List[float]] = []
         latt_a: List[List[float]] = []
         latt_b: List[List[float]] = []
         latt_c: List[List[float]] = []
@@ -308,7 +307,6 @@ class XtalConverter:
             frac_coords_tmp.append(
                 np.pad(s.frac_coords, ((0, self.max_sites - n_sites), (0, 0)))
             )
-            # abc.append(list(s._lattice.abc))
             latt_a.append(s._lattice.a)
             latt_b.append(s._lattice.b)
             latt_c.append(s._lattice.c)
@@ -334,7 +332,6 @@ class XtalConverter:
         # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
         atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
         frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
-        # abc_scaled = rgb_scaler(abc, data_range=self.abc_range)
         a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
         b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
         c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
@@ -351,7 +348,6 @@ class XtalConverter:
 
         atom_arr = np.expand_dims(atom_scaled, 2)
         frac_arr = frac_scaled
-        # abc_arr = np.repeat(np.expand_dims(abc_scaled, 1), self.max_sites, axis=1)
         a_arr = np.repeat(np.expand_dims(a_scaled, (1, 2)), self.max_sites, axis=1)
         b_arr = np.repeat(np.expand_dims(b_scaled, (1, 2)), self.max_sites, axis=1)
         c_arr = np.repeat(np.expand_dims(c_scaled, (1, 2)), self.max_sites, axis=1)
@@ -391,7 +387,6 @@ class XtalConverter:
         id_blocks = [
             np.ones_like(atom_arr) * ATOM_ID,
             np.ones_like(frac_arr) * FRAC_ID,
-            # np.ones_like(abc_arr) * ABC_ID,
             np.ones_like(a_arr) * A_ID,
             np.ones_like(b_arr) * B_ID,
             np.ones_like(c_arr) * C_ID,
@@ -548,7 +543,6 @@ class XtalConverter:
         (
             atom_scaled,
             frac_scaled,
-            # abc_scaled_tmp,
             a_scaled_tmp,
             b_scaled_tmp,
             c_scaled_tmp,
@@ -558,7 +552,6 @@ class XtalConverter:
             distance_scaled,
         ) = [np.squeeze(arr, axis=2) if arr.shape[2] == 1 else arr for arr in arrays]
 
-        # abc_scaled = np.mean(abc_scaled_tmp, axis=1, where=abc_scaled_tmp != 0)
         a_scaled = np.mean(a_scaled_tmp, axis=1, where=a_scaled_tmp != 0)
         b_scaled = np.mean(b_scaled_tmp, axis=1, where=b_scaled_tmp != 0)
         c_scaled = np.mean(c_scaled_tmp, axis=1, where=c_scaled_tmp != 0)
@@ -571,7 +564,6 @@ class XtalConverter:
 
         atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
         frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
-        # abc = rgb_unscaler(abc_scaled, data_range=self.abc_range)
         latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
         latt_b = rgb_unscaler(b_scaled, data_range=self.b_range)
         latt_c = rgb_unscaler(c_scaled, data_range=self.c_range)
@@ -917,3 +909,5 @@ if __name__ == "__main__":
 # volume.append(volume_tmp[i])
 # space_group.append(space_group_tmp[i])
 # distance_matrix.append(di_cropped)
+
+# abc: List[List[float]] = []
