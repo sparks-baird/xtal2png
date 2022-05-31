@@ -330,6 +330,10 @@ on [PyPI], the following steps can be used to release a new version for
 6. Run `tox -e publish -- --repository pypi` and check that everything was
    uploaded to [PyPI] correctly.
 
+A bot on `conda-forge` will recognize the new release on PyPI (typically within a
+few hours) and automatically open a pull request (PR) on [xtal2png-feedstock]. See
+[updating-feedstock] for detailed instructions.
+
 [^contrib1]: Even though, these resources focus on open source projects and
     communities, the general ideas behind collaborating with other developers
     to collectively create software are general and can be applied to all sorts
@@ -363,9 +367,7 @@ on [PyPI], the following steps can be used to release a new version for
 [virtual environment]: https://realpython.com/python-virtual-environments-a-primer/
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 
-
-```{todo} Please review and change the following definitions:
-```
-
-[repository]: https://github.com/<USERNAME>/xtal2png
-[issue tracker]: https://github.com/<USERNAME>/xtal2png/issues
+[repository]: https://github.com/sparks-baird/xtal2png
+[issue tracker]: https://github.com/sparks-baird/xtal2png/issues
+[feedstock]: https://github.com/conda-forge/xtal2png-feedstock
+[updating-feedstock]: https://github.com/conda-forge/xtal2png-feedstock#updating-xtal2png-feedstock
