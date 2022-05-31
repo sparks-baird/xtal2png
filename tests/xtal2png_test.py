@@ -50,7 +50,7 @@ def assert_structures_approximate_match(example_structures, structures):
         assert_allclose(
             c_check,
             latt_c,
-            rtol=rgb_loose_tol,
+            rtol=rgb_loose_tol * 2,
             err_msg="lattice parameter length `c` not all close",
         )
 
