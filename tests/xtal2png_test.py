@@ -2,6 +2,7 @@
 # (test), and back to crystal Structure (test)
 
 
+import plotly.express as px
 from numpy.testing import assert_allclose
 
 from xtal2png.core import XtalConverter
@@ -12,6 +13,7 @@ from xtal2png.utils.data import (
     rgb_scaler,
     rgb_unscaler,
 )
+from xtal2png.utils.plotting import plot_and_save
 
 rgb_tol = 1 / 255  # should this be 256?
 rgb_loose_tol = 1.5 / 255
@@ -136,6 +138,15 @@ def test_rgb_scaler_unscaler():
     )
     assert_allclose(check_unscaled, unscaled)
     assert_allclose(check_output, scaled)
+
+
+def test_plot_and_save():
+    df = px.data.tips()
+    fig = px.histogram(df, x="day")
+    plot_and_save("reports/figures/tmp", fig, mpl_kwargs={})
+
+
+# TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":

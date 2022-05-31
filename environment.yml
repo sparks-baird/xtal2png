@@ -20,6 +20,8 @@ dependencies:
   - matplotlib
   - ipympl  # interactive matplotlib plots
   - seaborn
+  - plotly
+  - kaleido
   # - altair
   # - yellowbrick
   # ML, STATS & DEEP LEARNING
