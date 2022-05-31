@@ -19,21 +19,39 @@ rgb_loose_tol = 1.5 / 255
 
 def assert_structures_approximate_match(example_structures, structures):
     for s, structure in zip(example_structures, structures):
-        abc_check = s._lattice.abc
+        a_check = s._lattice.a
+        b_check = s._lattice.b
+        c_check = s._lattice.c
         angles_check = s._lattice.angles
         atomic_numbers_check = s.atomic_numbers
         frac_coords_check = s.frac_coords
 
-        abc = structure._lattice.abc
+        latt_a = structure._lattice.a
+        latt_b = structure._lattice.b
+        latt_c = structure._lattice.c
         angles = structure._lattice.angles
         atomic_numbers = structure.atomic_numbers
         frac_coords = structure.frac_coords
 
         assert_allclose(
-            abc_check,
-            abc,
+            a_check,
+            latt_a,
             rtol=rgb_loose_tol,
-            err_msg="lattice parameter lengths not all close",
+            err_msg="lattice parameter length `a` not all close",
+        )
+
+        assert_allclose(
+            b_check,
+            latt_b,
+            rtol=rgb_loose_tol,
+            err_msg="lattice parameter length `b` not all close",
+        )
+
+        assert_allclose(
+            c_check,
+            latt_c,
+            rtol=rgb_loose_tol,
+            err_msg="lattice parameter length `c` not all close",
         )
 
         assert_allclose(
