@@ -2,6 +2,7 @@ name: Generate changelog
 on:
   release:
     types: [created, edited, published]
+  workflow_dispatch:
 
 jobs:
   generate-changelog:
