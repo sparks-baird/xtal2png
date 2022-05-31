@@ -130,19 +130,19 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: pipx run tox -e publish
-      - name: grayskull
-        run: |
-          sleep 60s
-          pip install grayskull conda-souschef
-          python scripts/run_grayskull.py
-      - name: Push meta.yaml to `xtal2png-feedstock` fork
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'xtal2png/meta.yaml'
-          destination_repo: 'sparks-baird/xtal2png-feedstock'
-          destination_folder: 'recipe'
-          user_email: 'sterling.baird@utah.edu'
-          user_name: 'sgbaird'
-          commit_message: 'Update meta.yaml based on latest PyPI version as faster version of regro-cf-autotick-bot)'
+#       - name: grayskull
+#         run: |
+#           sleep 60s
+#           pip install grayskull conda-souschef
+#           python scripts/run_grayskull.py
+#       - name: Push meta.yaml to `xtal2png-feedstock` fork
+#         uses: dmnemec/copy_file_to_another_repo_action@main
+#         env:
+#           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+#         with:
+#           source_file: 'xtal2png/meta.yaml'
+#           destination_repo: 'sparks-baird/xtal2png-feedstock'
+#           destination_folder: 'recipe'
+#           user_email: 'sterling.baird@utah.edu'
+#           user_name: 'sgbaird'
+#           commit_message: 'Update meta.yaml based on latest PyPI version as faster version of regro-cf-autotick-bot)'
