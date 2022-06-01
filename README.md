@@ -11,7 +11,7 @@
 
 > ⚠️ Manuscript and results using Palette coming soon ⚠️
 
-# xtal2png
+# xtal2png [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sparks-baird/xtal2png/blob/main/notebooks/1.0-xtal2png-tutorial.ipynb)
 
 > Encode/decode a crystal structure to/from a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
 
