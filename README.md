@@ -312,7 +312,7 @@ be created automatically if the directory does not already exist.
 
 <!-- pyscaffold-notes -->
 
-## Note
+## Note on PyScaffold
 
 This project has been set up using [PyScaffold] 4.2.1 and the [dsproject extension] 0.7.1.
 
@@ -324,7 +324,16 @@ This project has been set up using [PyScaffold] 4.2.1 and the [dsproject extensi
 [PyScaffold]: https://pyscaffold.org/
 [dsproject extension]: https://github.com/pyscaffold/pyscaffoldext-dsproject
 
+To create the same starting point for this repository, as of 2022-06-01 on Windows you will need the development versions of PyScaffold and extensions, however this will not be necessary once certain bugfixes have been introduced in the next stable releases:
+```bash
+pip install git+https://github.com/pyscaffold/pyscaffold.git git+https://github.com/pyscaffold/pyscaffoldext-dsproject.git git+https://github.com/pyscaffold/pyscaffoldext-markdown.git
+```
+
 The following `pyscaffold` command creates a starting point for this repository:
 ```bash
 putup xtal2png --github-actions --markdown --dsproj
+```
+Alternatively, you can edit a file interactively and update and uncomment relevant lines, which saves some of the additional setup:
+```bash
+putup --interactive xtal2png
 ```
