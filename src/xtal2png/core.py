@@ -64,7 +64,53 @@ def construct_save_name(s: Structure):
 
 
 class XtalConverter:
-    """Convert between pymatgen Structure object and PNG-encoded representation."""
+    """Convert between pymatgen Structure object and PNG-encoded representation.
+
+    Note that if you modify the ranges to be different than their defaults, you have
+    effectively created a new representation. In the future, anytime you use
+    :func:`XtalConverter` with a dataset that used modified range(s), you will need to
+    specify the same ranges; otherwise, your data will be decoded (unscaled)
+    incorrectly. In other words, make sure you're using the same :func:`XtalConverter`
+    object for both encoding and decoding.
+
+    We encourage you to use the default ranges, which were carefully selected based on a
+    trade-off between keeping the range as low as possible and trying to incorporate as
+    much of what's been observed on Materials Project with no more than 52 sites. For
+    more details, see the corresponding notebook in the ``notebooks`` directory:
+    https://github.com/sparks-baird/xtal2png/tree/main/notebooks
+
+    Parameters
+    ----------
+    atom_range : Tuple[int, int], optional
+        Expected range for atomic number, by default (0, 117)
+    frac_range : Tuple[float, float], optional
+        Expected range for fractional coordinates, by default (0.0, 1.0)
+    a_range : Tuple[float, float], optional
+        Expected range for lattice parameter length a, by default (2.0, 15.3)
+    b_range : Tuple[float, float], optional
+        Expected range for lattice parameter length b, by default (2.0, 15.0)
+    c_range : Tuple[float, float], optional
+        Expected range for lattice parameter length c, by default (2.0, 36.0)
+    angles_range : Tuple[float, float], optional
+        Expected range for lattice parameter angles, by default (0.0, 180.0)
+    volume_range : Tuple[float, float], optional
+        Expected range for unit cell volumes, by default (0.0, 1000.0)
+    space_group_range : Tuple[int, int], optional
+        Expected range for space group numbers, by default (1, 230)
+    distance_range : Tuple[float, float], optional
+        Expected range for pairwise distances between sites, by default (0.0, 25.0)
+    max_sites : int, optional
+        Maximum number of sites to accomodate in encoding, by default 52
+    save_dir : Union[str, 'PathLike[str]']
+        Directory to save PNG files via ``func:xtal2png``,
+        by default path.join("data", "interim")
+
+    Examples
+    --------
+    >>> xc = XtalConverter()
+
+    >>> xc = XtalConverter(atom_range=(0, 83)) # assumes no radioactive elements in data
+    """
 
     def __init__(
         self,
@@ -80,34 +126,7 @@ class XtalConverter:
         max_sites: int = 52,
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
     ):
-        """Instantiate an XtalConverter object with desired ranges and ``max_sites``.
-
-        Parameters
-        ----------
-        atom_range : Tuple[int, int], optional
-            Expected range for atomic number, by default (0, 117)
-        frac_range : Tuple[float, float], optional
-            Expected range for fractional coordinates, by default (0.0, 1.0)
-        a_range : Tuple[float, float], optional
-            Expected range for lattice parameter length a, by default (2.0, 15.3)
-        b_range : Tuple[float, float], optional
-            Expected range for lattice parameter length b, by default (2.0, 15.0)
-        c_range : Tuple[float, float], optional
-            Expected range for lattice parameter length c, by default (2.0, 36.0)
-        angles_range : Tuple[float, float], optional
-            Expected range for lattice parameter angles, by default (0.0, 180.0)
-        volume_range : Tuple[float, float], optional
-            Expected range for unit cell volumes, by default (0.0, 1000.0)
-        space_group_range : Tuple[int, int], optional
-            Expected range for space group numbers, by default (1, 230)
-        distance_range : Tuple[float, float], optional
-            Expected range for pairwise distances between sites, by default (0.0, 25.0)
-        max_sites : int, optional
-            Maximum number of sites to accomodate in encoding, by default 52
-        save_dir : Union[str, 'PathLike[str]']
-            Directory to save PNG files via ``func:xtal2png``,
-            by default path.join("data", "interim")
-        """
+        """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
         self.frac_range = frac_range
         self.a_range = a_range
@@ -233,7 +252,7 @@ class XtalConverter:
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
     ):
-        """_summary_
+        """Decode PNG files as Structure objects.
 
         Parameters
         ----------
@@ -242,17 +261,20 @@ class XtalConverter:
 
         Examples
         --------
-        >>> png2xtal(images)
+        >>> from xtal2png.utils.data import example_structures
+        >>> xc = XtalConverter()
+        >>> imgs = xc.xtal2png(example_structures)
+        >>> xc.png2xtal(imgs)
         OUTPUT
         """
         data_tmp = []
         for img in images:
             if isinstance(img, str):
                 # load image from file
-                with Image.open(img) as im:
+                with Image.open(img).convert("L") as im:
                     data_tmp.append(np.asarray(im))
             elif isinstance(img, Image.Image):
-                data_tmp.append(np.asarray(img))
+                data_tmp.append(np.asarray(img.convert("L")))
 
         data = np.stack(data_tmp, axis=0)
 
