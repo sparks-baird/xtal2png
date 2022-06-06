@@ -9,7 +9,7 @@
 [![Monthly Downloads](https://pepy.tech/badge/xtal2png/month)](https://pepy.tech/project/xtal2png)
 -->
 
-> ⚠️ Manuscript and results using Palette coming soon ⚠️
+> ⚠️ Manuscript and results using a generative model coming soon ⚠️
 
 # xtal2png [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sparks-baird/xtal2png/blob/main/notebooks/1.0-xtal2png-tutorial.ipynb)
 
@@ -41,33 +41,6 @@ decoded_structures = xc.png2xtal(data, save=False)
 ```python
 print(example_structures[0], decoded_structures[0])
 ```
-<!--
-> ```python
-> Structure Summary
-> Lattice
->     abc : 5.033788 11.523021 10.74117
->  angles : 90.0 90.0 90.0
->  volume : 623.0356027127609
->       A : 5.033788 0.0 3.0823061808931787e-16
->       B : 1.8530431062799525e-15 11.523021 7.055815392078867e-16
->       C : 0.0 0.0 10.74117
-> PeriodicSite: Zn2+ (0.9120, 5.7699, 9.1255) [0.1812, 0.5007, 0.8496]
-> PeriodicSite: Zn2+ (4.1218, 5.7531, 1.6156) [0.8188, 0.4993, 0.1504]
-> ...
->
-> Structure Summary
-> Lattice
->     abc : 5.058823529411765 11.52941176470588 10.764705882352942
->  angles : 90.35294117647058 90.35294117647058 90.35294117647058
->  volume : 627.8183805766784
->       A : 5.05872755011709 0.0 -0.031162082992936293
->       B : -0.07145939988143561 11.528971561860502 -0.07102056123971526
->       C : 0.0 0.0 10.764705882352942
-> PeriodicSite: Zn (0.8767, 5.7871, 9.1193) [0.1804, 0.5020, 0.8510]
-> PeriodicSite: Zn (4.1106, 5.7419, 1.5432) [0.8196, 0.4980, 0.1490]
-> ...
-> ```
-> -->
 
 <table>
 <tr>
