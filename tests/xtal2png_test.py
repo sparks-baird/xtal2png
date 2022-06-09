@@ -201,9 +201,3 @@ if __name__ == "__main__":
     test_png2xtal_single()
 
 1 + 1
-
-# %% Code Graveyard
-#     xc = XtalConverter()
-#     data = xc.xtal2png(example_structures, show=True, save=True)
-#     decoded_structures = xc.png2xtal(data, save=False)
-#     return decoded_structures
