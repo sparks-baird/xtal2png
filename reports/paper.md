@@ -85,19 +85,19 @@ be run without error.
 "[Pythonistas](https://en.wiktionary.org/wiki/Pythonista)" and entry-level coders alike.
 `xtal2png` provides a straightforward Python application programming interface (API) and
 command line interface (CLI). `xtal2png` relies on `pymatgen.core.structure.Structure`
-objects for representing crystal structures and also supports reading crystallographic
-information files (CIFs) from directories. `xtal2png` encodes crystallographic
-information related to the unit cell, crystallographic symmetry, and atomic elements and
-coordinates which are each scaled individually according to the information type. An
-upscaled version of the PNG image and a legend of the representation are given in
-\autoref{fig:example-and-legend}. Due to the encoding of numerical values as grayscale
-PNG images (allowable values are integers between 0 and 255), a small round-off error is
-present during a single round of encoding and decoding. An example comparing an original
-vs. decoded structure is given in \autoref{fig:original-decoded}.
+[@ongPythonMaterialsGenomics2013] objects for representing crystal structures and also
+supports reading crystallographic information files (CIFs) from directories. `xtal2png`
+encodes crystallographic information related to the unit cell, crystallographic
+symmetry, and atomic elements and coordinates which are each scaled individually
+according to the information type. An upscaled version of the PNG image and a legend of
+the representation are given in \autoref{fig:example-and-legend}. Due to the encoding of
+numerical values as grayscale PNG images (allowable values are integers between 0 and
+255), a small round-off error is present during a single round of encoding and decoding.
+An example comparing an original vs. decoded structure is given in
+\autoref{fig:original-decoded}.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
-[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2 𝐵_2 𝑃𝑏
-𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2𝐵_2𝑃𝑏𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the representation lies in being able to directly use the PNG
 representation with image-based models which often do not directly support custom
