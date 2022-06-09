@@ -61,8 +61,7 @@ informatics (chemical-formula-based predictions) was not publicly realized until
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
-Another example of state-of-the-art algorithm domain transfer is refactoring
-state-of-the-art image-processing models for crystal structure applications, with
+Another example of state-of-the-art algorithm domain transfer is refactoring image-processing models for crystal structure applications, with
 introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (preprint)
 [@xieCrystalGraphConvolutional2017], and peer-reviewed domain transferred
 [@xieCrystalGraphConvolutional2018] publication dates of Sep 2016, Oct 2017, and Apr
