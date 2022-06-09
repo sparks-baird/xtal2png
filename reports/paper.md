@@ -15,7 +15,7 @@ authors:
     orcid: 0000-0002-6583-7755
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
-  - name: Michael Alverson
+  - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
