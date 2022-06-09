@@ -95,7 +95,7 @@ original vs. decoded structure is given in \autoref{fig:original-decoded}.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
 [`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2 𝐵_2 𝑃𝑏
-𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=75% }
+𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the
 representation lies in being able to directly use the PNG representation with
