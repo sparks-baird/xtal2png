@@ -18,15 +18,17 @@ authors:
   - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
-    affiliation: "1" # (Multiple affiliations must be quoted)
+    affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Taylor D. Sparks
     orcid: 0000-0001-8020-7711
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
 affiliations:
- - name: Materials Science & Engineering, University of Utah, Salt Lake City, USA
+ - name: Materials Science & Engineering, University of Utah, USA
    index: 1
-date: 7 June 2022
+ - name: Computer Science, University of Southern California, USA
+   index: 2
+date: 9 June 2022
 bibliography: paper.bib
 
 # # Optional fields if submitting to a AAS journal too, see this blog post:
@@ -59,8 +61,7 @@ informatics (chemical-formula-based predictions) was not publicly realized until
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
-Another example of state-of-the-art algorithm domain transfer is refactoring
-state-of-the-art image-processing models for crystal structure applications, with
+Another example of state-of-the-art algorithm domain transfer is refactoring image-processing models for crystal structure applications, with
 introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (preprint)
 [@xieCrystalGraphConvolutional2017], and peer-reviewed domain transferred
 [@xieCrystalGraphConvolutional2018] publication dates of Sep 2016, Oct 2017, and Apr
