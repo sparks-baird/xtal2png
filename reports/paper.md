@@ -18,15 +18,17 @@ authors:
   - name: Michael Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
-    affiliation: "1" # (Multiple affiliations must be quoted)
+    affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Taylor D. Sparks
     orcid: 0000-0001-8020-7711
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
 affiliations:
- - name: Materials Science & Engineering, University of Utah, Salt Lake City, USA
+ - name: Materials Science & Engineering, University of Utah, USA
    index: 1
-date: 7 June 2022
+ - name: Computer Science, University of Southern California, USA
+   index: 2
+date: 9 June 2022
 bibliography: paper.bib
 
 # # Optional fields if submitting to a AAS journal too, see this blog post:
