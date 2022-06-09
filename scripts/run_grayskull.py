@@ -94,8 +94,3 @@ my_recipe.save(fpath)
 if personal_conda_channel:
     my_recipe.save(fpath2)
     copyfile("LICENSE.txt", join(dirname(fpath2), "LICENSE.txt"))
-
-# %% Code Graveyard
-# blank_id = bld.value.index("")
-# last_id = len(bld.value) - 1
-# bld.value[blank_id], bld.value[last_id] = bld.value[last_id], bld.value[blank_id]
