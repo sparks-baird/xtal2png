@@ -69,7 +69,7 @@ transfer from image-processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to encode/decode a crystal structure
 to/from a grayscale PNG image for direct use with image-based machine learning models.
-For example, Let's take [Google's image-to-image diffusion model,
+Let's take [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022]. Rather than dig into the code spending
 hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the
@@ -80,7 +80,7 @@ be run without error.
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
 
 `xtal2png` was designed to be easy-to-use by both
-["Pythonistas"](https://en.wiktionary.org/wiki/Pythonista) and entry-level coders alike.
+"[Pythonistas](https://en.wiktionary.org/wiki/Pythonista)" and entry-level coders alike.
 `xtal2png` provides a straightforward Python application programming interface (API) and
 command line interface (CLI). `xtal2png` relies on `pymatgen.core.structure.Structure`
 objects for representing crystal structures and also supports reading crystallographic
@@ -90,12 +90,14 @@ coordinates which are each scaled individually according to the information type
 upscaled version of the PNG image and a legend of the representation are given in
 \autoref{fig:example-and-legend}. Due to the encoding of numerical values as grayscale
 PNG images (allowable values are integers between 0 and 255), a small round-off error is
-present during a single round of encoding and decoding. Original and decoded
-visualizations of the crystal structure represented in \autoref{fig:example-and-legend}
-are given in \autoref{fig:original-decoded}. The significance of the representation lies
-in being able to directly use the PNG representation with image-based models which often
-do not directly support custom dataset types, potentially saving days or weeks during
-the process of obtaining preliminary results on a newly released model.
+present during a single round of encoding and decoding. The significance of the
+representation lies in being able to directly use the PNG representation with
+image-based models which often do not directly support custom dataset types, potentially
+saving days or weeks during the process of obtaining preliminary results on a newly
+released model.
+
+We plan to apply `xtal2png` to a probabilistic diffusion generative model as a
+proof-of-concept and present our findings in the near future.
 
 <!-- ![Caption for example figure.\label{fig:example}](figure.png) -->
 
