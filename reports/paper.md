@@ -40,7 +40,7 @@ bibliography: paper.bib
 The latest advances in machine learning are often in natural language such as with long
 short-term memory networks (LSTMs) and transformers or image processing such as with
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
-diffusion models. Encoding/decoding crystal structures via grayscale PNG images (see
+diffusion models. Using `xtal2png` [@xtal2png] to encode/decode crystal structures via grayscale PNG images (see
 e.g. \autoref{fig:64-bit}) is akin to making/reading a QR code for crystal structures.
 This allows you, as a materials informatics practitioner, to get streamlined results for
 new state-of-the-art image-based machine learning models applied to crystal structure.
@@ -55,10 +55,10 @@ introduced the revolutionary natural language processing transformer architectur
 2017; yet the application of transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019/early 2020
-[@goodallPredictingMaterialsProperties2019,@wangCompositionallyrestrictedAttentionbasedNetwork2020],
+[@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
-[@goodallPredictingMaterialsProperties2020,@wangCompositionallyRestrictedAttentionbased2021].
+[@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
 Another example of state-of-the-art algorithm domain transfer is refactoring
 state-of-the-art image-processing models for crystal structure applications, with
 introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (preprint)
@@ -67,9 +67,11 @@ introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (prep
 2018, respectively. Here, we focus on the latter application: state-of-the-art domain
 transfer from image-processing to crystal structure.
 
-`xtal2png` is a Python package that allows you to encode/decode a crystal structure
-to/from a grayscale PNG image for direct use with image-based machine learning models.
-For example, Let's take [Google's image-to-image diffusion model,
+`xtal2png` [@xtal2png]
+([https://github.com/sparks-baird/xtal2png](https://github.com/sparks-baird/xtal2png))
+is a Python package that allows you to encode/decode a crystal structure to/from a
+grayscale PNG image for direct use with image-based machine learning models. Let's take
+[Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022]. Rather than dig into the code spending
 hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the
@@ -80,7 +82,7 @@ be run without error.
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
 
 `xtal2png` was designed to be easy-to-use by both
-["Pythonistas"](https://en.wiktionary.org/wiki/Pythonista) and entry-level coders alike.
+"[Pythonistas](https://en.wiktionary.org/wiki/Pythonista)" and entry-level coders alike.
 `xtal2png` provides a straightforward Python application programming interface (API) and
 command line interface (CLI). `xtal2png` relies on `pymatgen.core.structure.Structure`
 objects for representing crystal structures and also supports reading crystallographic
@@ -90,12 +92,20 @@ coordinates which are each scaled individually according to the information type
 upscaled version of the PNG image and a legend of the representation are given in
 \autoref{fig:example-and-legend}. Due to the encoding of numerical values as grayscale
 PNG images (allowable values are integers between 0 and 255), a small round-off error is
-present during a single round of encoding and decoding. Original and decoded
-visualizations of the crystal structure represented in \autoref{fig:example-and-legend}
-are given in \autoref{fig:original-decoded}. The significance of the representation lies
-in being able to directly use the PNG representation with image-based models which often
-do not directly support custom dataset types, potentially saving days or weeks during
-the process of obtaining preliminary results on a newly released model.
+present during a single round of encoding and decoding. An example comparing an original
+vs. decoded structure is given in \autoref{fig:original-decoded}.
+
+![(a) Original and (b) `xtal2png` decoded visualizations of
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2 𝐵_2 𝑃𝑏
+𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
+
+The significance of the representation lies in being able to directly use the PNG
+representation with image-based models which often do not directly support custom
+dataset types, potentially saving days or weeks during the process of obtaining
+preliminary results on a newly released model.
+
+We plan to apply `xtal2png` to a probabilistic diffusion generative model as a
+proof-of-concept and present our findings in the near future.
 
 <!-- ![Caption for example figure.\label{fig:example}](figure.png) -->
 
