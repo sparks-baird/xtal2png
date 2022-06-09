@@ -55,10 +55,10 @@ introduced the revolutionary natural language processing transformer architectur
 2017; yet the application of transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019/early 2020
-[@goodallPredictingMaterialsProperties2019,@wangCompositionallyrestrictedAttentionbasedNetwork2020],
+[@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
-[@goodallPredictingMaterialsProperties2020,@wangCompositionallyRestrictedAttentionbased2021].
+[@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
 Another example of state-of-the-art algorithm domain transfer is refactoring
 state-of-the-art image-processing models for crystal structure applications, with
 introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (preprint)
