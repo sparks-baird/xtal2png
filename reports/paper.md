@@ -47,16 +47,6 @@ new state-of-the-art image-based machine learning models applied to crystal stru
 
 ![A real-size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
 
-<!-- The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration). -->
-
 # Statement of need
 
 Using a state-of-the-art method in a separate domain with a custom data representation
@@ -107,32 +97,7 @@ in being able to directly use the PNG representation with image-based models whi
 do not directly support custom dataset types, potentially saving days or weeks during
 the process of obtaining preliminary results on a newly released model.
 
-<!-- | (a) 64x64 pixels | (b) Scaled for Better Viewing ([tool credit](https://lospec.com/pixel-art-scaler/)) |  Legend |
-| --- | --- | --- |
-| ![Zn8B8Pb4O24,volume=623,uid=bc2d](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png) | <img src="figures/Zn8B8Pb4O24,volume=623,uid=bc2d_upsampled.png" width=400> | <img src="figures/legend.png" width=400> | -->
-
 <!-- ![Caption for example figure.\label{fig:example}](figure.png) -->
-
-
-<!-- `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
-
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike. -->
 
 <!-- # Mathematics
 
