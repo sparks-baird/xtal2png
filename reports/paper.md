@@ -67,9 +67,11 @@ introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (prep
 2018, respectively. Here, we focus on the latter application: state-of-the-art domain
 transfer from image-processing to crystal structure.
 
-`xtal2png` is a Python package that allows you to encode/decode a crystal structure
-to/from a grayscale PNG image for direct use with image-based machine learning models.
-Let's take [Google's image-to-image diffusion model,
+`xtal2png` [@Xtal2png2022]
+([https://github.com/sparks-baird/xtal2png](https://github.com/sparks-baird/xtal2png))
+is a Python package that allows you to encode/decode a crystal structure to/from a
+grayscale PNG image for direct use with image-based machine learning models. Let's take
+[Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022]. Rather than dig into the code spending
 hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the
@@ -90,18 +92,17 @@ coordinates which are each scaled individually according to the information type
 upscaled version of the PNG image and a legend of the representation are given in
 \autoref{fig:example-and-legend}. Due to the encoding of numerical values as grayscale
 PNG images (allowable values are integers between 0 and 255), a small round-off error is
-present during a single round of encoding and decoding. An example comparing an
-original vs. decoded structure is given in \autoref{fig:original-decoded}.
+present during a single round of encoding and decoding. An example comparing an original
+vs. decoded structure is given in \autoref{fig:original-decoded}.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
 [`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2 𝐵_2 𝑃𝑏
 𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
-The significance of the
-representation lies in being able to directly use the PNG representation with
-image-based models which often do not directly support custom dataset types, potentially
-saving days or weeks during the process of obtaining preliminary results on a newly
-released model.
+The significance of the representation lies in being able to directly use the PNG
+representation with image-based models which often do not directly support custom
+dataset types, potentially saving days or weeks during the process of obtaining
+preliminary results on a newly released model.
 
 We plan to apply `xtal2png` to a probabilistic diffusion generative model as a
 proof-of-concept and present our findings in the near future.
