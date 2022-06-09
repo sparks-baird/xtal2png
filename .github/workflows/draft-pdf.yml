@@ -1,4 +1,9 @@
-on: [push]
+on:
+  push:
+    paths:
+      - 'reports/paper.md'
+      - 'reports/paper.bib'
+      - 'reports/figures/**'
 
 jobs:
   paper:
