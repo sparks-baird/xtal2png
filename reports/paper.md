@@ -90,7 +90,14 @@ coordinates which are each scaled individually according to the information type
 upscaled version of the PNG image and a legend of the representation are given in
 \autoref{fig:example-and-legend}. Due to the encoding of numerical values as grayscale
 PNG images (allowable values are integers between 0 and 255), a small round-off error is
-present during a single round of encoding and decoding. The significance of the
+present during a single round of encoding and decoding. An example comparing an
+original vs. decoded structure is given in \autoref{fig:original-decoded}.
+
+![(a) Original and (b) `xtal2png` decoded visualizations of
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2 𝐵_2 𝑃𝑏
+𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022] \label{fig:original-decoded}](figures/original-decoded.png){ width=75% }
+
+The significance of the
 representation lies in being able to directly use the PNG representation with
 image-based models which often do not directly support custom dataset types, potentially
 saving days or weeks during the process of obtaining preliminary results on a newly
