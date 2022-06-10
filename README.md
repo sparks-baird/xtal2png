@@ -4,6 +4,7 @@
 [![PyPI-Server](https://img.shields.io/pypi/v/xtal2png.svg)](https://pypi.org/project/xtal2png/)
 [![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/xtal2png.svg)](https://anaconda.org/conda-forge/xtal2png)
 ![Lines of code](https://img.shields.io/tokei/lines/github/sparks-baird/xtal2png)
+![status](https://camo.githubusercontent.com/9b7db85a41e8e254868a35d8eed34586f89935902cf6c8c3d3ebadee2ae5f427/68747470733a2f2f6a6f73732e7468656f6a2e6f72672f7061706572732f30633730346636616539373339633165393765303561653061643537616563622f7374617475732e737667)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter)](https://twitter.com/xtal2png)
 <!-- These are examples of badges you might also want to add to your README. Update the URLs accordingly.
 [![Built Status](https://api.cirrus-ci.com/github/<USER>/xtal2png.svg?branch=main)](https://cirrus-ci.com/github/<USER>/xtal2png)
