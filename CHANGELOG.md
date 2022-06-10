@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## Unreleased
+
+Changes unreleased.
+
+### Bug Fixes
+
+- general:
+  - fix typos, remove extraneous figure, add future work ([d0ffb91](https://github.com/sparks-baird/xtal2png/commit/d0ffb917e062c0a580a42dc5ee5309c4e036e48f)) ([#67](https://github.com/sparks-baird/xtal2png/pull/67))
+
+## [v0.4.0](https://github.com/sparks-baird/xtal2png/releases/tag/v0.4.0) - 2022-06-03 02:01:29
+
+<!-- Release notes generated using configuration in .github/release.yml at v0.4.0 -->
+
+## What's Changed
+### Other Changes
+* available on conda-forge by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/49
+* fix colab link in index.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/53
+* add colab link to README by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/52
+* fixup colab link by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/56
+* add note about needing development versions of pyscaffold and extensions by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/58
+* Support rgb images in `png2xtal` by converting to grayscale by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/62
+
+
+**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.3.0...v0.4.0
+
+### Bug Fixes
+
+- general:
+  - fixup colab link ([7803383](https://github.com/sparks-baird/xtal2png/commit/7803383b2e1acbb565b417d82606a6c40ac425b8)) ([#56](https://github.com/sparks-baird/xtal2png/pull/56))
+  - fix colab link in index.md ([7ff9bfa](https://github.com/sparks-baird/xtal2png/commit/7ff9bface93181f40fcf9e733dd082f737249b74)) ([#53](https://github.com/sparks-baird/xtal2png/pull/53))
+
 ## [v0.3.0](https://github.com/sparks-baird/xtal2png/releases/tag/v0.3.0) - 2022-05-31 17:28:49
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.3.0  -->
@@ -61,10 +92,7 @@ Feature ranges for `a`, `b`, `c`, `volume`, and `distance` are chosen based on M
 
 ## [v0.1.6](https://github.com/sparks-baird/xtal2png/releases/tag/v0.1.6) - 2022-05-27 05:36:46
 
-- no changes
-
 <!-- Release notes generated using configuration in .github/release.yml at v0.1.6 -->
-
 ## What's Changed
 ### Other Changes
 * minor typos, clarification by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/29

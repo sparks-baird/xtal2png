@@ -1,12 +1,13 @@
 """Touch up the conda recipe from grayskull using conda-souschef."""
 import os
-from copy import deepcopy
+from copy import copy
 from os import getcwd
 from os.path import basename, dirname, join, normpath
 from pathlib import Path
 from shutil import copyfile
 from warnings import warn
 
+import numpy as np
 from souschef.recipe import Recipe
 
 import xtal2png as module
@@ -15,6 +16,11 @@ import xtal2png as module
 
 
 name, version = module.__name__, module.__version__
+
+replace_underscores_with_hyphens = True
+
+if replace_underscores_with_hyphens:
+    name = name.replace("_", "-")
 
 src_dirname = "src"
 if basename(normpath(getcwd())) != src_dirname:
@@ -45,12 +51,31 @@ if personal_conda_channel:
 
 my_recipe = Recipe(load_file=fpath)
 
-bld = my_recipe["build"]
-bld.add_section({"noarch": "python"})
-blank_line = deepcopy(bld.value[bld.value.index("")])
-bld.value[bld.value.index("")].remove()
-# how to add blank_line back in? Following doesn't seem to work:
-bld.value = bld.value + [blank_line]
+# ensure proper order for conda-forge
+keys = list(my_recipe.keys())
+
+# https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html
+key_order = [
+    "package",
+    "source",
+    "build",
+    "requirements",
+    "test",
+    "outputs",
+    "about",
+    "app",
+    "extra",
+]
+unshared_keys = np.setdiff1d(key_order, keys)
+
+ordered_keys = copy(key_order)
+for key in unshared_keys:
+    ordered_keys.remove(key)
+
+for key in ordered_keys:
+    my_recipe.yaml.move_to_end(key)
+
+my_recipe["build"].add_section({"noarch": "python"})
 
 try:
     del my_recipe["build"]["skip"]
@@ -81,7 +106,7 @@ my_recipe["requirements"]["run"].append("importlib-metadata")
 # my_recipe["about"].insert(0, "key", "value")
 
 # # sometimes package names differ between PyPI and Anaconda (e.g. `kaleido`)
-# my_recipe["requirements"]["run"].replace("kaleido", "python-kaleido")
+my_recipe["requirements"]["run"].replace("kaleido", "python-kaleido")
 
 # # It's better to install some packages either exclusively via Anaconda or
 # # via custom PyPI installation instructions (see e.g. the selectable table from:
