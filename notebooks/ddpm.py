@@ -1,4 +1,5 @@
 from os import path
+from uuid import uuid4
 
 from denoising_diffusion_pytorch import GaussianDiffusion, Trainer, Unet
 from mp_time_split.core import MPTimeSplit
@@ -31,6 +32,8 @@ trainer = Trainer(
     gradient_accumulate_every=2,  # gradient accumulation steps
     ema_decay=0.995,  # exponential moving average decay
     amp=True,  # turn on mixed precision
+    augment_horizontal_flip=False,
+    results_folder=path.join("results", str(uuid4())[0:4]),
 )
 
 trainer.train()
