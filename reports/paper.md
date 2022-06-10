@@ -98,7 +98,7 @@ An example comparing an original vs. decoded structure is given in
 \autoref{fig:original-decoded}.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
-[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $𝑍𝑛_2𝐵_2𝑃𝑏𝑂_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022]. \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $Zn_2B_2PbO_6$. Images were generated via [`pymatviz`](https://github.com/janosh/pymatviz) [@riebesellPymatviz2022]. \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the representation lies in being able to directly use the PNG
 representation with image-based models which often do not directly support custom
