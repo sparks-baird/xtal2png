@@ -55,5 +55,5 @@ MANIFEST
 src/xtal2png/meta.yaml
 xtal2png/meta.yaml
 tmp/**
-results/model-*.pt
-results/sample-*.png
+results/**/model-*.pt
+results/**/sample-*.png
