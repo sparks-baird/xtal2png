@@ -1,21 +1,20 @@
+import os
 from os import path
 from pathlib import Path
-from uuid import uuid4
 
+import numpy as np
 from denoising_diffusion_pytorch import GaussianDiffusion, Trainer, Unet
 from mp_time_split.core import MPTimeSplit
+from PIL import Image
 
 from xtal2png.core import XtalConverter
+from xtal2png.utils.data import rgb_scaler
 
 mpt = MPTimeSplit()
 mpt.load()
 
 fold = 0
 train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
-
-data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
-xc = XtalConverter(save_dir=data_path)
-xc.xtal2png(train_inputs.tolist())
 
 model = Unet(dim=64, dim_mults=(1, 2, 4, 8), channels=1).cuda()
 
@@ -26,8 +25,18 @@ diffusion = GaussianDiffusion(
 train_batch_size = 32
 print("train_batch_size: ", train_batch_size)
 
-results_folder = path.join("data", "interim", "ddpm", f"fold={fold}", str(uuid4())[0:4])
+uid = "427c"
+results_folder = path.join("data", "interim", "ddpm", f"fold={fold}", uid)
 Path(results_folder).mkdir(exist_ok=True, parents=True)
+
+data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
+
+fnames = os.listdir(results_folder)
+
+# i.e. "model-1.pt" --> "1.pt" --> "1" --> 1
+checkpoints = [int(name.split("-")[1].split(".")[0]) for name in fnames]
+checkpoint = np.max(checkpoints)
+
 
 trainer = Trainer(
     diffusion,
@@ -43,8 +52,20 @@ trainer = Trainer(
     results_folder=results_folder,
 )
 
-trainer.train()
+trainer.load(checkpoint)
 
-sampled_images = diffusion.sample(batch_size=100)
+diffusion = trainer.model
+
+img_arrays_torch = diffusion.sample(batch_size=16)
+unscaled_arrays = np.squeeze(img_arrays_torch.cpu().numpy())
+rgb_arrays = rgb_scaler(unscaled_arrays, data_range=(0, 1))
+
+sampled_images = [Image.fromarray(arr, "I") for arr in rgb_arrays]
+
+gen_path = path.join(
+    "data", "preprocessed", "mp-time-split", "ddpm", f"fold={fold}", uid
+)
+xc = XtalConverter(save_dir=gen_path)
+structures = xc.png2xtal(sampled_images, save=True)
 
 1 + 1
