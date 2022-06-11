@@ -17,6 +17,7 @@ from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
@@ -104,6 +105,14 @@ class XtalConverter:
     save_dir : Union[str, 'PathLike[str]']
         Directory to save PNG files via ``func:xtal2png``,
         by default path.join("data", "interim")
+    symprec : float, optional
+        The symmetry precision to use when decoding `pymatgen` structures via
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
+        default 0.1.
+    angle_tolerance : Union[float, int], optional
+        The angle tolerance (degrees) to use when decoding `pymatgen` structures via
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
+        default 5.0.
 
     Examples
     --------
@@ -125,6 +134,8 @@ class XtalConverter:
         distance_range: Tuple[float, float] = (0.0, 18.0),
         max_sites: int = 52,
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
+        symprec: float = 0.1,
+        angle_tolerance: float = 5.0,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -138,6 +149,8 @@ class XtalConverter:
         self.distance_range = distance_range
         self.max_sites = max_sites
         self.save_dir = save_dir
+        self.symprec = symprec
+        self.angle_tolerance = angle_tolerance
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -283,7 +296,9 @@ class XtalConverter:
         if save:
             for s in S:
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
-                CifWriter(s).write_file(fpath)
+                CifWriter(
+                    s, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+                ).write_file(fpath)
 
         return S
 
@@ -625,6 +640,10 @@ class XtalConverter:
                 a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma
             )
             structure = Structure(lattice, at, fr)
+            spa = SpacegroupAnalyzer(
+                structure, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+            )
+            structure = spa.get_refined_structure()
             S.append(structure)
 
         return S
