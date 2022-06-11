@@ -3,7 +3,7 @@
 
 
 import plotly.express as px
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
@@ -27,6 +27,7 @@ def assert_structures_approximate_match(example_structures, structures):
         angles_check = s._lattice.angles
         atomic_numbers_check = s.atomic_numbers
         frac_coords_check = s.frac_coords
+        space_group_check = s.get_space_group_info()[1]
 
         latt_a = structure._lattice.a
         latt_b = structure._lattice.b
@@ -34,6 +35,7 @@ def assert_structures_approximate_match(example_structures, structures):
         angles = structure._lattice.angles
         atomic_numbers = structure.atomic_numbers
         frac_coords = structure.frac_coords
+        space_group = s.get_space_group_info()[1]
 
         assert_allclose(
             a_check,
@@ -76,6 +78,12 @@ def assert_structures_approximate_match(example_structures, structures):
             frac_coords,
             atol=rgb_tol,
             err_msg="atomic numbers not all close",
+        )
+
+        assert_equal(
+            space_group_check,
+            space_group,
+            err_msg=f"space groups do not match. Original: {space_group_check}. Decoded: {space_group}.",  # noqa: E501
         )
 
 
