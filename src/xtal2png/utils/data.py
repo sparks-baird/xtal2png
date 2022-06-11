@@ -5,10 +5,6 @@ import numpy as np
 from numpy.typing import ArrayLike
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-
-default_symprec = 0.1
-default_angle_tolerance = 5.0
 
 coords = [[0, 0, 0], [0.75, 0.5, 0.75]]
 lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120, beta=90, gamma=60)
@@ -19,15 +15,9 @@ dummy_structures = [
 
 EXAMPLE_CIFS = ["Zn2B2PbO6.cif", "V2NiSe4.cif"]
 example_structures = []
-refined_example_structures = []
 for cif in EXAMPLE_CIFS:
     cif_str = read_text("xtal2png.utils", cif)
-    structure = Structure.from_str(cif_str, "cif")
-    spa = SpacegroupAnalyzer(
-        structure, symprec=default_symprec, angle_tolerance=default_angle_tolerance
-    )
-    example_structures.append(structure)
-    refined_example_structures.append(spa.get_refined_structure(structure))
+    example_structures.append(Structure.from_str(cif_str, "cif"))
 
 
 def element_wise_scaler(
