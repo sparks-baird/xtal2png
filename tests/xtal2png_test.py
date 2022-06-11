@@ -2,8 +2,11 @@
 # (test), and back to crystal Structure (test)
 
 
+from warnings import warn
+
 import plotly.express as px
 from numpy.testing import assert_allclose, assert_equal
+from pymatgen.analysis.structure_matcher import ElementComparator, StructureMatcher
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
@@ -20,7 +23,24 @@ rgb_loose_tol = 1.5 / 255
 
 
 def assert_structures_approximate_match(example_structures, structures):
-    for s, structure in zip(example_structures, structures):
+    for i, (s, structure) in enumerate(zip(example_structures, structures)):
+        # d = np.linalg.norm(s._lattice.abc)
+        # sm = StructureMatcher(
+        #     ltol=rgb_loose_tol * d,
+        #     stol=rgb_loose_tol * d,
+        #     angle_tol=rgb_loose_tol * 180,
+        #     comparator=ElementComparator(),
+        # )
+        sm = StructureMatcher(comparator=ElementComparator())
+        is_match = sm.fit(s, structure)
+        if not is_match:
+            warn(
+                f"{i}-th original and decoded structures do not match according to StructureMatcher(comparator=ElementComparator()).fit(s, structure).\n\nOriginal (s): {s}\n\nDecoded (structure): {structure}"  # noqa: E501
+            )
+
+        sm = StructureMatcher(primitive_cell=False, comparator=ElementComparator())
+        s2 = sm.get_s2_like_s1(s, structure)
+
         a_check = s._lattice.a
         b_check = s._lattice.b
         c_check = s._lattice.c
@@ -29,12 +49,12 @@ def assert_structures_approximate_match(example_structures, structures):
         frac_coords_check = s.frac_coords
         space_group_check = s.get_space_group_info()[1]
 
-        latt_a = structure._lattice.a
-        latt_b = structure._lattice.b
-        latt_c = structure._lattice.c
-        angles = structure._lattice.angles
-        atomic_numbers = structure.atomic_numbers
-        frac_coords = structure.frac_coords
+        latt_a = s2._lattice.a
+        latt_b = s2._lattice.b
+        latt_c = s2._lattice.c
+        angles = s2._lattice.angles
+        atomic_numbers = s2.atomic_numbers
+        frac_coords = s2.frac_coords
         space_group = s.get_space_group_info()[1]
 
         assert_allclose(
