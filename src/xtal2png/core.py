@@ -12,12 +12,14 @@ from uuid import uuid4
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from tqdm import tqdm
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
@@ -231,6 +233,66 @@ class XtalConverter:
                 img.show()
 
         return imgs
+
+    def fit(
+        self,
+        structures: Union[
+            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
+        ],
+        low_quantile=0.00,
+        upp_quantile=0.99,
+    ):
+        _, S = self.process_filepaths_or_structures(structures)
+
+        a = []
+        b = []
+        c = []
+        volume = []
+        distance = []
+
+        for s in tqdm(S):
+            s = s["structure"]
+            lattice = s.lattice
+            a.append(lattice.a)
+            b.append(lattice.b)
+            c.append(lattice.c)
+            volume.append(lattice.volume)
+            distance.append(s.distance_matrix)
+
+        print("range of a is: ", min(a), "-", max(a))
+        print("range of b is: ", min(b), "-", max(b))
+        print("range of c is: ", min(c), "-", max(c))
+        print("range of volume is: ", min(volume), "-", max(volume))
+
+        dis_min_tmp = []
+        dis_max_tmp = []
+        for d in tqdm(range(len(distance))):
+            dis_min_tmp.append(min(distance[d][np.nonzero(distance[d])]))
+            dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
+
+        df = pd.DataFrame(
+            dict(
+                a=a,
+                b=b,
+                c=c,
+                volume=volume,
+                min_distance=dis_min_tmp,
+                max_distance=dis_max_tmp,
+            )
+        )
+
+        low_df = (
+            df.apply(lambda a: np.quantile(a, low_quantile))
+            .drop("max_distance")
+            .rename(columns={"min_distance": "distance"})
+        )
+        upp_df = (
+            df.apply(lambda a: np.quantile(a, upp_quantile))
+            .drop("min_distance")
+            .rename(columns={"max_distance": "distance"})
+        )
+        low_df
+        upp_df
 
     def process_filepaths_or_structures(self, structures):
         save_names: List[str] = []
