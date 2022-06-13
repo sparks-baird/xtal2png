@@ -103,7 +103,7 @@ class XtalConverter:
     max_sites : int, optional
         Maximum number of sites to accomodate in encoding, by default 52
     save_dir : Union[str, 'PathLike[str]']
-        Directory to save PNG files via ``func:xtal2png``,
+        Directory to save PNG files via :func:``xtal2png``,
         by default path.join("data", "interim")
     symprec : float, optional
         The symmetry precision to use when decoding `pymatgen` structures via
