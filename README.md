@@ -312,3 +312,6 @@ Alternatively, you can edit a file interactively and update and uncomment releva
 ```bash
 putup --interactive xtal2png
 ```
+
+## Attributions
+- [@michaeldalverson](https://github.com/michaeldalverson) for iterating through various representations during extensive work with crystal GANs. The base representation for `xtal2png` (see [#output](https://github.com/sparks-baird/xtal2png#output)) closely follows a recent iteration (2022-06-13), taking the first layer ($1\times64\times64$) of the $4\times64\times64$ representation and replacing a buffer column/row of zeros with unit cell volume.
