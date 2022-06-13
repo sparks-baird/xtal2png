@@ -241,28 +241,36 @@ class XtalConverter:
         ],
         low_quantile=0.00,
         upp_quantile=0.99,
+        verbose=True,
     ):
         _, S = self.process_filepaths_or_structures(structures)
 
+        # TODO: how to deal with range of elemental scale? By accessing site_properties
+        atomic_numbers = []
         a = []
         b = []
         c = []
         volume = []
         distance = []
+        num_sites = []
 
         for s in tqdm(S):
             s = s["structure"]
+            atomic_numbers.append(s.atomic_numbers)
             lattice = s.lattice
             a.append(lattice.a)
             b.append(lattice.b)
             c.append(lattice.c)
             volume.append(lattice.volume)
             distance.append(s.distance_matrix)
+            num_sites.append(len(list(s.sites)))
 
-        print("range of a is: ", min(a), "-", max(a))
-        print("range of b is: ", min(b), "-", max(b))
-        print("range of c is: ", min(c), "-", max(c))
-        print("range of volume is: ", min(volume), "-", max(volume))
+        if verbose:
+            print("range of a is: ", min(a), "-", max(a))
+            print("range of b is: ", min(b), "-", max(b))
+            print("range of c is: ", min(c), "-", max(c))
+            print("range of volume is: ", min(volume), "-", max(volume))
+            print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
 
         dis_min_tmp = []
         dis_max_tmp = []
