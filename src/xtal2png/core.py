@@ -234,7 +234,6 @@ class XtalConverter:
 
     def process_filepaths_or_structures(self, structures):
         save_names: List[str] = []
-        S: List[Structure] = []
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
             if isinstance(s, str) or isinstance(s, PathLike):
@@ -243,8 +242,7 @@ class XtalConverter:
                         f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
                     )
 
-                # load the CIF and convert to a pymatgen Structure
-                S.append(Structure.from_file(s))
+                structures[i] = Structure.from_file(s)
                 save_names.append(Path(str(s)).stem)
 
             elif isinstance(s, Structure):
@@ -253,14 +251,14 @@ class XtalConverter:
                         f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
                     )
 
-                S.append(s)
+                structures[i] = s
                 save_names.append(construct_save_name(s))
             else:
                 raise ValueError(
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
                 )
 
-        return save_names, S
+        return save_names, structures
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
