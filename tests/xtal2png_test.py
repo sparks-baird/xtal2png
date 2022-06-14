@@ -229,3 +229,10 @@ if __name__ == "__main__":
     test_png2xtal_single()
 
 1 + 1
+
+# %% Code Graveyard
+# from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+# spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
+# s = spa.get_refined_structure()
+# spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
+# structure = spa.get_refined_structure()

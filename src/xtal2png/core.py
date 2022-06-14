@@ -146,8 +146,8 @@ class XtalConverter:
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
         symprec: Union[float, Tuple[float, float]] = 0.1,
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
-        encode_as_primitive: bool = True,
-        decode_as_primitive: bool = True,
+        encode_as_primitive: bool = False,
+        decode_as_primitive: bool = False,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
