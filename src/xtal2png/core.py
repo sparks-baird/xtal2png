@@ -256,13 +256,12 @@ class XtalConverter:
         num_sites = []
 
         for s in tqdm(S):
-            s = s["structure"]
             atomic_numbers.append(s.atomic_numbers)
             lattice = s.lattice
             a.append(lattice.a)
             b.append(lattice.b)
             c.append(lattice.c)
-            space_group.append(s.get_space_group_info())
+            space_group.append(s.get_space_group_info()[1])
             volume.append(lattice.volume)
             distance.append(s.distance_matrix)
             num_sites.append(len(list(s.sites)))
@@ -272,6 +271,7 @@ class XtalConverter:
             print("range of a is: ", min(a), "-", max(a))
             print("range of b is: ", min(b), "-", max(b))
             print("range of c is: ", min(c), "-", max(c))
+            print("range of space_group is: ", min(space_group), "-", max(space_group))
             print("range of volume is: ", min(volume), "-", max(volume))
             print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
 
@@ -281,13 +281,14 @@ class XtalConverter:
             dis_min_tmp.append(min(distance[d][np.nonzero(distance[d])]))
             dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
 
-        min_atomic_number = [min(atoms) for atoms in atomic_numbers]
-        max_atomic_number = [max(atoms) for atoms in atomic_numbers]
+        atoms = np.array(atomic_numbers, dtype="object")
+        self.atom_range = (min(np.min(atoms)), max(np.max(atoms)))
+        self.space_group_range = (np.min(space_group), np.max(space_group))
+
+        self.num_sites = np.max(num_sites)
 
         df = pd.DataFrame(
             dict(
-                min_atomic_number=min_atomic_number,
-                max_atomic_number=max_atomic_number,
                 a=a,
                 b=b,
                 c=c,
@@ -301,24 +302,21 @@ class XtalConverter:
 
         low_df = (
             df.apply(lambda a: np.quantile(a, low_quantile))
-            .drop("max_atomic_number", "max_distance")
-            .rename(
-                index={"min_distance": "distance", "min_atomic_number": "atomic_number"}
-            )
+            .drop(["max_distance"])
+            .rename(index={"min_distance": "distance"})
         )
         upp_df = (
             df.apply(lambda a: np.quantile(a, upp_quantile))
-            .drop("min_atomic_number", "min_distance")
-            .rename(
-                index={"max_distance": "distance", "max_atomic_number": "atomic_number"}
-            )
+            .drop(["min_distance"])
+            .rename(index={"max_distance": "distance"})
         )
+        low_df.name = "low"
+        upp_df.name = "upp"
 
-        for name, low_val in low_df.iteritems():
-            setattr(self, name, low_val)
+        range_df = pd.concat((low_df, upp_df), axis=1)
 
-        for name, upp_val in upp_df.iteritems():
-            setattr(self, name, upp_val)
+        for name, bounds in range_df.iterrows():
+            setattr(self, name + "_range", tuple(bounds))
 
     def process_filepaths_or_structures(self, structures):
         save_names: List[str] = []

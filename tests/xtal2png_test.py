@@ -5,11 +5,12 @@
 from warnings import warn
 
 import plotly.express as px
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import assert_allclose, assert_array_equal, assert_equal
 from pymatgen.analysis.structure_matcher import ElementComparator, StructureMatcher
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
+    dummy_structures,
     element_wise_scaler,
     element_wise_unscaler,
     example_structures,
@@ -171,6 +172,20 @@ def test_png2xtal_rgb_image():
     return decoded_structures
 
 
+def test_fit():
+    xc = XtalConverter()
+    xc.fit(example_structures + dummy_structures)
+    assert_array_equal((14, 82), xc.atom_range)
+    assert_allclose((3.84, 12.718448099999998), xc.a_range)
+    assert_allclose((3.395504, 11.292530369999998), xc.b_range)
+    assert_allclose((3.84, 10.6047314973), xc.c_range)
+    assert_array_equal((0.0, 180.0), xc.angles_range)
+    assert_allclose((12, 227), xc.space_group_range)
+    assert_allclose((40.03858081023111, 611.6423774462978), xc.volume_range)
+    assert_allclose((1.383037596160554, 7.8291318247510695), xc.distance_range)
+    assert_equal(44, xc.num_sites)
+
+
 def test_element_wise_scaler_unscaler():
     check_input = [[1, 2], [3, 4]]
     feature_range = [1, 4]
@@ -214,6 +229,7 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_fit()
     test_png2xtal_rgb_image()
     test_element_wise_scaler_unscaler()
     test_rgb_scaler_unscaler()
