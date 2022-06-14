@@ -203,7 +203,7 @@ class XtalConverter:
         save_names, structures = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_keys = self.structures_to_arrays(structures)
+        self.data, self.id_data, self.id_keys = self.structures_to_arrays(structures)  # type: ignore # noqa: E501
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -255,7 +255,7 @@ class XtalConverter:
                 save_names.append(construct_save_name(s))
             else:
                 raise ValueError(
-                    f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
+                    f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"  # noqa
                 )
 
         return save_names, structures
