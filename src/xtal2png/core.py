@@ -318,7 +318,7 @@ class XtalConverter:
             setattr(self, name, low_val)
 
         for name, upp_val in upp_df.iteritems():
-            setattr(self, name, low_val)
+            setattr(self, name, upp_val)
 
     def process_filepaths_or_structures(self, structures):
         save_names: List[str] = []
