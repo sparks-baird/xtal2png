@@ -105,14 +105,24 @@ class XtalConverter:
     save_dir : Union[str, 'PathLike[str]']
         Directory to save PNG files via ``func:xtal2png``,
         by default path.join("data", "interim")
-    symprec : float, optional
+    symprec : Union[float, Tuple[float, float]], optional
         The symmetry precision to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
-        default 0.1.
-    angle_tolerance : Union[float, int], optional
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        specified as a tuple, then ``symprec[0]`` applies to encoding and ``symprec[1]``
+        applies to decoding. By default 0.1.
+    angle_tolerance : Union[float, int, Tuple[float, float], Tuple[int, int]], optional
         The angle tolerance (degrees) to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
-        default 5.0.
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        specified as a tuple, then ``angle_tolerance[0]`` applies to encoding and
+        ``angle_tolerance[1]`` applies to decoding. By default 5.0.
+    encode_as_primitive : bool, optional
+        Encode structures as symmetrized, primitive structures. Uses ``symprec`` if
+        ``symprec`` is of type float, else uses ``symprec[0]`` if ``symprec`` is of type
+        tuple. Same applies for ``angle_tolerance``. By default True
+    decode_as_primitive : bool, optional
+        Decode structures as symmetrized, primitive structures. Uses ``symprec`` if
+        ``symprec`` is of type float, else uses ``symprec[1]`` if ``symprec`` is of type
+        tuple. Same applies for ``angle_tolerance``. By default True
 
     Examples
     --------
@@ -134,8 +144,10 @@ class XtalConverter:
         distance_range: Tuple[float, float] = (0.0, 18.0),
         max_sites: int = 52,
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
-        symprec: float = 0.1,
-        angle_tolerance: float = 5.0,
+        symprec: Union[float, Tuple[float, float]] = 0.1,
+        angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
+        encode_as_primitive: bool = True,
+        decode_as_primitive: bool = True,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -149,8 +161,23 @@ class XtalConverter:
         self.distance_range = distance_range
         self.max_sites = max_sites
         self.save_dir = save_dir
-        self.symprec = symprec
-        self.angle_tolerance = angle_tolerance
+
+        if isinstance(symprec, (float, int)):
+            self.encode_symprec = symprec
+            self.decode_symprec = symprec
+        elif isinstance(symprec, tuple):
+            self.encode_symprec = symprec[0]
+            self.decode_symprec = symprec[1]
+
+        if isinstance(angle_tolerance, (float, int)):
+            self.encode_angle_tolerance = angle_tolerance
+            self.decode_angle_tolerance = angle_tolerance
+        elif isinstance(angle_tolerance, tuple):
+            self.encode_angle_tolerance = angle_tolerance[0]
+            self.decode_angle_tolerance = angle_tolerance[1]
+
+        self.encode_as_primitive = encode_as_primitive
+        self.decode_as_primitive = decode_as_primitive
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -297,7 +324,9 @@ class XtalConverter:
             for s in S:
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
                 CifWriter(
-                    s, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+                    s,
+                    symprec=self.decode_symprec,
+                    angle_tolerance=self.decode_angle_tolerance,
                 ).write_file(fpath)
 
         return S
@@ -328,6 +357,21 @@ class XtalConverter:
         volume: List[float] = []
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
+
+        sym_structures = []
+        for s in structures:
+            spa = SpacegroupAnalyzer(
+                s,
+                symprec=self.encode_symprec,
+                angle_tolerance=self.encode_angle_tolerance,
+            )
+            if self.encode_as_primitive:
+                s = spa.get_primitive_standard_structure()
+            else:
+                s = spa.get_refined_structure()
+            sym_structures.append(s)
+
+        structures = sym_structures
 
         for s in structures:
             n_sites = len(s.atomic_numbers)
@@ -641,9 +685,14 @@ class XtalConverter:
             )
             structure = Structure(lattice, at, fr)
             spa = SpacegroupAnalyzer(
-                structure, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+                structure,
+                symprec=self.decode_symprec,
+                angle_tolerance=self.decode_angle_tolerance,
             )
-            structure = spa.get_refined_structure()
+            if self.decode_as_primitive:
+                structure = spa.get_primitive_standard_structure()
+            else:
+                structure = spa.get_refined_structure()
             S.append(structure)
 
         return S
