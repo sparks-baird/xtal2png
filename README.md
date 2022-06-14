@@ -15,9 +15,9 @@
 
 # xtal2png [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sparks-baird/xtal2png/blob/main/notebooks/1.0-xtal2png-tutorial.ipynb)
 
-> Encode/decode a crystal structure to/from a grayscale PNG image for direct use with image-based machine learning models such as [Palette](https://github.com/Janspiry/Palette-Image-to-Image-Diffusion-Models).
+> Encode/decode a crystal structure to/from a grayscale PNG image for direct use with image-based machine learning models such as [Google's Imagen](https://imagen.research.google/).
 
-The latest advances in machine learning are often in natural language such as with LSTMs and transformers or image processing such as with GANs, VAEs, and guided diffusion models. Encoding/decoding crystal structures via grayscale PNG images is akin to making/reading a QR code for crystal structures. This allows you, as a materials informatics practitioner, to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. Let's take [Google's image-to-image diffusion model, Palette](https://iterative-refinement.github.io/palette/). Rather than dig into the code spending hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the developers before you can (maybe) get preliminary results, `xtal2png` lets you get those results using the default instructions on the repository.
+The latest advances in machine learning are often in natural language such as with LSTMs and transformers or image processing such as with GANs, VAEs, and guided diffusion models. Encoding/decoding crystal structures via grayscale PNG images is akin to making/reading a QR code for crystal structures. This allows you, as a materials informatics practitioner, to get streamlined results for new state-of-the-art image-based machine learning models applied to crystal structure. Let's take Google's text-to-image diffusion model, [Imagen](https://imagen.research.google/) ([unofficial](https://github.com/lucidrains/imagen-pytorch)), which [can also be used as an image-to-image model](https://github.com/lucidrains/imagen-pytorch#usage). Rather than dig into the code spending hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the developers before you can (maybe) get preliminary results, `xtal2png` lets you get those results using the default instructions on the repository.
 
 After getting preliminary results, you get to decide whether it's worth it to you to take on the higher-cost/higher-expertise task of modifying the codebase and using a more customized approach. Or, you can stick with the results of `xtal2png`. It's up to you!
 
@@ -312,3 +312,6 @@ Alternatively, you can edit a file interactively and update and uncomment releva
 ```bash
 putup --interactive xtal2png
 ```
+
+## Attributions
+- [@michaeldalverson](https://github.com/michaeldalverson) for iterating through various representations during extensive work with crystal GANs. The base representation for `xtal2png` (see [#output](https://github.com/sparks-baird/xtal2png#output)) closely follows a recent iteration (2022-06-13), taking the first layer ($1\times64\times64$) of the $4\times64\times64$ representation and replacing a buffer column/row of zeros with unit cell volume.
