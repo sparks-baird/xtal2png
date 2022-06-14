@@ -1,4 +1,5 @@
 import os
+import re
 from os import path
 from pathlib import Path
 
@@ -6,6 +7,8 @@ import numpy as np
 from denoising_diffusion_pytorch import GaussianDiffusion, Trainer, Unet
 from mp_time_split.core import MPTimeSplit
 from PIL import Image
+from pymatgen.core.composition import Composition
+from pymatviz.elements import ptable_heatmap_plotly
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import rgb_scaler
@@ -68,4 +71,24 @@ gen_path = path.join(
 xc = XtalConverter(save_dir=gen_path)
 structures = xc.png2xtal(sampled_images, save=True)
 
+space_group = []
+W = []
+for s in structures:
+    try:
+        space_group.append(s.get_space_group_info(symprec=0.1)[1])
+    except Exception as e:
+        W.append(e)
+        space_group.append(None)
+print(space_group)
+
+equimolar_compositions = train_inputs.apply(
+    lambda s: Composition(re.sub(r"\d", "", s.formula))
+)
+fig = ptable_heatmap_plotly(equimolar_compositions)
+fig.show()
+
 1 + 1
+
+# %% Code Graveyard
+# compositions = train_inputs.apply(lambda s: s.composition)
+# atomic_numbers = train_inputs.apply(lambda s: np.unique(s.atomic_numbers))
