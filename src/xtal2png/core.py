@@ -612,7 +612,7 @@ class XtalConverter:
             space_group_scaled, data_range=self.space_group_range
         )
         distance_matrix = rgb_unscaler(distance_scaled, data_range=self.distance_range)
-        np.fill_diagonal(distance_matrix, 0.0)
+        [np.fill_diagonal(dm, 0.0) for dm in distance_matrix]
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
