@@ -200,10 +200,10 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, S = self.process_filepaths_or_structures(structures)
+        save_names, structures = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_keys = self.structures_to_arrays(S)
+        self.data, self.id_data, self.id_keys = self.structures_to_arrays(structures)
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
