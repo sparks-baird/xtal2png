@@ -239,17 +239,18 @@ class XtalConverter:
         structures: Union[
             List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
         ],
-        low_quantile=0.00,
-        upp_quantile=0.99,
+        y=None,
+        fit_quantiles=(0.00, 0.99),
         verbose=True,
     ):
         _, S = self.process_filepaths_or_structures(structures)
 
-        # TODO: how to deal with range of elemental scale? By accessing site_properties
+        # TODO: deal with arbitrary site_properties
         atomic_numbers = []
         a = []
         b = []
         c = []
+        space_group = []
         volume = []
         distance = []
         num_sites = []
@@ -261,11 +262,13 @@ class XtalConverter:
             a.append(lattice.a)
             b.append(lattice.b)
             c.append(lattice.c)
+            space_group.append(s.get_space_group_info())
             volume.append(lattice.volume)
             distance.append(s.distance_matrix)
             num_sites.append(len(list(s.sites)))
 
         if verbose:
+            print("range of atomic_numbers is: ", min(a), "-", max(a))
             print("range of a is: ", min(a), "-", max(a))
             print("range of b is: ", min(b), "-", max(b))
             print("range of c is: ", min(c), "-", max(c))
@@ -278,8 +281,13 @@ class XtalConverter:
             dis_min_tmp.append(min(distance[d][np.nonzero(distance[d])]))
             dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
 
+        min_atomic_number = [min(atoms) for atoms in atomic_numbers]
+        max_atomic_number = [max(atoms) for atoms in atomic_numbers]
+
         df = pd.DataFrame(
             dict(
+                min_atomic_number=min_atomic_number,
+                max_atomic_number=max_atomic_number,
                 a=a,
                 b=b,
                 c=c,
@@ -289,18 +297,28 @@ class XtalConverter:
             )
         )
 
+        low_quantile, upp_quantile = fit_quantiles
+
         low_df = (
             df.apply(lambda a: np.quantile(a, low_quantile))
-            .drop("max_distance")
-            .rename(columns={"min_distance": "distance"})
+            .drop("max_atomic_number", "max_distance")
+            .rename(
+                index={"min_distance": "distance", "min_atomic_number": "atomic_number"}
+            )
         )
         upp_df = (
             df.apply(lambda a: np.quantile(a, upp_quantile))
-            .drop("min_distance")
-            .rename(columns={"max_distance": "distance"})
+            .drop("min_atomic_number", "min_distance")
+            .rename(
+                index={"max_distance": "distance", "max_atomic_number": "atomic_number"}
+            )
         )
-        low_df
-        upp_df
+
+        for name, low_val in low_df.iteritems():
+            setattr(self, name, low_val)
+
+        for name, upp_val in upp_df.iteritems():
+            setattr(self, name, low_val)
 
     def process_filepaths_or_structures(self, structures):
         save_names: List[str] = []
@@ -391,9 +409,9 @@ class XtalConverter:
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
-        latt_a: List[List[float]] = []
-        latt_b: List[List[float]] = []
-        latt_c: List[List[float]] = []
+        latt_a: List[float] = []
+        latt_b: List[float] = []
+        latt_c: List[float] = []
         angles: List[List[float]] = []
         volume: List[float] = []
         space_group: List[int] = []
