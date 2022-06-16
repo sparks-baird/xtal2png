@@ -12,12 +12,14 @@ from uuid import uuid4
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from tqdm import tqdm
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
@@ -227,11 +229,11 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, S = self.process_filepaths_or_structures(structures)
+        save_names, structures = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
         self.data, self.id_data, self.id_mapper = self.structures_to_arrays(
-            S, return_id_data=True, return_id_mapper=True
+            structures, return_id_data=True, return_id_mapper=True
         )
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
@@ -261,12 +263,94 @@ class XtalConverter:
 
         return imgs
 
+    def fit(
+        self,
+        structures: Union[
+            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
+        ],
+        y=None,
+        fit_quantiles=(0.00, 0.99),
+        verbose=True,
+    ):
+        _, structures = self.process_filepaths_or_structures(structures)
+
+        # TODO: deal with arbitrary site_properties
+        atomic_numbers = []
+        a = []
+        b = []
+        c = []
+        space_group = []
+        volume = []
+        distance = []
+        num_sites = []
+
+        for s in tqdm(structures):
+            atomic_numbers.append(s.atomic_numbers)
+            lattice = s.lattice
+            a.append(lattice.a)
+            b.append(lattice.b)
+            c.append(lattice.c)
+            space_group.append(s.get_space_group_info()[1])
+            volume.append(lattice.volume)
+            distance.append(s.distance_matrix)
+            num_sites.append(len(list(s.sites)))
+
+        if verbose:
+            print("range of atomic_numbers is: ", min(a), "-", max(a))
+            print("range of a is: ", min(a), "-", max(a))
+            print("range of b is: ", min(b), "-", max(b))
+            print("range of c is: ", min(c), "-", max(c))
+            print("range of space_group is: ", min(space_group), "-", max(space_group))
+            print("range of volume is: ", min(volume), "-", max(volume))
+            print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
+
+        dis_min_tmp = []
+        dis_max_tmp = []
+        for d in tqdm(range(len(distance))):
+            dis_min_tmp.append(min(distance[d][np.nonzero(distance[d])]))
+            dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
+
+        atoms = np.array(atomic_numbers, dtype="object")
+        self.atom_range = (min(np.min(atoms)), max(np.max(atoms)))
+        self.space_group_range = (np.min(space_group), np.max(space_group))
+
+        self.num_sites = np.max(num_sites)
+
+        df = pd.DataFrame(
+            dict(
+                a=a,
+                b=b,
+                c=c,
+                volume=volume,
+                min_distance=dis_min_tmp,
+                max_distance=dis_max_tmp,
+            )
+        )
+
+        low_quantile, upp_quantile = fit_quantiles
+
+        low_df = (
+            df.apply(lambda a: np.quantile(a, low_quantile))
+            .drop(["max_distance"])
+            .rename(index={"min_distance": "distance"})
+        )
+        upp_df = (
+            df.apply(lambda a: np.quantile(a, upp_quantile))
+            .drop(["min_distance"])
+            .rename(index={"max_distance": "distance"})
+        )
+        low_df.name = "low"
+        upp_df.name = "upp"
+
+        range_df = pd.concat((low_df, upp_df), axis=1)
+
+        for name, bounds in range_df.iterrows():
+            setattr(self, name + "_range", tuple(bounds))
+
     def process_filepaths_or_structures(
         self, structures: Union[List[PathLike], List[Structure]]
     ) -> Tuple[List[str], List[Structure]]:
         """Extract (or create) save names and convert/passthrough the structures.
-
-
 
         Parameters
         ----------
@@ -294,11 +378,9 @@ class XtalConverter:
 
         Examples
         --------
-        >>> save_names, S = process_filepaths_or_structures(structures)
-        OUTPUT
+        >>> save_names, structures = process_filepaths_or_structures(structures)
         """
         save_names: List[str] = []
-        S: List[Structure] = []
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
             if isinstance(s, str) or isinstance(s, PathLike):
@@ -307,8 +389,7 @@ class XtalConverter:
                         f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
                     )
 
-                # load the CIF and convert to a pymatgen Structure
-                S.append(Structure.from_file(s))
+                structures[i] = Structure.from_file(s)
                 save_names.append(Path(str(s)).stem)
 
             elif isinstance(s, Structure):
@@ -317,14 +398,14 @@ class XtalConverter:
                         f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
                     )
 
-                S.append(s)
+                structures[i] = s
                 save_names.append(construct_save_name(s))
             else:
                 raise ValueError(
-                    f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(S)} (entry {i})"  # noqa
+                    f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"  # noqa
                 )
 
-        return save_names, S
+        return save_names, structures
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
@@ -433,9 +514,9 @@ class XtalConverter:
         # extract crystallographic information
         atomic_numbers: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
-        latt_a: List[List[float]] = []
-        latt_b: List[List[float]] = []
-        latt_c: List[List[float]] = []
+        latt_a: List[float] = []
+        latt_b: List[float] = []
+        latt_c: List[float] = []
         angles: List[List[float]] = []
         volume: List[float] = []
         space_group: List[int] = []
