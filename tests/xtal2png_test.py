@@ -28,13 +28,6 @@ def assert_structures_approximate_match(
     example_structures, structures, tol_multiplier=1.0
 ):
     for i, (s, structure) in enumerate(zip(example_structures, structures)):
-        # d = np.linalg.norm(s._lattice.abc)
-        # sm = StructureMatcher(
-        #     ltol=rgb_loose_tol * d,
-        #     stol=rgb_loose_tol * d,
-        #     angle_tol=rgb_loose_tol * 180,
-        #     comparator=ElementComparator(),
-        # )
         dummy_matcher = StructureMatcher()
         ltol = dummy_matcher.ltol * tol_multiplier
         stol = dummy_matcher.stol * tol_multiplier
