@@ -121,15 +121,25 @@ def test_structures_to_arrays_single():
 
 def test_arrays_to_structures():
     xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays(example_structures)
+    data = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data)
+    assert_structures_approximate_match(example_structures, structures)
+    return structures
+
+
+def test_arrays_to_structures_with_id_data():
+    xc = XtalConverter()
+    data, id_data, id_mapper = xc.structures_to_arrays(
+        example_structures, return_id_data=True, return_id_mapper=True
+    )
+    structures = xc.arrays_to_structures(data, id_data=id_data, id_mapper=id_mapper)
     assert_structures_approximate_match(example_structures, structures)
     return structures
 
 
 def test_arrays_to_structures_single():
     xc = XtalConverter()
-    data, _, _ = xc.structures_to_arrays([example_structures[0]])
+    data = xc.structures_to_arrays([example_structures[0]])
     structures = xc.arrays_to_structures(data)
     assert_structures_approximate_match([example_structures[0]], structures)
     return structures
@@ -169,6 +179,32 @@ def test_png2xtal_rgb_image():
     decoded_structures = xc.png2xtal(imgs)
     assert_structures_approximate_match(example_structures, decoded_structures)
     return decoded_structures
+
+
+def test_primitive_encoding():
+    xc = XtalConverter(
+        symprec=0.1,
+        angle_tolerance=5.0,
+        encode_as_primitive=True,
+        decode_as_primitive=False,
+    )
+    data = xc.structures_to_arrays(example_structures)
+    decoded_structures = xc.arrays_to_structures(data)
+    return decoded_structures
+    1 + 1
+
+
+def test_primitive_decoding():
+    xc = XtalConverter(
+        symprec=0.1,
+        angle_tolerance=5.0,
+        encode_as_primitive=False,
+        decode_as_primitive=True,
+    )
+    data = xc.structures_to_arrays(example_structures)
+    decoded_structures = xc.arrays_to_structures(data)
+    return decoded_structures
+    1 + 1
 
 
 def test_element_wise_scaler_unscaler():
@@ -214,6 +250,8 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_primitive_encoding()
+    test_primitive_decoding()
     test_png2xtal_rgb_image()
     test_element_wise_scaler_unscaler()
     test_rgb_scaler_unscaler()
