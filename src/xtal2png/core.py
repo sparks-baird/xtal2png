@@ -232,9 +232,7 @@ class XtalConverter:
         save_names, structures = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(
-            structures, return_id_data=True, return_id_mapper=True
-        )
+        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(structures)
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -454,8 +452,6 @@ class XtalConverter:
     def structures_to_arrays(
         self,
         structures: Sequence[Structure],
-        return_id_data: bool = False,
-        return_id_mapper: bool = False,
     ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
@@ -467,14 +463,6 @@ class XtalConverter:
         S : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure object(s)
 
-        return_id_data : bool
-            If True, then returns `id_data` (before ``id_mapper`` if
-            ``return_id_mapper`` is also True). By default False.
-
-        return_id_mapper : bool
-            If True, then returns `id_mapper` (after ``id_data`` if
-            ``return_id_mapper`` is also True). By default False.
-
         Returns
         -------
         data : ArrayLike
@@ -484,12 +472,11 @@ class XtalConverter:
         id_data : ArrayLike
             Same shape as ``data``, except one-hot encoded to distinguish between the
             various types of information contained in ``data``. See ``id_mapper`` for
-            the "legend" for this data. Only returned if ``return_id_data`` is True.
+            the "legend" for this data.
 
         id_mapper : ArrayLike
             Dictionary containing the legend/key between the names of the blocks and the
-            corresponding numbers in ``id_data``. Only returned if ``return_id_mapper``
-            is True.
+            corresponding numbers in ``id_data``.
 
         Raises
         ------
@@ -642,14 +629,7 @@ class XtalConverter:
         ]
         id_data = self.assemble_blocks(*id_blocks)
 
-        if not return_id_data and not return_id_mapper:
-            return data
-        elif return_id_data:
-            return data, id_data
-        elif return_id_mapper:
-            return data, id_mapper
-        elif return_id_data and return_id_mapper:
-            return data, id_data, id_mapper
+        return data, id_data, id_mapper
 
     def assemble_blocks(
         self,
@@ -724,18 +704,6 @@ class XtalConverter:
             id_data is not None and id_mapper is not None
         ), "id_data and id_mapper should not be None at this point"
 
-        # keys = [
-        #     ATOM_KEY,
-        #     FRAC_KEY,
-        #     A_KEY,
-        #     B_KEY,
-        #     C_KEY,
-        #     ANGLES_KEY,
-        #     VOLUME_KEY,
-        #     SPACE_GROUP_KEY,
-        #     DISTANCE_KEY,
-        # ]
-
         [a.shape for a in np.array_split(data, [12], axis=1)]
 
         zero_pad = 12
@@ -794,7 +762,20 @@ class XtalConverter:
         ----------
         data : np.ndarray
             3D array containing crystallographic information.
+
+        id_data : ArrayLike
+            Same shape as ``data``, except one-hot encoded to distinguish between the
+            various types of information contained in ``data``. See ``id_mapper`` for
+            the "legend" for this data.
+
+        id_mapper : ArrayLike
+            Dictionary containing the legend/key between the names of the blocks and the
+            corresponding numbers in ``id_data``.
         """
+        if not isinstance(data, np.ndarray):
+            raise ValueError(
+                f"`data` should be of type `np.ndarray`.  Received type {type(data)}. Maybe you passed a tuple of (data, id_data, id_mapper) returned from `structures_to_arrays()` by accident?"  # noqa: E501
+            )
         arrays = self.disassemble_blocks(data, id_data=id_data, id_mapper=id_mapper)
 
         (
