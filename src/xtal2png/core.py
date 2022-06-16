@@ -107,14 +107,24 @@ class XtalConverter:
     save_dir : Union[str, 'PathLike[str]']
         Directory to save PNG files via :func:``xtal2png``,
         by default path.join("data", "interim")
-    symprec : float, optional
+    symprec : Union[float, Tuple[float, float]], optional
         The symmetry precision to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
-        default 0.1.
-    angle_tolerance : Union[float, int], optional
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        specified as a tuple, then ``symprec[0]`` applies to encoding and ``symprec[1]``
+        applies to decoding. By default 0.1.
+    angle_tolerance : Union[float, int, Tuple[float, float], Tuple[int, int]], optional
         The angle tolerance (degrees) to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. By
-        default 5.0.
+        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        specified as a tuple, then ``angle_tolerance[0]`` applies to encoding and
+        ``angle_tolerance[1]`` applies to decoding. By default 5.0.
+    encode_as_primitive : bool, optional
+        Encode structures as symmetrized, primitive structures. Uses ``symprec`` if
+        ``symprec`` is of type float, else uses ``symprec[0]`` if ``symprec`` is of type
+        tuple. Same applies for ``angle_tolerance``. By default True
+    decode_as_primitive : bool, optional
+        Decode structures as symmetrized, primitive structures. Uses ``symprec`` if
+        ``symprec`` is of type float, else uses ``symprec[1]`` if ``symprec`` is of type
+        tuple. Same applies for ``angle_tolerance``. By default True
 
     Examples
     --------
@@ -136,8 +146,10 @@ class XtalConverter:
         distance_range: Tuple[float, float] = (0.0, 18.0),
         max_sites: int = 52,
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
-        symprec: float = 0.1,
-        angle_tolerance: float = 5.0,
+        symprec: Union[float, Tuple[float, float]] = 0.1,
+        angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
+        encode_as_primitive: bool = False,
+        decode_as_primitive: bool = False,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -151,8 +163,23 @@ class XtalConverter:
         self.distance_range = distance_range
         self.max_sites = max_sites
         self.save_dir = save_dir
-        self.symprec = symprec
-        self.angle_tolerance = angle_tolerance
+
+        if isinstance(symprec, (float, int)):
+            self.encode_symprec = symprec
+            self.decode_symprec = symprec
+        elif isinstance(symprec, tuple):
+            self.encode_symprec = symprec[0]
+            self.decode_symprec = symprec[1]
+
+        if isinstance(angle_tolerance, (float, int)):
+            self.encode_angle_tolerance = angle_tolerance
+            self.decode_angle_tolerance = angle_tolerance
+        elif isinstance(angle_tolerance, tuple):
+            self.encode_angle_tolerance = angle_tolerance[0]
+            self.decode_angle_tolerance = angle_tolerance[1]
+
+        self.encode_as_primitive = encode_as_primitive
+        self.decode_as_primitive = decode_as_primitive
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -205,7 +232,7 @@ class XtalConverter:
         save_names, structures = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_keys = self.structures_to_arrays(structures)  # type: ignore # noqa: E501
+        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(structures)
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -243,7 +270,7 @@ class XtalConverter:
         fit_quantiles=(0.00, 0.99),
         verbose=True,
     ):
-        _, S = self.process_filepaths_or_structures(structures)
+        _, structures = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
         atomic_numbers = []
@@ -255,7 +282,7 @@ class XtalConverter:
         distance = []
         num_sites = []
 
-        for s in tqdm(S):
+        for s in tqdm(structures):
             atomic_numbers.append(s.atomic_numbers)
             lattice = s.lattice
             a.append(lattice.a)
@@ -318,7 +345,39 @@ class XtalConverter:
         for name, bounds in range_df.iterrows():
             setattr(self, name + "_range", tuple(bounds))
 
-    def process_filepaths_or_structures(self, structures):
+    def process_filepaths_or_structures(
+        self, structures: Union[List[PathLike], List[Structure]]
+    ) -> Tuple[List[str], List[Structure]]:
+        """Extract (or create) save names and convert/passthrough the structures.
+
+        Parameters
+        ----------
+        structures : Union[PathLike, Structure]
+            List of filepaths or list of structures to be processed.
+
+        Returns
+        -------
+        save_names : List[str]
+            Save names of the files if filepaths are passed, otherwise some relatively
+            unique names (due to 4 random characters being appended at the end) for each
+            structure. See ``construct_save_name``.
+
+        S : List[Structure]
+            Processed structures.
+
+        Raises
+        ------
+        ValueError
+            _description_
+        ValueError
+            _description_
+        ValueError
+            _description_
+
+        Examples
+        --------
+        >>> save_names, structures = process_filepaths_or_structures(structures)
+        """
         save_names: List[str] = []
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
@@ -381,14 +440,19 @@ class XtalConverter:
             for s in S:
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
                 CifWriter(
-                    s, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+                    s,
+                    symprec=self.decode_symprec,
+                    angle_tolerance=self.decode_angle_tolerance,
                 ).write_file(fpath)
 
         return S
 
         # unscale values
 
-    def structures_to_arrays(self, structures: Sequence[Structure]):
+    def structures_to_arrays(
+        self,
+        structures: Sequence[Structure],
+    ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
@@ -398,6 +462,38 @@ class XtalConverter:
         ----------
         S : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure object(s)
+
+        Returns
+        -------
+        data : ArrayLike
+            RGB-scaled arrays with first dimension corresponding to each crystal
+            structure.
+
+        id_data : ArrayLike
+            Same shape as ``data``, except one-hot encoded to distinguish between the
+            various types of information contained in ``data``. See ``id_mapper`` for
+            the "legend" for this data.
+
+        id_mapper : ArrayLike
+            Dictionary containing the legend/key between the names of the blocks and the
+            corresponding numbers in ``id_data``.
+
+        Raises
+        ------
+        ValueError
+            "`structures` should be a list of pymatgen Structure(s)"
+        ValueError
+            "crystal supplied with {n_sites} sites, which is more than {self.max_sites}
+            sites. Remove crystal or increase `max_sites`."
+        ValueError
+            "len(atomic_numbers) {n_sites} and distance_matrix.shape[0]
+            {s.distance_matrix.shape[0]} do not match"
+
+        Examples
+        --------
+        >>> xc = XtalConverter()
+        >>> data = xc.structures_to_arrays(structures)
+        OUTPUT
         """
         if isinstance(structures, Structure):
             raise ValueError("`structures` should be a list of pymatgen Structure(s)")
@@ -412,6 +508,21 @@ class XtalConverter:
         volume: List[float] = []
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
+
+        sym_structures = []
+        for s in structures:
+            spa = SpacegroupAnalyzer(
+                s,
+                symprec=self.encode_symprec,
+                angle_tolerance=self.encode_angle_tolerance,
+            )
+            if self.encode_as_primitive:
+                s = spa.get_primitive_standard_structure()
+            else:
+                s = spa.get_refined_structure()
+            sym_structures.append(s)
+
+        structures = sym_structures
 
         for s in structures:
             n_sites = len(s.atomic_numbers)
@@ -593,18 +704,6 @@ class XtalConverter:
             id_data is not None and id_mapper is not None
         ), "id_data and id_mapper should not be None at this point"
 
-        # keys = [
-        #     ATOM_KEY,
-        #     FRAC_KEY,
-        #     A_KEY,
-        #     B_KEY,
-        #     C_KEY,
-        #     ANGLES_KEY,
-        #     VOLUME_KEY,
-        #     SPACE_GROUP_KEY,
-        #     DISTANCE_KEY,
-        # ]
-
         [a.shape for a in np.array_split(data, [12], axis=1)]
 
         zero_pad = 12
@@ -651,15 +750,33 @@ class XtalConverter:
             distance_arr,
         )
 
-    def arrays_to_structures(self, data: np.ndarray):
+    def arrays_to_structures(
+        self,
+        data: np.ndarray,
+        id_data: Optional[np.ndarray] = None,
+        id_mapper: Optional[dict] = None,
+    ):
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
         Parameters
         ----------
         data : np.ndarray
             3D array containing crystallographic information.
+
+        id_data : ArrayLike
+            Same shape as ``data``, except one-hot encoded to distinguish between the
+            various types of information contained in ``data``. See ``id_mapper`` for
+            the "legend" for this data.
+
+        id_mapper : ArrayLike
+            Dictionary containing the legend/key between the names of the blocks and the
+            corresponding numbers in ``id_data``.
         """
-        arrays = self.disassemble_blocks(data)
+        if not isinstance(data, np.ndarray):
+            raise ValueError(
+                f"`data` should be of type `np.ndarray`.  Received type {type(data)}. Maybe you passed a tuple of (data, id_data, id_mapper) returned from `structures_to_arrays()` by accident?"  # noqa: E501
+            )
+        arrays = self.disassemble_blocks(data, id_data=id_data, id_mapper=id_mapper)
 
         (
             atom_scaled,
@@ -727,9 +844,14 @@ class XtalConverter:
             )
             structure = Structure(lattice, at, fr)
             spa = SpacegroupAnalyzer(
-                structure, symprec=self.symprec, angle_tolerance=self.angle_tolerance
+                structure,
+                symprec=self.decode_symprec,
+                angle_tolerance=self.decode_angle_tolerance,
             )
-            structure = spa.get_refined_structure()
+            if self.decode_as_primitive:
+                structure = spa.get_primitive_standard_structure()
+            else:
+                structure = spa.get_refined_structure()
             S.append(structure)
 
         return S
