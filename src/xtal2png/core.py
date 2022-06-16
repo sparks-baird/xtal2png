@@ -230,7 +230,9 @@ class XtalConverter:
         save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_keys = self.structures_to_arrays(S)
+        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(
+            S, return_id_data=True, return_id_mapper=True
+        )
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -259,7 +261,42 @@ class XtalConverter:
 
         return imgs
 
-    def process_filepaths_or_structures(self, structures):
+    def process_filepaths_or_structures(
+        self, structures: Union[List[PathLike], List[Structure]]
+    ) -> Tuple[List[str], List[Structure]]:
+        """Extract (or create) save names and convert/passthrough the structures.
+
+
+
+        Parameters
+        ----------
+        structures : Union[PathLike, Structure]
+            List of filepaths or list of structures to be processed.
+
+        Returns
+        -------
+        save_names : List[str]
+            Save names of the files if filepaths are passed, otherwise some relatively
+            unique names (due to 4 random characters being appended at the end) for each
+            structure. See ``construct_save_name``.
+
+        S : List[Structure]
+            Processed structures.
+
+        Raises
+        ------
+        ValueError
+            _description_
+        ValueError
+            _description_
+        ValueError
+            _description_
+
+        Examples
+        --------
+        >>> save_names, S = process_filepaths_or_structures(structures)
+        OUTPUT
+        """
         save_names: List[str] = []
         S: List[Structure] = []
         first_is_structure = isinstance(structures[0], Structure)
@@ -333,7 +370,12 @@ class XtalConverter:
 
         # unscale values
 
-    def structures_to_arrays(self, structures: Sequence[Structure]):
+    def structures_to_arrays(
+        self,
+        structures: Sequence[Structure],
+        return_id_data: bool = False,
+        return_id_mapper: bool = False,
+    ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
@@ -343,6 +385,47 @@ class XtalConverter:
         ----------
         S : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure object(s)
+
+        return_id_data : bool
+            If True, then returns `id_data` (before ``id_mapper`` if
+            ``return_id_mapper`` is also True). By default False.
+
+        return_id_mapper : bool
+            If True, then returns `id_mapper` (after ``id_data`` if
+            ``return_id_mapper`` is also True). By default False.
+
+        Returns
+        -------
+        data : ArrayLike
+            RGB-scaled arrays with first dimension corresponding to each crystal
+            structure.
+
+        id_data : ArrayLike
+            Same shape as ``data``, except one-hot encoded to distinguish between the
+            various types of information contained in ``data``. See ``id_mapper`` for
+            the "legend" for this data. Only returned if ``return_id_data`` is True.
+
+        id_mapper : ArrayLike
+            Dictionary containing the legend/key between the names of the blocks and the
+            corresponding numbers in ``id_data``. Only returned if ``return_id_mapper``
+            is True.
+
+        Raises
+        ------
+        ValueError
+            "`structures` should be a list of pymatgen Structure(s)"
+        ValueError
+            "crystal supplied with {n_sites} sites, which is more than {self.max_sites}
+            sites. Remove crystal or increase `max_sites`."
+        ValueError
+            "len(atomic_numbers) {n_sites} and distance_matrix.shape[0]
+            {s.distance_matrix.shape[0]} do not match"
+
+        Examples
+        --------
+        >>> xc = XtalConverter()
+        >>> data = xc.structures_to_arrays(structures)
+        OUTPUT
         """
         if isinstance(structures, Structure):
             raise ValueError("`structures` should be a list of pymatgen Structure(s)")
@@ -478,7 +561,14 @@ class XtalConverter:
         ]
         id_data = self.assemble_blocks(*id_blocks)
 
-        return data, id_data, id_mapper
+        if not return_id_data and not return_id_mapper:
+            return data
+        elif return_id_data:
+            return data, id_data
+        elif return_id_mapper:
+            return data, id_mapper
+        elif return_id_data and return_id_mapper:
+            return data, id_data, id_mapper
 
     def assemble_blocks(
         self,
@@ -611,7 +701,12 @@ class XtalConverter:
             distance_arr,
         )
 
-    def arrays_to_structures(self, data: np.ndarray):
+    def arrays_to_structures(
+        self,
+        data: np.ndarray,
+        id_data: Optional[np.ndarray] = None,
+        id_mapper: Optional[dict] = None,
+    ):
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
         Parameters
@@ -619,7 +714,7 @@ class XtalConverter:
         data : np.ndarray
             3D array containing crystallographic information.
         """
-        arrays = self.disassemble_blocks(data)
+        arrays = self.disassemble_blocks(data, id_data=id_data, id_mapper=id_mapper)
 
         (
             atom_scaled,
