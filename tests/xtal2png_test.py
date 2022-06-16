@@ -7,6 +7,7 @@ from warnings import warn
 import plotly.express as px
 from numpy.testing import assert_allclose, assert_array_equal, assert_equal
 from pymatgen.analysis.structure_matcher import ElementComparator, StructureMatcher
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import (
@@ -23,7 +24,9 @@ rgb_tol = 1 / 255  # should this be 256?
 rgb_loose_tol = 1.5 / 255
 
 
-def assert_structures_approximate_match(example_structures, structures):
+def assert_structures_approximate_match(
+    example_structures, structures, tol_multiplier=1.0
+):
     for i, (s, structure) in enumerate(zip(example_structures, structures)):
         # d = np.linalg.norm(s._lattice.abc)
         # sm = StructureMatcher(
@@ -32,7 +35,16 @@ def assert_structures_approximate_match(example_structures, structures):
         #     angle_tol=rgb_loose_tol * 180,
         #     comparator=ElementComparator(),
         # )
-        sm = StructureMatcher(comparator=ElementComparator())
+        dummy_matcher = StructureMatcher()
+        ltol = dummy_matcher.ltol * tol_multiplier
+        stol = dummy_matcher.stol * tol_multiplier
+        angle_tol = dummy_matcher.angle_tol * tol_multiplier
+        sm = StructureMatcher(
+            ltol=ltol,
+            stol=stol,
+            angle_tol=angle_tol,
+            comparator=ElementComparator(),
+        )
         is_match = sm.fit(s, structure)
         if not is_match:
             warn(
@@ -61,35 +73,35 @@ def assert_structures_approximate_match(example_structures, structures):
         assert_allclose(
             a_check,
             latt_a,
-            rtol=rgb_loose_tol,
+            rtol=rgb_loose_tol * tol_multiplier,
             err_msg="lattice parameter length `a` not all close",
         )
 
         assert_allclose(
             b_check,
             latt_b,
-            rtol=rgb_loose_tol,
+            rtol=rgb_loose_tol * tol_multiplier,
             err_msg="lattice parameter length `b` not all close",
         )
 
         assert_allclose(
             c_check,
             latt_c,
-            rtol=rgb_loose_tol * 2,
+            rtol=rgb_loose_tol * 2 * tol_multiplier,
             err_msg="lattice parameter length `c` not all close",
         )
 
         assert_allclose(
             angles_check,
             angles,
-            rtol=rgb_loose_tol,
+            rtol=rgb_loose_tol * tol_multiplier,
             err_msg="lattice parameter angles not all close",
         )
 
         assert_allclose(
             atomic_numbers_check,
             atomic_numbers,
-            rtol=rgb_loose_tol,
+            rtol=rgb_loose_tol * tol_multiplier,
             err_msg="atomic numbers not all close",
         )
 
@@ -97,7 +109,7 @@ def assert_structures_approximate_match(example_structures, structures):
         assert_allclose(
             frac_coords_check,
             frac_coords,
-            atol=rgb_tol,
+            atol=rgb_tol * tol_multiplier,
             err_msg="atomic numbers not all close",
         )
 
@@ -110,7 +122,7 @@ def assert_structures_approximate_match(example_structures, structures):
 
 def test_structures_to_arrays():
     xc = XtalConverter()
-    data = xc.structures_to_arrays(example_structures)
+    data, _, _ = xc.structures_to_arrays(example_structures)
     return data
 
 
@@ -122,26 +134,16 @@ def test_structures_to_arrays_single():
 
 def test_arrays_to_structures():
     xc = XtalConverter()
-    data = xc.structures_to_arrays(example_structures)
-    structures = xc.arrays_to_structures(data)
-    assert_structures_approximate_match(example_structures, structures)
-    return structures
-
-
-def test_arrays_to_structures_with_id_data():
-    xc = XtalConverter()
-    data, id_data, id_mapper = xc.structures_to_arrays(
-        example_structures, return_id_data=True, return_id_mapper=True
-    )
-    structures = xc.arrays_to_structures(data, id_data=id_data, id_mapper=id_mapper)
+    data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
+    structures = xc.arrays_to_structures(data, id_data, id_mapper)
     assert_structures_approximate_match(example_structures, structures)
     return structures
 
 
 def test_arrays_to_structures_single():
     xc = XtalConverter()
-    data = xc.structures_to_arrays([example_structures[0]])
-    structures = xc.arrays_to_structures(data)
+    data, id_data, id_mapper = xc.structures_to_arrays([example_structures[0]])
+    structures = xc.arrays_to_structures(data, id_data, id_mapper)
     assert_structures_approximate_match([example_structures[0]], structures)
     return structures
 
@@ -189,9 +191,17 @@ def test_primitive_encoding():
         encode_as_primitive=True,
         decode_as_primitive=False,
     )
-    data = xc.structures_to_arrays(example_structures)
-    decoded_structures = xc.arrays_to_structures(data)
-    return decoded_structures
+    input_structures = [
+        SpacegroupAnalyzer(
+            s, symprec=0.1, angle_tolerance=5.0
+        ).get_conventional_standard_structure()
+        for s in example_structures
+    ]
+    data, id_data, id_mapper = xc.structures_to_arrays(input_structures)
+    decoded_structures = xc.arrays_to_structures(data, id_data, id_mapper)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
     1 + 1
 
 
@@ -202,8 +212,24 @@ def test_primitive_decoding():
         encode_as_primitive=False,
         decode_as_primitive=True,
     )
-    data = xc.structures_to_arrays(example_structures)
-    decoded_structures = xc.arrays_to_structures(data)
+    input_structures = [
+        SpacegroupAnalyzer(
+            s, symprec=0.1, angle_tolerance=5.0
+        ).get_conventional_standard_structure()
+        for s in example_structures
+    ]
+    data, id_data, id_mapper = xc.structures_to_arrays(input_structures)
+    decoded_structures = xc.arrays_to_structures(data, id_data, id_mapper)
+    # decoded has to be conventional too for compatibility with `get_s1_like_s2`
+    decoded_structures = [
+        SpacegroupAnalyzer(
+            s, symprec=0.1, angle_tolerance=5.0
+        ).get_conventional_standard_structure()
+        for s in decoded_structures
+    ]
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
     return decoded_structures
     1 + 1
 
@@ -265,8 +291,8 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
-    test_primitive_encoding()
     test_primitive_decoding()
+    test_primitive_encoding()
     test_fit()
     test_png2xtal_rgb_image()
     test_element_wise_scaler_unscaler()
