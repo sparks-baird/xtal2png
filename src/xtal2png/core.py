@@ -62,7 +62,7 @@ SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
 
 
-def construct_save_name(s: Structure):
+def construct_save_name(s: Structure) -> str:
     save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
 
@@ -190,9 +190,7 @@ class XtalConverter:
 
     def xtal2png(
         self,
-        structures: Union[
-            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
-        ],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
         show: bool = False,
         save: bool = True,
     ):
@@ -201,8 +199,7 @@ class XtalConverter:
         Parameters
         ----------
         structures : List[Union[Structure, str, PathLike[str]]]
-            pymatgen Structure objects or path to CIF files or path to directory
-            containing CIF files.
+            pymatgen Structure objects or path to CIF files.
         show : bool, optional
             Whether to display the PNG-encoded file, by default False
         save : bool, optional
@@ -234,6 +231,7 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
+
         save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
@@ -268,9 +266,7 @@ class XtalConverter:
 
     def fit(
         self,
-        structures: Union[
-            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
-        ],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
         fit_quantiles=(0.00, 0.99),
         verbose=True,
@@ -352,9 +348,7 @@ class XtalConverter:
 
     def process_filepaths_or_structures(
         self,
-        structures: Union[
-            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
-        ],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
     ) -> Tuple[List[str], List[Structure]]:
         """Extract (or create) save names and convert/passthrough the structures.
 
@@ -392,6 +386,7 @@ class XtalConverter:
         >>> save_names, structures = process_filepaths_or_structures(structures)
         """
         save_names: List[str] = []
+
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
             if isinstance(s, str) or isinstance(s, PathLike):
@@ -420,8 +415,9 @@ class XtalConverter:
             assert isinstance(
                 s, Structure
             ), f"structures[{i}]: {type(s)}, expected: Structure"
+            assert not isinstance(s, str) and not isinstance(s, PathLike)
 
-        return save_names, structures
+        return save_names, structures  # type: ignore
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
