@@ -53,6 +53,7 @@ print(example_structures[0], decoded_structures[0], relaxed_decoded_structures[0
 <tr>
 <th> Original </th>
 <th> Decoded </th>
+<th> Relaxed Decoded </th>
 </tr>
 <tr>
 <td>
@@ -90,6 +91,7 @@ PeriodicSite: Zn (4.1235, 5.7554, 6.9988) [0.8206, 0.4990, 0.6480]
 
 </td>
 <td>
+
 ```python
 Structure Summary
 Lattice
@@ -103,6 +105,7 @@ PeriodicSite: Zn (0.9050, 5.7978, 3.7547) [0.1800, 0.5007, 0.3501]
 PeriodicSite: Zn (4.1218, 5.7810, 6.9693) [0.8200, 0.4993, 0.6499]
 ...
 ```
+
 </td>
 </tr>
 </table>
