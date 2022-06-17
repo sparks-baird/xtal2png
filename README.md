@@ -34,7 +34,7 @@ conda activate xtal2png
 from xtal2png.utils.data import example_structures
 from xtal2png.core import XtalConverter
 
-xc = XtalConverter() # DFT surrogate relaxation via m3gnet by default
+xc = XtalConverter()  # DFT surrogate relaxation via m3gnet by default
 data = xc.xtal2png(example_structures, show=True, save=True)
 relaxed_decoded_structures = xc.png2xtal(data, save=False)
 
