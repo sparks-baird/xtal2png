@@ -25,7 +25,6 @@ from tqdm import tqdm
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
-from xtal2png.utils.logging_filter import Filter
 
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -846,7 +845,6 @@ class XtalConverter:
 
         if self.relax_on_decode:
             if not self.verbose:
-                sys.stdout = Filter(sys.stdout, r"^FIRE:|     Step     Time          Energy         fmax|\*Force-consistent energies used in optimization.")  # type: ignore # noqa: E501
                 tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
 
@@ -872,7 +870,8 @@ class XtalConverter:
 
             # REVIEW: round fractional coordinates to nearest multiple?
             if self.relax_on_decode:
-                structure = relaxer.relax(structure)["final_structure"]
+                relaxed_results = relaxer.relax(structure, verbose=self.verbose)
+                structure = relaxed_results["final_structure"]
 
                 # relax_results = relaxer.relax()
                 # final_structure = relax_results["final_structure"]
