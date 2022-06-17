@@ -34,20 +34,26 @@ conda activate xtal2png
 from xtal2png.utils.data import example_structures
 from xtal2png.core import XtalConverter
 
-xc = XtalConverter()
+xc = XtalConverter()  # DFT surrogate relaxation via m3gnet by default
+data = xc.xtal2png(example_structures, show=True, save=True)
+relaxed_decoded_structures = xc.png2xtal(data, save=False)
+
+
+xc = XtalConverter(relax_on_decode=False)
 data = xc.xtal2png(example_structures, show=True, save=True)
 decoded_structures = xc.png2xtal(data, save=False)
 ```
 
 ### Output
 ```python
-print(example_structures[0], decoded_structures[0])
+print(example_structures[0], decoded_structures[0], relaxed_decoded_structures[0])
 ```
 
 <table>
 <tr>
 <th> Original </th>
 <th> Decoded </th>
+<th> Relaxed Decoded </th>
 </tr>
 <tr>
 <td>
@@ -58,11 +64,11 @@ Lattice
     abc : 5.033788 11.523021 10.74117
  angles : 90.0 90.0 90.0
  volume : 623.0356027127609
-      A : 5.033788 0.0 3.082306e-16
-      B : 1.853043e-15 11.523021 7.055815e-16
+      A : 5.033788 0.0 3.0823061808931787e-16
+      B : 1.8530431062799525e-15 11.523021 7.055815392078867e-16
       C : 0.0 0.0 10.74117
-PeriodicSite: Zn2+ (0.912, 5.770, 9.126) [0.181, 0.501, 0.850]
-PeriodicSite: Zn2+ (4.122, 5.753, 1.616) [0.8188, 0.499, 0.150]
+PeriodicSite: Zn2+ (0.9120, 5.7699, 9.1255) [0.1812, 0.5007, 0.8496]
+PeriodicSite: Zn2+ (4.1218, 5.7531, 1.6156) [0.8188, 0.4993, 0.1504]
 ...
 ```
 
@@ -72,14 +78,31 @@ PeriodicSite: Zn2+ (4.122, 5.753, 1.616) [0.8188, 0.499, 0.150]
 ```python
 Structure Summary
 Lattice
-    abc : 5.058824 11.529412 10.764706
- angles : 90.352941 90.352941 90.352941
- volume : 627.818381
-      A : 5.058728 0.0 -0.031162
-      B : -0.071459 11.528972 -0.071021
-      C : 0.0 0.0 10.764706
-PeriodicSite: Zn (0.877, 5.787, 9.119) [0.180, 0.502, 0.851]
-PeriodicSite: Zn (4.111, 5.742, 1.543) [0.820, 0.498, 0.149]
+    abc : 5.0250980392156865 11.533333333333331 10.8
+ angles : 90.0 90.0 90.0
+ volume : 625.9262117647058
+      A : 5.0250980392156865 0.0 0.0
+      B : 0.0 11.533333333333331 0.0
+      C : 0.0 0.0 10.8
+PeriodicSite: Zn (0.9016, 5.7780, 3.8012) [0.1794, 0.5010, 0.3520]
+PeriodicSite: Zn (4.1235, 5.7554, 6.9988) [0.8206, 0.4990, 0.6480]
+...
+```
+
+</td>
+<td>
+
+```python
+Structure Summary
+Lattice
+    abc : 5.026834307381214 11.578854613685237 10.724087971087924
+ angles : 90.0 90.0 90.0
+ volume : 624.1953646135236
+      A : 5.026834307381214 0.0 0.0
+      B : 0.0 11.578854613685237 0.0
+      C : 0.0 0.0 10.724087971087924
+PeriodicSite: Zn (0.9050, 5.7978, 3.7547) [0.1800, 0.5007, 0.3501]
+PeriodicSite: Zn (4.1218, 5.7810, 6.9693) [0.8200, 0.4993, 0.6499]
 ...
 ```
 
