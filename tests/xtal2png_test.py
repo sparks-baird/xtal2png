@@ -4,6 +4,7 @@
 
 from warnings import warn
 
+import numpy as np
 import plotly.express as px
 from numpy.testing import assert_allclose, assert_array_equal, assert_equal
 from pymatgen.analysis.structure_matcher import ElementComparator, StructureMatcher
@@ -125,10 +126,35 @@ def test_structures_to_arrays_single():
     return data
 
 
+def test_structures_to_arrays_zero_one():
+    xc = XtalConverter(relax_on_decode=False)
+    data, _, _ = xc.structures_to_arrays(example_structures, rgb_scaling=False)
+
+    if np.min(data) < 0.0:
+        raise ValueError(
+            f"minimum is less than 0 when rgb_output=False: {np.min(data)}"
+        )
+    if np.max(data) > 1.0:
+        raise ValueError(
+            f"maximum is greater than 1 when rgb_output=False: {np.max(data)}"
+        )
+    return data
+
+
 def test_arrays_to_structures():
     xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
+    assert_structures_approximate_match(example_structures, structures)
+    return structures
+
+
+def test_arrays_to_structures_zero_one():
+    xc = XtalConverter(relax_on_decode=False)
+    data, id_data, id_mapper = xc.structures_to_arrays(
+        example_structures, rgb_scaling=False
+    )
+    structures = xc.arrays_to_structures(data, id_data, id_mapper, rgb_scaling=False)
     assert_structures_approximate_match(example_structures, structures)
     return structures
 
@@ -295,6 +321,8 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_structures_to_arrays_zero_one()
+    test_arrays_to_structures_zero_one()
     test_relax_on_decode()
     test_primitive_decoding()
     test_primitive_encoding()
