@@ -28,7 +28,9 @@ diffusion = GaussianDiffusion(
 train_batch_size = 32
 print("train_batch_size: ", train_batch_size)
 
-results_folder = path.join("data", "interim", "ddpm", f"fold={fold}", str(uuid4())[0:4])
+results_folder = path.join(
+    "data", "interim", "denoising_diffusion_pytorch", f"fold={fold}", str(uuid4())[0:4]
+)
 Path(results_folder).mkdir(exist_ok=True, parents=True)
 
 trainer = Trainer(
