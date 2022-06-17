@@ -854,15 +854,6 @@ class XtalConverter:
                 a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma
             )
             structure = Structure(lattice, at, fr)
-            spa = SpacegroupAnalyzer(
-                structure,
-                symprec=self.decode_symprec,
-                angle_tolerance=self.decode_angle_tolerance,
-            )
-            if self.decode_as_primitive:
-                structure = spa.get_primitive_standard_structure()
-            else:
-                structure = spa.get_refined_structure()
 
             # REVIEW: round fractional coordinates to nearest multiple?
             if self.relax_on_decode:
@@ -878,6 +869,16 @@ class XtalConverter:
                 # )
                 # # TODO: print the initial energy as well (assuming it's available)
                 # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
+
+            spa = SpacegroupAnalyzer(
+                structure,
+                symprec=self.decode_symprec,
+                angle_tolerance=self.decode_angle_tolerance,
+            )
+            if self.decode_as_primitive:
+                structure = spa.get_primitive_standard_structure()
+            else:
+                structure = spa.get_refined_structure()
 
             S.append(structure)
 
