@@ -479,7 +479,7 @@ class XtalConverter:
     def structures_to_arrays(
         self,
         structures: Sequence[Structure],
-        rgb_output=True,
+        rgb_scaling=True,
     ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
@@ -587,7 +587,7 @@ class XtalConverter:
         frac_coords = np.stack(frac_coords_tmp)
         distance_matrix = np.stack(distance_matrix_tmp)
 
-        if rgb_output:
+        if rgb_scaling:
             # REVIEW: consider using modified pettifor scale instead of atomic numbers
             # REVIEW: consider using feature_range=atom_range or 2*atom_range
             # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
@@ -636,7 +636,9 @@ class XtalConverter:
                 volume, feature_range=feature_range, data_range=self.volume_range
             )
             space_group_scaled = element_wise_scaler(
-                space_group, data_range=self.space_group_range
+                space_group,
+                feature_range=feature_range,
+                data_range=self.space_group_range,
             )
             distance_scaled = element_wise_scaler(
                 distance_matrix,
@@ -821,7 +823,7 @@ class XtalConverter:
         data: np.ndarray,
         id_data: Optional[np.ndarray] = None,
         id_mapper: Optional[dict] = None,
-        rgb_output: bool = True,
+        rgb_scaling: bool = True,
     ):
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
@@ -867,7 +869,7 @@ class XtalConverter:
             int
         )
 
-        if rgb_output:
+        if rgb_scaling:
             atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
             frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
             latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
