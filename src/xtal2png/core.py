@@ -24,7 +24,13 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from tqdm import tqdm
 
 from xtal2png import __version__
-from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
+from xtal2png.utils.data import (
+    dummy_structures,
+    element_wise_scaler,
+    element_wise_unscaler,
+    rgb_scaler,
+    rgb_unscaler,
+)
 
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -473,6 +479,7 @@ class XtalConverter:
     def structures_to_arrays(
         self,
         structures: Sequence[Structure],
+        rgb_output=True,
     ):
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
@@ -580,24 +587,62 @@ class XtalConverter:
         frac_coords = np.stack(frac_coords_tmp)
         distance_matrix = np.stack(distance_matrix_tmp)
 
-        # REVIEW: consider using modified pettifor scale instead of atomic numbers
-        # REVIEW: consider using feature_range=atom_range or 2*atom_range
-        # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
-        atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
-        frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
-        a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
-        b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
-        c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
-        angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
-        volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
-        space_group_scaled = rgb_scaler(space_group, data_range=self.space_group_range)
-        # NOTE: max_distance could be added as another (repeated) value/row to infer
-        # NOTE: kind of like frac_distance_matrix, not sure if would be effective
-        # NOTE: Or could normalize distance_matix by cell volume
-        # NOTE: and possibly include cell volume as a (repeated) value/row to infer
-        # NOTE: It's possible extra info like this isn't so bad, instilling the physics
-        # NOTE: but it could also just be extraneous work to predict/infer
-        distance_scaled = rgb_scaler(distance_matrix, data_range=self.distance_range)
+        if rgb_output:
+            # REVIEW: consider using modified pettifor scale instead of atomic numbers
+            # REVIEW: consider using feature_range=atom_range or 2*atom_range
+            # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
+            atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
+            frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
+            a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
+            b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
+            c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
+            angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
+            volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
+            space_group_scaled = rgb_scaler(
+                space_group, data_range=self.space_group_range
+            )
+            # NOTE: max_distance could be added as another (repeated) value/row to infer
+            # NOTE: kind of like frac_distance_matrix, not sure if would be effective
+            # NOTE: Or could normalize distance_matix by cell volume
+            # NOTE: and possibly include cell volume as a (repeated) value/row to infer
+            # NOTE: It's possible extra info like this isn't so bad, instilling the
+            # physics
+            # NOTE: but it could also just be extraneous work to predict/infer
+            distance_scaled = rgb_scaler(
+                distance_matrix, data_range=self.distance_range
+            )
+
+        else:
+            feature_range = (0.0, 1.0)
+            atom_scaled = element_wise_scaler(
+                atomic_numbers, feature_range=feature_range, data_range=self.atom_range
+            )
+            frac_scaled = element_wise_scaler(
+                frac_coords, feature_range=feature_range, data_range=self.frac_range
+            )
+            a_scaled = element_wise_scaler(
+                latt_a, feature_range=feature_range, data_range=self.a_range
+            )
+            b_scaled = element_wise_scaler(
+                latt_b, feature_range=feature_range, data_range=self.b_range
+            )
+            c_scaled = element_wise_scaler(
+                latt_c, feature_range=feature_range, data_range=self.c_range
+            )
+            angles_scaled = element_wise_scaler(
+                angles, feature_range=feature_range, data_range=self.angles_range
+            )
+            volume_scaled = element_wise_scaler(
+                volume, feature_range=feature_range, data_range=self.volume_range
+            )
+            space_group_scaled = element_wise_scaler(
+                space_group, data_range=self.space_group_range
+            )
+            distance_scaled = element_wise_scaler(
+                distance_matrix,
+                feature_range=feature_range,
+                data_range=self.distance_range,
+            )
 
         atom_arr = np.expand_dims(atom_scaled, 2)
         frac_arr = frac_scaled
@@ -776,6 +821,7 @@ class XtalConverter:
         data: np.ndarray,
         id_data: Optional[np.ndarray] = None,
         id_mapper: Optional[dict] = None,
+        rgb_output: bool = True,
     ):
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
@@ -821,19 +867,56 @@ class XtalConverter:
             int
         )
 
-        atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
-        frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
-        latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
-        latt_b = rgb_unscaler(b_scaled, data_range=self.b_range)
-        latt_c = rgb_unscaler(c_scaled, data_range=self.c_range)
-        angles = rgb_unscaler(angles_scaled, data_range=self.angles_range)
+        if rgb_output:
+            atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
+            frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
+            latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
+            latt_b = rgb_unscaler(b_scaled, data_range=self.b_range)
+            latt_c = rgb_unscaler(c_scaled, data_range=self.c_range)
+            angles = rgb_unscaler(angles_scaled, data_range=self.angles_range)
 
-        # # volume, space_group, distance_matrix unecessary for making Structure
-        volume = rgb_unscaler(volume_scaled, data_range=self.volume_range)
-        space_group = rgb_unscaler(
-            space_group_scaled, data_range=self.space_group_range
-        )
-        distance_matrix = rgb_unscaler(distance_scaled, data_range=self.distance_range)
+            # # volume, space_group, distance_matrix unecessary for making Structure
+            volume = rgb_unscaler(volume_scaled, data_range=self.volume_range)
+            space_group = rgb_unscaler(
+                space_group_scaled, data_range=self.space_group_range
+            )
+            distance_matrix = rgb_unscaler(
+                distance_scaled, data_range=self.distance_range
+            )
+        else:
+            feature_range = (0.0, 1.0)
+            atomic_numbers = element_wise_unscaler(
+                atom_scaled, feature_range=feature_range, data_range=self.atom_range
+            )
+            frac_coords = element_wise_unscaler(
+                frac_scaled, feature_range=feature_range, data_range=self.frac_range
+            )
+            latt_a = element_wise_unscaler(
+                a_scaled, feature_range=feature_range, data_range=self.a_range
+            )
+            latt_b = element_wise_unscaler(
+                b_scaled, feature_range=feature_range, data_range=self.b_range
+            )
+            latt_c = element_wise_unscaler(
+                c_scaled, feature_range=feature_range, data_range=self.c_range
+            )
+            angles = element_wise_unscaler(
+                angles_scaled, feature_range=feature_range, data_range=self.angles_range
+            )
+            volume = element_wise_unscaler(
+                volume_scaled, feature_range=feature_range, data_range=self.volume_range
+            )
+            space_group = element_wise_unscaler(
+                space_group_scaled,
+                feature_range=feature_range,
+                data_range=self.space_group_range,
+            )
+            distance_matrix = element_wise_unscaler(
+                distance_scaled,
+                feature_range=feature_range,
+                data_range=self.distance_range,
+            )
+
         for dm in distance_matrix:
             np.fill_diagonal(dm, 0.0)
         # technically unused, but to avoid issue with pre-commit for now:
