@@ -14,7 +14,9 @@ fold = 0
 train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
 
 data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
-xc = XtalConverter(save_dir=data_path)
+xc = XtalConverter(
+    save_dir=data_path, encode_as_primitive=True, decode_as_primitive=True
+)
 xc.xtal2png(train_inputs.tolist())
 
 model = Unet(dim=64, dim_mults=(1, 2, 4, 8), channels=1).cuda()
