@@ -351,7 +351,10 @@ class XtalConverter:
             setattr(self, name + "_range", tuple(bounds))
 
     def process_filepaths_or_structures(
-        self, structures: Union[List[str], List[PathLike], List[Structure]]
+        self,
+        structures: Union[
+            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
+        ],
     ) -> Tuple[List[str], List[Structure]]:
         """Extract (or create) save names and convert/passthrough the structures.
 
@@ -412,6 +415,11 @@ class XtalConverter:
                 raise ValueError(
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"  # noqa
                 )
+
+        for i, s in enumerate(structures):
+            assert isinstance(
+                s, Structure
+            ), f"structures[{i}]: {type(s)}, expected: Structure"
 
         return save_names, structures
 
