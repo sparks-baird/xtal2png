@@ -13,6 +13,8 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+from m3gnet.models import Relaxer
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
@@ -61,7 +63,7 @@ SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
 
 
-def construct_save_name(s: Structure):
+def construct_save_name(s: Structure) -> str:
     save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
 
@@ -125,6 +127,10 @@ class XtalConverter:
         Decode structures as symmetrized, primitive structures. Uses ``symprec`` if
         ``symprec`` is of type float, else uses ``symprec[1]`` if ``symprec`` is of type
         tuple. Same applies for ``angle_tolerance``. By default True
+    relax_on_decode: bool, optional
+        Use m3gnet to relax the decoded crystal structures.
+    verbose: bool, optional
+        Whether to print verbose debugging information or not.
 
     Examples
     --------
@@ -150,6 +156,8 @@ class XtalConverter:
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
         encode_as_primitive: bool = False,
         decode_as_primitive: bool = False,
+        relax_on_decode: bool = True,
+        verbose: bool = True,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -180,14 +188,14 @@ class XtalConverter:
 
         self.encode_as_primitive = encode_as_primitive
         self.decode_as_primitive = decode_as_primitive
+        self.relax_on_decode = relax_on_decode
+        self.verbose = verbose
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
     def xtal2png(
         self,
-        structures: Union[
-            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
-        ],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
         show: bool = False,
         save: bool = True,
     ):
@@ -196,8 +204,7 @@ class XtalConverter:
         Parameters
         ----------
         structures : List[Union[Structure, str, PathLike[str]]]
-            pymatgen Structure objects or path to CIF files or path to directory
-            containing CIF files.
+            pymatgen Structure objects or path to CIF files.
         show : bool, optional
             Whether to display the PNG-encoded file, by default False
         save : bool, optional
@@ -229,10 +236,11 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, structures = self.process_filepaths_or_structures(structures)
+
+        save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(structures)
+        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(S)
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -263,14 +271,14 @@ class XtalConverter:
 
     def fit(
         self,
-        structures: Union[
-            List[Union[Structure, str, "PathLike[str]"]], str, "PathLike[str]"
-        ],
+        structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
         fit_quantiles=(0.00, 0.99),
-        verbose=True,
+        verbose=None,
     ):
-        _, structures = self.process_filepaths_or_structures(structures)
+        verbose = self.verbose if verbose is None else verbose
+
+        _, S = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
         atomic_numbers = []
@@ -282,7 +290,7 @@ class XtalConverter:
         distance = []
         num_sites = []
 
-        for s in tqdm(structures):
+        for s in tqdm(S):
             atomic_numbers.append(s.atomic_numbers)
             lattice = s.lattice
             a.append(lattice.a)
@@ -346,7 +354,8 @@ class XtalConverter:
             setattr(self, name + "_range", tuple(bounds))
 
     def process_filepaths_or_structures(
-        self, structures: Union[List[PathLike], List[Structure]]
+        self,
+        structures: List[Union[Structure, str, "PathLike[str]"]],
     ) -> Tuple[List[str], List[Structure]]:
         """Extract (or create) save names and convert/passthrough the structures.
 
@@ -368,23 +377,29 @@ class XtalConverter:
         Raises
         ------
         ValueError
-            _description_
+            "structures should be of same datatype, either strs or pymatgen Structures.
+            structures[0] is {type(structures[0])}, but got type {type(s)} for entry
+            {i}"
         ValueError
-            _description_
+            "structures should be of same datatype, either strs or pymatgen Structures.
+            structures[0] is {type(structures[0])}, but got type {type(s)} for entry
+            {i}"
         ValueError
-            _description_
+            "structures should be of type `str`, `os.PathLike` or
+            `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"
 
         Examples
         --------
         >>> save_names, structures = process_filepaths_or_structures(structures)
         """
         save_names: List[str] = []
+
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
             if isinstance(s, str) or isinstance(s, PathLike):
                 if first_is_structure:
                     raise ValueError(
-                        f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa
+                        f"structures should be of same datatype, either strs or pymatgen Structures. structures[0] is {type(structures[0])}, but got type {type(s)} for entry {i}"  # noqa: E501
                     )
 
                 structures[i] = Structure.from_file(s)
@@ -403,7 +418,13 @@ class XtalConverter:
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"  # noqa
                 )
 
-        return save_names, structures
+        for i, s in enumerate(structures):
+            assert isinstance(
+                s, Structure
+            ), f"structures[{i}]: {type(s)}, expected: Structure"
+            assert not isinstance(s, str) and not isinstance(s, PathLike)
+
+        return save_names, structures  # type: ignore
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
@@ -820,9 +841,12 @@ class XtalConverter:
 
         atomic_numbers = np.round(atomic_numbers).astype(int)
 
-        # REVIEW: round fractional coordinates to nearest multiple?
-
         # TODO: tweak lattice parameters to match predicted space group rules
+
+        if self.relax_on_decode:
+            if not self.verbose:
+                tf.get_logger().setLevel(logging.ERROR)
+            relaxer = Relaxer()  # This loads the default pre-trained model
 
         # build Structure-s
         S: List[Structure] = []
@@ -843,6 +867,23 @@ class XtalConverter:
                 a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma
             )
             structure = Structure(lattice, at, fr)
+
+            # REVIEW: round fractional coordinates to nearest multiple?
+            if self.relax_on_decode:
+                relaxed_results = relaxer.relax(structure, verbose=self.verbose)
+                structure = relaxed_results["final_structure"]
+
+                # relax_results = relaxer.relax()
+                # final_structure = relax_results["final_structure"]
+                # final_energy = relax_results["trajectory"].energies[-1] / 2
+
+                # print(
+                #     f"Relaxed lattice parameter is
+                #     {final_structure.lattice.abc[0]:.3f} Å"
+                # )
+                # # TODO: print the initial energy as well (assuming it's available)
+                # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
+
             spa = SpacegroupAnalyzer(
                 structure,
                 symprec=self.decode_symprec,
@@ -852,7 +893,12 @@ class XtalConverter:
                 structure = spa.get_primitive_standard_structure()
             else:
                 structure = spa.get_refined_structure()
+
             S.append(structure)
+
+        if self.relax_on_decode:
+            # restore default https://stackoverflow.com/a/51340381/13697228
+            sys.stdout = sys.__stdout__
 
         return S
 

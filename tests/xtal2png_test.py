@@ -114,19 +114,19 @@ def assert_structures_approximate_match(
 
 
 def test_structures_to_arrays():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     data, _, _ = xc.structures_to_arrays(example_structures)
     return data
 
 
 def test_structures_to_arrays_single():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     data, _, _ = xc.structures_to_arrays([example_structures[0]])
     return data
 
 
 def test_arrays_to_structures():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
     assert_structures_approximate_match(example_structures, structures)
@@ -134,7 +134,7 @@ def test_arrays_to_structures():
 
 
 def test_arrays_to_structures_single():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays([example_structures[0]])
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
     assert_structures_approximate_match([example_structures[0]], structures)
@@ -142,26 +142,26 @@ def test_arrays_to_structures_single():
 
 
 def test_xtal2png():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=False, save=True)
     return imgs
 
 
 def test_xtal2png_single():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png([example_structures[0]], show=False, save=True)
     return imgs
 
 
 def test_png2xtal():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=True, save=True)
     decoded_structures = xc.png2xtal(imgs)
     assert_structures_approximate_match(example_structures, decoded_structures)
 
 
 def test_png2xtal_single():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png([example_structures[0]], show=True, save=True)
     decoded_structures = xc.png2xtal(imgs, save=False)
     assert_structures_approximate_match([example_structures[0]], decoded_structures)
@@ -169,7 +169,7 @@ def test_png2xtal_single():
 
 
 def test_png2xtal_rgb_image():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=False, save=False)
     imgs = [img.convert("RGB") for img in imgs]
     decoded_structures = xc.png2xtal(imgs)
@@ -183,6 +183,7 @@ def test_primitive_encoding():
         angle_tolerance=5.0,
         encode_as_primitive=True,
         decode_as_primitive=False,
+        relax_on_decode=False,
     )
     input_structures = [
         SpacegroupAnalyzer(
@@ -195,7 +196,7 @@ def test_primitive_encoding():
     assert_structures_approximate_match(
         example_structures, decoded_structures, tol_multiplier=2.0
     )
-    1 + 1
+    return decoded_structures
 
 
 def test_primitive_decoding():
@@ -204,6 +205,7 @@ def test_primitive_decoding():
         angle_tolerance=5.0,
         encode_as_primitive=False,
         decode_as_primitive=True,
+        relax_on_decode=False,
     )
     input_structures = [
         SpacegroupAnalyzer(
@@ -224,11 +226,10 @@ def test_primitive_decoding():
         example_structures, decoded_structures, tol_multiplier=2.0
     )
     return decoded_structures
-    1 + 1
 
 
 def test_fit():
-    xc = XtalConverter()
+    xc = XtalConverter(relax_on_decode=False)
     xc.fit(example_structures + dummy_structures)
     assert_array_equal((14, 82), xc.atom_range)
     assert_allclose((3.84, 12.718448099999998), xc.a_range)
@@ -274,6 +275,16 @@ def test_rgb_scaler_unscaler():
     assert_allclose(check_output, scaled)
 
 
+def test_relax_on_decode():
+    xc = XtalConverter(relax_on_decode=True)
+    imgs = xc.xtal2png(example_structures, show=False, save=False)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=4.0
+    )
+    return decoded_structures
+
+
 def test_plot_and_save():
     df = px.data.tips()
     fig = px.histogram(df, x="day")
@@ -284,6 +295,7 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_relax_on_decode()
     test_primitive_decoding()
     test_primitive_encoding()
     test_fit()
