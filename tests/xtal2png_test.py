@@ -183,6 +183,7 @@ def test_primitive_encoding():
         angle_tolerance=5.0,
         encode_as_primitive=True,
         decode_as_primitive=False,
+        relax_on_decode=False,
     )
     input_structures = [
         SpacegroupAnalyzer(
@@ -204,6 +205,7 @@ def test_primitive_decoding():
         angle_tolerance=5.0,
         encode_as_primitive=False,
         decode_as_primitive=True,
+        relax_on_decode=False,
     )
     input_structures = [
         SpacegroupAnalyzer(
@@ -277,7 +279,10 @@ def test_relax_on_decode():
     xc = XtalConverter(relax_on_decode=True)
     imgs = xc.xtal2png(example_structures, show=False, save=False)
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=4.0
+    )
+    return decoded_structures
 
 
 def test_plot_and_save():
@@ -290,6 +295,7 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_relax_on_decode()
     test_primitive_decoding()
     test_primitive_encoding()
     test_fit()
