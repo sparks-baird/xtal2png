@@ -234,10 +234,10 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, structures = self.process_filepaths_or_structures(structures)  # type: ignore # noqa: E501
+        save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
-        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(structures)
+        self.data, self.id_data, self.id_mapper = self.structures_to_arrays(S)
         mn, mx = self.data.min(), self.data.max()
         if mn < 0:
             warn(
@@ -275,7 +275,7 @@ class XtalConverter:
         fit_quantiles=(0.00, 0.99),
         verbose=True,
     ):
-        _, structures = self.process_filepaths_or_structures(structures)  # type: ignore
+        _, S = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
         atomic_numbers = []
@@ -287,7 +287,7 @@ class XtalConverter:
         distance = []
         num_sites = []
 
-        for s in tqdm(structures):
+        for s in tqdm(S):
             atomic_numbers.append(s.atomic_numbers)
             lattice = s.lattice
             a.append(lattice.a)
