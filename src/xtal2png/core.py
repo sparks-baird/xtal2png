@@ -13,6 +13,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from m3gnet.models import Relaxer
 from numpy.typing import NDArray
 from PIL import Image
@@ -24,6 +25,7 @@ from tqdm import tqdm
 
 from xtal2png import __version__
 from xtal2png.utils.data import dummy_structures, rgb_scaler, rgb_unscaler
+from xtal2png.utils.logging_filter import Filter
 
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -128,6 +130,8 @@ class XtalConverter:
         tuple. Same applies for ``angle_tolerance``. By default True
     relax_on_decode: bool, optional
         Use m3gnet to relax the decoded crystal structures.
+    verbose: bool, optional
+        Whether to print verbose debugging information or not.
 
     Examples
     --------
@@ -154,6 +158,7 @@ class XtalConverter:
         encode_as_primitive: bool = False,
         decode_as_primitive: bool = False,
         relax_on_decode: bool = True,
+        verbose: bool = True,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -185,6 +190,7 @@ class XtalConverter:
         self.encode_as_primitive = encode_as_primitive
         self.decode_as_primitive = decode_as_primitive
         self.relax_on_decode = relax_on_decode
+        self.verbose = verbose
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -269,8 +275,10 @@ class XtalConverter:
         structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
         fit_quantiles=(0.00, 0.99),
-        verbose=True,
+        verbose=None,
     ):
+        verbose = self.verbose if verbose is None else verbose
+
         _, S = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
@@ -837,6 +845,9 @@ class XtalConverter:
         # TODO: tweak lattice parameters to match predicted space group rules
 
         if self.relax_on_decode:
+            if not self.verbose:
+                sys.stdout = Filter(sys.stdout, r"^FIRE:|     Step     Time          Energy         fmax|\*Force-consistent energies used in optimization.")  # type: ignore # noqa: E501
+                tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
 
         # build Structure-s
@@ -885,6 +896,10 @@ class XtalConverter:
                 structure = spa.get_refined_structure()
 
             S.append(structure)
+
+        if self.relax_on_decode:
+            # restore default https://stackoverflow.com/a/51340381/13697228
+            sys.stdout = sys.__stdout__
 
         return S
 
