@@ -300,25 +300,14 @@ class XtalConverter:
         _, S = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
-        atomic_numbers = []
-        a = []
-        b = []
-        c = []
-        space_group = []
-        volume = []
-        distance = []
-        num_sites = []
-
-        for s in tqdm(S):
-            atomic_numbers.append(s.atomic_numbers)
-            lattice = s.lattice
-            a.append(lattice.a)
-            b.append(lattice.b)
-            c.append(lattice.c)
-            space_group.append(s.get_space_group_info()[1])
-            volume.append(lattice.volume)
-            distance.append(s.distance_matrix)
-            num_sites.append(len(list(s.sites)))
+        atomic_numbers = [s.atomic_numbers for s in S]
+        a = [s.lattice.a for s in S]
+        b = [s.lattice.b for s in S]
+        c = [s.lattice.c for s in S]
+        space_group = [s.get_space_group_info()[1] for s in S]
+        volume = [s.lattice.volume for s in S]
+        distance = [s.distance_matrix for s in S]
+        num_sites = [len(list(s.sites)) for s in S]
 
         if verbose:
             print("range of atomic_numbers is: ", min(a), "-", max(a))
