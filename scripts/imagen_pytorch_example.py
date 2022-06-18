@@ -6,7 +6,7 @@ from mp_time_split.core import MPTimeSplit
 from xtal2png.core import XtalConverter
 
 low_mem = True
-max_batch_size = 1
+max_batch_size = 16
 
 mpt = MPTimeSplit()
 mpt.load()
@@ -62,6 +62,6 @@ for u in (1, 2):
 # do the above for many many many many steps
 # now you can sample images unconditionally from the cascading unet(s)
 
-images = trainer.sample(batch_size=16)  # (16, 3, 128, 128)
+images = trainer.sample(batch_size=16, return_pil_images=True)  # (16, 3, 128, 128)
 
 1 + 1
