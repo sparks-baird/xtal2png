@@ -189,3 +189,18 @@ def rgb_unscaler(
     rgb_range = [0, 255]
     X_scaled = element_wise_unscaler(X, data_range=data_range, feature_range=rgb_range)
     return X_scaled
+
+
+def get_image_mode(d):
+    if d.ndim != 3:
+        raise ValueError("expected an array with 3 dimensions, received {d.ndim} dims")
+    if d.shape[0] == 3:
+        mode = "RGB"
+    elif d.shape[0] == 1:
+        mode = "L"
+    else:
+        raise ValueError(
+            f"Expected a single-channel or 3-channel array, but received a {d.ndim}-channel array."  # noqa: E501
+        )
+
+    return mode
