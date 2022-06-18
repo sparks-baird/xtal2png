@@ -268,6 +268,8 @@ class XtalConverter:
         for d, save_name in zip(self.data, save_names):
             mode = get_image_mode(d)
             d = np.squeeze(d)
+            if mode == "RGB":
+                d = d.transpose(1, 2, 0)
             img = Image.fromarray(d, mode=mode)
             imgs.append(img)
             if save:
@@ -466,11 +468,17 @@ class XtalConverter:
             if isinstance(img, str):
                 # load image from file
                 with Image.open(img).convert(mode) as im:
-                    data_tmp.append(np.asarray(im))
+                    arr = np.asarray(im)
             elif isinstance(img, Image.Image):
-                data_tmp.append(np.asarray(img.convert(mode)))
+                arr = np.asarray(img.convert(mode))
+            if mode == "RGB":
+                arr = arr.transpose(2, 0, 1)
+            data_tmp.append(arr)
 
         data = np.stack(data_tmp, axis=0)
+
+        if mode == "L":
+            data = np.expand_dims(data, 1)
 
         S = self.arrays_to_structures(data)
 
