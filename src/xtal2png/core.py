@@ -26,6 +26,7 @@ from xtal2png.utils.data import (
     dummy_structures,
     element_wise_scaler,
     element_wise_unscaler,
+    get_image_mode,
     rgb_scaler,
     rgb_unscaler,
 )
@@ -161,6 +162,7 @@ class XtalConverter:
         encode_as_primitive: bool = False,
         decode_as_primitive: bool = False,
         relax_on_decode: bool = True,
+        channels: int = 1,
         verbose: bool = True,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
@@ -193,6 +195,7 @@ class XtalConverter:
         self.encode_as_primitive = encode_as_primitive
         self.decode_as_primitive = decode_as_primitive
         self.relax_on_decode = relax_on_decode
+        self.channels = channels
         self.verbose = verbose
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
@@ -263,7 +266,9 @@ class XtalConverter:
         # convert to PNG images. Save and/or show, if applicable
         imgs: List[Image.Image] = []
         for d, save_name in zip(self.data, save_names):
-            img = Image.fromarray(d, mode="L")
+            mode = get_image_mode(d)
+            d = np.squeeze(d)
+            img = Image.fromarray(d, mode=mode)
             imgs.append(img)
             if save:
                 savepath = path.join(self.save_dir, save_name + ".png")
@@ -449,13 +454,21 @@ class XtalConverter:
         OUTPUT
         """
         data_tmp = []
+        if self.channels == 1:
+            mode = "L"
+        elif self.channels == 3:
+            mode = "RGB"
+        else:
+            raise ValueError(
+                f"expected grayscale (1-channel) or RGB (3-channels) image, but got {self.channels}-channels. Either set channels to 1 or 3 or use xc.structures_to_arrays and xc.arrays_to_structures directly instead of xc.xtal2png and xc.png2xtal"  # noqa: E501
+            )
         for img in images:
             if isinstance(img, str):
                 # load image from file
-                with Image.open(img).convert("L") as im:
+                with Image.open(img).convert(mode) as im:
                     data_tmp.append(np.asarray(im))
             elif isinstance(img, Image.Image):
-                data_tmp.append(np.asarray(img.convert("L")))
+                data_tmp.append(np.asarray(img.convert(mode)))
 
         data = np.stack(data_tmp, axis=0)
 
@@ -695,6 +708,12 @@ class XtalConverter:
         ]
         id_data = self.assemble_blocks(*id_blocks)
 
+        data = np.expand_dims(data, 1)
+        id_data = np.expand_dims(id_data, 1)
+
+        data = np.repeat(data, self.channels, 1)
+        id_data = np.repeat(id_data, self.channels, 1)
+
         return data, id_data, id_mapper
 
     def assemble_blocks(
@@ -843,6 +862,11 @@ class XtalConverter:
             raise ValueError(
                 f"`data` should be of type `np.ndarray`.  Received type {type(data)}. Maybe you passed a tuple of (data, id_data, id_mapper) returned from `structures_to_arrays()` by accident?"  # noqa: E501
             )
+
+        # convert to single channel and remove singleton dimension before disassembly
+        data = np.mean(data, axis=1)
+        if id_data is not None:
+            id_data = np.mean(id_data, axis=1)
         arrays = self.disassemble_blocks(data, id_data=id_data, id_mapper=id_mapper)
 
         (
