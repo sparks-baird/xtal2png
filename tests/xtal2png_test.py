@@ -179,6 +179,12 @@ def test_xtal2png_single():
     return imgs
 
 
+def test_xtal2png_three_channels():
+    xc = XtalConverter(relax_on_decode=False, channels=3)
+    imgs = xc.xtal2png(example_structures, show=False, save=False)
+    return imgs
+
+
 def test_png2xtal():
     xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=True, save=True)
@@ -201,6 +207,16 @@ def test_png2xtal_rgb_image():
     decoded_structures = xc.png2xtal(imgs)
     assert_structures_approximate_match(example_structures, decoded_structures)
     return decoded_structures
+
+
+def test_png2xtal_three_channels():
+    xc = XtalConverter(relax_on_decode=False, channels=3)
+    imgs = xc.xtal2png(example_structures, show=False, save=False)
+    img_shape = np.asarray(imgs[0]).shape
+    if img_shape != (64, 64, 3):
+        raise ValueError(f"Expected image shape: (3, 64, 64), received: {img_shape}")
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(example_structures, decoded_structures)
 
 
 def test_primitive_encoding():
@@ -321,6 +337,8 @@ def test_plot_and_save():
 
 
 if __name__ == "__main__":
+    test_xtal2png_three_channels()
+    test_png2xtal_three_channels()
     test_structures_to_arrays_zero_one()
     test_arrays_to_structures_zero_one()
     test_relax_on_decode()
