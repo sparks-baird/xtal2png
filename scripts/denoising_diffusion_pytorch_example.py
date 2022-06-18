@@ -7,11 +7,17 @@ from mp_time_split.core import MPTimeSplit
 
 from xtal2png.core import XtalConverter
 
+# import numpy as np
+
+
 mpt = MPTimeSplit()
 mpt.load()
 
 fold = 0
 train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
+# train_idx = np.random.permutation(len(train_inputs))
+# train_inputs = train_inputs.iloc[train_idx]
+# train_outputs = train_outputs.iloc[train_idx]
 
 data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
 xc = XtalConverter(
