@@ -1,10 +1,12 @@
+import numpy as np
+import torch
 from imagen_pytorch import Imagen, ImagenTrainer, SRUnet256, Unet
 from mp_time_split.core import MPTimeSplit
 
 from xtal2png.core import XtalConverter
 
 low_mem = True
-max_batch_size = 32
+max_batch_size = 1
 
 mpt = MPTimeSplit()
 mpt.load()
@@ -13,7 +15,8 @@ fold = 0
 train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
 
 xc = XtalConverter(save_dir="tmp", encode_as_primitive=True, decode_as_primitive=True)
-training_images = xc.structures_to_arrays(train_inputs.tolist(), rgb_scaling=False)
+arrays, _, _ = xc.structures_to_arrays(train_inputs.tolist(), rgb_scaling=False)
+training_images = torch.from_numpy(np.expand_dims(arrays, 1)).float().cuda()
 
 # unets for unconditional imagen
 
