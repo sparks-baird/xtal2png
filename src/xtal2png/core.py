@@ -202,10 +202,7 @@ class XtalConverter:
         self.encode_as_primitive = encode_as_primitive
         self.decode_as_primitive = decode_as_primitive
         self.relax_on_decode = relax_on_decode
-        if self.channels < 1:
-            raise ValueError(
-                f"channels should be a positive integer, but got: {self.channels}"
-            )
+
         self.channels = channels
         self.verbose = verbose
 
