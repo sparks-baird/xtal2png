@@ -11,7 +11,7 @@ from pymatgen.core.composition import Composition
 from pymatviz.elements import ptable_heatmap_plotly
 
 from xtal2png.core import XtalConverter
-from xtal2png.utils.data import rgb_scaler
+from xtal2png.utils.data import get_image_mode, rgb_scaler
 
 mpt = MPTimeSplit()
 mpt.load()
@@ -63,7 +63,10 @@ img_arrays_torch = diffusion.sample(batch_size=16)
 unscaled_arrays = np.squeeze(img_arrays_torch.cpu().numpy())
 rgb_arrays = rgb_scaler(unscaled_arrays, data_range=(0, 1))
 
-sampled_images = [Image.fromarray(arr, "I") for arr in rgb_arrays]
+mode = get_image_mode(rgb_arrays[0])
+if mode == "RGB":
+    rgb_arrays = [arr.transpose(1, 2, 0) for arr in rgb_arrays]
+sampled_images = [Image.fromarray(arr, mode) for arr in rgb_arrays]
 
 gen_path = path.join(
     "data", "preprocessed", "mp-time-split", "ddpm", f"fold={fold}", uid
