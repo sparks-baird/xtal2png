@@ -13,8 +13,6 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from m3gnet.models import Relaxer
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
@@ -929,6 +927,12 @@ class XtalConverter:
         # TODO: tweak lattice parameters to match predicted space group rules
 
         if self.relax_on_decode:
+            try:
+                import tensorflow as tf
+                from m3gnet.models import Relaxer
+            except ImportError as e:
+                print(e)
+                print("For Windows users on Anaconda, you need to `pip install m3gnet`")
             if not self.verbose:
                 tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
