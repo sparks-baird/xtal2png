@@ -134,6 +134,13 @@ class XtalConverter:
         tuple. Same applies for ``angle_tolerance``. By default True
     relax_on_decode: bool, optional
         Use m3gnet to relax the decoded crystal structures.
+    channels : int, optional
+        Number of channels, a positive integer. Typically choices would be 1 (grayscale)
+        or 3 (RGB), and are the only compatible choices when using
+        func:``XtalConverter().xtal2png`` and func:``XtalConverter().png2xtal``. For
+        positive integers other than 1 or 3, use
+        func:``XtalConverter().structures_to_arrays`` and
+        func:``XtalConverter().arrays_to_structures`` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
 
@@ -195,6 +202,10 @@ class XtalConverter:
         self.encode_as_primitive = encode_as_primitive
         self.decode_as_primitive = decode_as_primitive
         self.relax_on_decode = relax_on_decode
+        if self.channels < 1:
+            raise ValueError(
+                f"channels should be a positive integer, but got: {self.channels}"
+            )
         self.channels = channels
         self.verbose = verbose
 
