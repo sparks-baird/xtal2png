@@ -28,7 +28,7 @@ diffusion = GaussianDiffusion(
 train_batch_size = 32
 print("train_batch_size: ", train_batch_size)
 
-uid = "427c"
+uid = "5eab"
 results_folder = path.join("data", "interim", "ddpm", f"fold={fold}", uid)
 Path(results_folder).mkdir(exist_ok=True, parents=True)
 
@@ -71,7 +71,9 @@ sampled_images = [Image.fromarray(arr, mode) for arr in rgb_arrays]
 gen_path = path.join(
     "data", "preprocessed", "mp-time-split", "ddpm", f"fold={fold}", uid
 )
-xc = XtalConverter(save_dir=gen_path)
+xc = XtalConverter(
+    save_dir=gen_path, encode_as_primitive=True, decode_as_primitive=True
+)
 structures = xc.png2xtal(sampled_images, save=True)
 
 space_group = []
