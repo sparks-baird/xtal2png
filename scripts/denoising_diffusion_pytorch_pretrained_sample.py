@@ -75,7 +75,9 @@ gen_path = path.join(
     f"fold={fold}",
     uid,
 )
-xc = XtalConverter(save_dir=gen_path)
+xc = XtalConverter(
+    save_dir=gen_path, encode_as_primitive=True, decode_as_primitive=True
+)
 structures = xc.png2xtal(sampled_images, save=True)
 
 space_group = []
