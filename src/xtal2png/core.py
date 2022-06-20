@@ -206,6 +206,11 @@ class XtalConverter:
         self.channels = channels
         self.verbose = verbose
 
+        if self.verbose:
+            self.tqdm_if_verbose = tqdm
+        else:
+            self.tqdm_if_verbose = lambda x: x
+
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
     def xtal2png(
@@ -480,7 +485,7 @@ class XtalConverter:
         S = self.arrays_to_structures(data)
 
         if save:
-            for s in S:
+            for s in self.tqdm_if_verbose(S):
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
                 CifWriter(
                     s,
@@ -554,7 +559,7 @@ class XtalConverter:
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
         sym_structures = []
-        for s in structures:
+        for s in self.tqdm_if_verbose(structures):
             spa = SpacegroupAnalyzer(
                 s,
                 symprec=self.encode_symprec,
@@ -568,7 +573,7 @@ class XtalConverter:
 
         structures = sym_structures
 
-        for s in structures:
+        for s in self.tqdm_if_verbose(structures):
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
@@ -972,7 +977,8 @@ class XtalConverter:
         # build Structure-s
         S: List[Structure] = []
         num_structures = len(atomic_numbers)
-        for i in range(num_structures):
+
+        for i in self.tqdm_if_verbose(range(num_structures)):
             at = atomic_numbers[i]
             fr = frac_coords[i]
             site_ids = np.where(at > 0)
