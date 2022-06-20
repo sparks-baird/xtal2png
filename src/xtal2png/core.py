@@ -168,7 +168,7 @@ class XtalConverter:
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
         encode_as_primitive: bool = False,
         decode_as_primitive: bool = False,
-        relax_on_decode: bool = True,
+        relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
     ):
@@ -948,6 +948,7 @@ class XtalConverter:
 
         for dm in distance_matrix:
             np.fill_diagonal(dm, 0.0)
+
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
@@ -961,22 +962,23 @@ class XtalConverter:
                 from m3gnet.models import Relaxer
             except ImportError as e:
                 print(e)
-                print("For Windows users on Anaconda, you need to `pip install m3gnet`")
+                print(
+                    "For Windows users on Anaconda, you need to `pip install m3gnet` or set relax_on_decode=False."  # noqa: E501
+                )
             if not self.verbose:
                 tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
 
         # build Structure-s
         S: List[Structure] = []
-        for i in range(len(atomic_numbers)):
+        num_structures = len(atomic_numbers)
+        for i in range(num_structures):
             at = atomic_numbers[i]
             fr = frac_coords[i]
-            # di = distance_matrix[i]
             site_ids = np.where(at > 0)
 
             at = at[site_ids]
             fr = fr[site_ids]
-            # di_cropped = di[site_ids[0]][:, site_ids[0]]
 
             a, b, c = latt_a[i], latt_b[i], latt_c[i]
             alpha, beta, gamma = angles[i]
@@ -990,17 +992,6 @@ class XtalConverter:
             if self.relax_on_decode:
                 relaxed_results = relaxer.relax(structure, verbose=self.verbose)
                 structure = relaxed_results["final_structure"]
-
-                # relax_results = relaxer.relax()
-                # final_structure = relax_results["final_structure"]
-                # final_energy = relax_results["trajectory"].energies[-1] / 2
-
-                # print(
-                #     f"Relaxed lattice parameter is
-                #     {final_structure.lattice.abc[0]:.3f} Å"
-                # )
-                # # TODO: print the initial energy as well (assuming it's available)
-                # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
 
             spa = SpacegroupAnalyzer(
                 structure,
@@ -1165,3 +1156,15 @@ if __name__ == "__main__":
     #     python -m xtal2png.core example.cif
     #
     run()
+
+# %% Code Graveyard
+# relax_results = relaxer.relax()
+# final_structure = relax_results["final_structure"]
+# final_energy = relax_results["trajectory"].energies[-1] / 2
+
+# print(
+#     f"Relaxed lattice parameter is
+#     {final_structure.lattice.abc[0]:.3f} Å"
+# )
+# # TODO: print the initial energy as well (assuming it's available)
+# print(f"Final energy is {final_energy.item(): .3f} eV/atom")
