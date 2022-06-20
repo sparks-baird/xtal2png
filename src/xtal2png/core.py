@@ -1014,10 +1014,6 @@ class XtalConverter:
 
             S.append(structure)
 
-        if self.relax_on_decode:
-            # restore default https://stackoverflow.com/a/51340381/13697228
-            sys.stdout = sys.__stdout__
-
         return S
 
 
