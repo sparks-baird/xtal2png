@@ -1,9 +1,8 @@
 from os import path
 from uuid import uuid4
 
-import numpy as np
 import torch
-from imagen_pytorch import Imagen, ImagenTrainer, SRUnet256, Unet
+from imagen_pytorch import BaseUnet64, Imagen, ImagenTrainer, Unet
 from mp_time_split.core import MPTimeSplit
 
 from xtal2png.core import XtalConverter
@@ -19,7 +18,7 @@ train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_dat
 
 xc = XtalConverter(save_dir="tmp", encode_as_primitive=True, decode_as_primitive=True)
 arrays, _, _ = xc.structures_to_arrays(train_inputs.tolist(), rgb_scaling=False)
-training_images = torch.from_numpy(np.expand_dims(arrays, 1)).float().cuda()
+training_images = torch.from_numpy(arrays).float().cuda()
 
 # unets for unconditional imagen
 
@@ -42,7 +41,8 @@ if low_mem:
         use_linear_attn=True,
     )
 else:
-    unet2 = SRUnet256()
+    # unet2 = SRUnet256()
+    unet2 = BaseUnet64()
 
 # imagen, which contains the unets above (base unet and super resoluting ones)
 
