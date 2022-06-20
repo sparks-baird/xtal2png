@@ -13,11 +13,7 @@ from pymatviz.elements import ptable_heatmap_plotly
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import get_image_mode, rgb_scaler
 
-mpt = MPTimeSplit()
-mpt.load()
-
 fold = 0
-train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
 
 model = Unet(dim=64, dim_mults=(1, 2, 4, 8), channels=1).cuda()
 
@@ -28,8 +24,10 @@ diffusion = GaussianDiffusion(
 train_batch_size = 32
 print("train_batch_size: ", train_batch_size)
 
-uid = "427c"
-results_folder = path.join("data", "interim", "ddpm", f"fold={fold}", uid)
+uid = "5eab"
+results_folder = path.join(
+    "data", "interim", "denoising_diffusion_pytorch", f"fold={fold}", uid
+)
 Path(results_folder).mkdir(exist_ok=True, parents=True)
 
 data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
@@ -40,6 +38,7 @@ fnames = os.listdir(results_folder)
 checkpoints = [int(name.split("-")[1].split(".")[0]) for name in fnames]
 checkpoint = np.max(checkpoints)
 
+print(f"checkpoint: {checkpoint}")
 
 trainer = Trainer(
     diffusion,
@@ -66,10 +65,15 @@ rgb_arrays = rgb_scaler(unscaled_arrays, data_range=(0, 1))
 mode = get_image_mode(rgb_arrays[0])
 if mode == "RGB":
     rgb_arrays = [arr.transpose(1, 2, 0) for arr in rgb_arrays]
-sampled_images = [Image.fromarray(arr, mode) for arr in rgb_arrays]
+sampled_images = [Image.fromarray(np.uint8(arr), mode) for arr in rgb_arrays]
 
 gen_path = path.join(
-    "data", "preprocessed", "mp-time-split", "ddpm", f"fold={fold}", uid
+    "data",
+    "preprocessed",
+    "mp-time-split",
+    "denoising_diffusion_pytorch",
+    f"fold={fold}",
+    uid,
 )
 xc = XtalConverter(save_dir=gen_path)
 structures = xc.png2xtal(sampled_images, save=True)
@@ -83,6 +87,10 @@ for s in structures:
         W.append(e)
         space_group.append(None)
 print(space_group)
+
+mpt = MPTimeSplit()
+mpt.load()
+train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
 
 equimolar_compositions = train_inputs.apply(
     lambda s: Composition(re.sub(r"\d", "", s.formula))
