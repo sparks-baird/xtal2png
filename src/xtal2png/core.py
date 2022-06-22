@@ -168,7 +168,7 @@ class XtalConverter:
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
         encode_as_primitive: bool = False,
         decode_as_primitive: bool = False,
-        relax_on_decode: bool = True,
+        relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
     ):
@@ -205,6 +205,11 @@ class XtalConverter:
 
         self.channels = channels
         self.verbose = verbose
+
+        if self.verbose:
+            self.tqdm_if_verbose = tqdm
+        else:
+            self.tqdm_if_verbose = lambda x: x
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -300,25 +305,14 @@ class XtalConverter:
         _, S = self.process_filepaths_or_structures(structures)
 
         # TODO: deal with arbitrary site_properties
-        atomic_numbers = []
-        a = []
-        b = []
-        c = []
-        space_group = []
-        volume = []
-        distance = []
-        num_sites = []
-
-        for s in tqdm(S):
-            atomic_numbers.append(s.atomic_numbers)
-            lattice = s.lattice
-            a.append(lattice.a)
-            b.append(lattice.b)
-            c.append(lattice.c)
-            space_group.append(s.get_space_group_info()[1])
-            volume.append(lattice.volume)
-            distance.append(s.distance_matrix)
-            num_sites.append(len(list(s.sites)))
+        atomic_numbers = [s.atomic_numbers for s in S]
+        a = [s.lattice.a for s in S]
+        b = [s.lattice.b for s in S]
+        c = [s.lattice.c for s in S]
+        space_group = [s.get_space_group_info()[1] for s in S]
+        volume = [s.lattice.volume for s in S]
+        distance = [s.distance_matrix for s in S]
+        num_sites = [len(list(s.sites)) for s in S]
 
         if verbose:
             print("range of atomic_numbers is: ", min(a), "-", max(a))
@@ -491,7 +485,7 @@ class XtalConverter:
         S = self.arrays_to_structures(data)
 
         if save:
-            for s in S:
+            for s in self.tqdm_if_verbose(S):
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
                 CifWriter(
                     s,
@@ -565,7 +559,7 @@ class XtalConverter:
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
         sym_structures = []
-        for s in structures:
+        for s in self.tqdm_if_verbose(structures):
             spa = SpacegroupAnalyzer(
                 s,
                 symprec=self.encode_symprec,
@@ -579,7 +573,7 @@ class XtalConverter:
 
         structures = sym_structures
 
-        for s in structures:
+        for s in self.tqdm_if_verbose(structures):
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
@@ -959,6 +953,7 @@ class XtalConverter:
 
         for dm in distance_matrix:
             np.fill_diagonal(dm, 0.0)
+
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
@@ -972,22 +967,24 @@ class XtalConverter:
                 from m3gnet.models import Relaxer
             except ImportError as e:
                 print(e)
-                print("For Windows users on Anaconda, you need to `pip install m3gnet`")
+                print(
+                    "For Windows users on Anaconda, you need to `pip install m3gnet` or set relax_on_decode=False."  # noqa: E501
+                )
             if not self.verbose:
                 tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
 
         # build Structure-s
         S: List[Structure] = []
-        for i in range(len(atomic_numbers)):
+        num_structures = len(atomic_numbers)
+
+        for i in self.tqdm_if_verbose(range(num_structures)):
             at = atomic_numbers[i]
             fr = frac_coords[i]
-            # di = distance_matrix[i]
             site_ids = np.where(at > 0)
 
             at = at[site_ids]
             fr = fr[site_ids]
-            # di_cropped = di[site_ids[0]][:, site_ids[0]]
 
             a, b, c = latt_a[i], latt_b[i], latt_c[i]
             alpha, beta, gamma = angles[i]
@@ -1001,17 +998,6 @@ class XtalConverter:
             if self.relax_on_decode:
                 relaxed_results = relaxer.relax(structure, verbose=self.verbose)
                 structure = relaxed_results["final_structure"]
-
-                # relax_results = relaxer.relax()
-                # final_structure = relax_results["final_structure"]
-                # final_energy = relax_results["trajectory"].energies[-1] / 2
-
-                # print(
-                #     f"Relaxed lattice parameter is
-                #     {final_structure.lattice.abc[0]:.3f} Å"
-                # )
-                # # TODO: print the initial energy as well (assuming it's available)
-                # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
 
             spa = SpacegroupAnalyzer(
                 structure,
@@ -1176,3 +1162,15 @@ if __name__ == "__main__":
     #     python -m xtal2png.core example.cif
     #
     run()
+
+# %% Code Graveyard
+# relax_results = relaxer.relax()
+# final_structure = relax_results["final_structure"]
+# final_energy = relax_results["trajectory"].energies[-1] / 2
+
+# print(
+#     f"Relaxed lattice parameter is
+#     {final_structure.lattice.abc[0]:.3f} Å"
+# )
+# # TODO: print the initial energy as well (assuming it's available)
+# print(f"Final energy is {final_energy.item(): .3f} eV/atom")
