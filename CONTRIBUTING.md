@@ -59,6 +59,14 @@ Please try also to simplify the reproduction steps to a very minimal example
 that still illustrates the problem you are facing. By removing other factors,
 you help us to identify the root cause of the issue.
 
+## Discussions
+
+The discussions page is a great place for topics that don't fit directly into
+specific future code development plans (i.e. feature requests) or bugs in
+the software. Issues are easily converted to discussions and vice-versa,
+so don't worry too much about where to put it if you're not sure.
+We want to hear from you!
+
 ## Documentation Improvements
 
 You can help improve `xtal2png` docs by making them more readable and coherent, or
@@ -68,28 +76,23 @@ by adding missing information and correcting mistakes.
 This means that the docs are kept in the same repository as the project code, and
 that any documentation update is done in the same way was a code contribution.
 
-```{todo} Don't forget to mention which markup language you are using.
+We use [CommonMark] with [MyST] extensions, meaning most of the documentation files
+are Markdown (`.md`) files.
 
-    e.g.,  [reStructuredText] or [CommonMark] with [MyST] extensions.
-```
+:::{tip}
+   Please notice that the [GitHub web interface] provides a quick way of
+   propose changes in `xtal2png`'s files. While this mechanism can
+   be tricky for normal code contributions, it works perfectly fine for
+   contributing to the docs, and can be quite handy.
 
-```{todo} If your project is hosted on GitHub, you can also mention the following tip:
-
-   :::{tip}
-      Please notice that the [GitHub web interface] provides a quick way of
-      propose changes in `xtal2png`'s files. While this mechanism can
-      be tricky for normal code contributions, it works perfectly fine for
-      contributing to the docs, and can be quite handy.
-
-      If you are interested in trying this method out, please navigate to
-      the `docs` folder in the source [repository], find which file you
-      would like to propose changes and click in the little pencil icon at the
-      top, to open [GitHub's code editor]. Once you finish editing the file,
-      please write a message in the form at the bottom of the page describing
-      which changes have you made and what are the motivations behind them and
-      submit your proposal.
-   :::
-```
+   If you are interested in trying this method out, please navigate to
+   the `docs` folder in the source [repository], find which file you
+   would like to propose changes and click in the little pencil icon at the
+   top, to open [GitHub's code editor]. Once you finish editing the file,
+   please write a message in the form at the bottom of the page describing
+   which changes have you made and what are the motivations behind them and
+   submit your proposal.
+:::
 
 When working on documentation changes in your local machine, you can
 compile them using [tox] :
@@ -107,12 +110,23 @@ python3 -m http.server --directory 'docs/_build/html'
 
 ## Code Contributions
 
-```{todo} Please include a reference or explanation about the internals of the project.
-
-   An architecture description, design principles or at least a summary of the
-   main concepts will make it easy for potential contributors to get started
-   quickly.
-```
+`xtal2png` has two main functionalities: encoding crystal structures as PNG
+images, and decoding appropriately encoded PNG images back to crystal
+structures. Where appropriate, we prefer to use
+[pymatgen](https://pymatgen.org/)'s built-in functionality rather than write
+the functionality from scratch. As the main use-case for `xtal2png` is
+generative modeling of crystal structures using models directly from the
+image-processing domain, many of `xtal2png`'s features are implemented to make
+this process better and smoother. On one hand, we're interested in finding an
+optimal representation in conjunction with an image generative model (see
+[`hyperparameters`](https://github.com/sparks-baird/xtal2png/issues?q=is%3Aissue+is%3Aopen+label%3Ahyperparameter)
+label in issue tracker). In order to know whwat is "better", we also need a
+notion of best fit (see
+[`notion-of-best`](https://github.com/sparks-baird/xtal2png/issues?q=is%3Aissue+is%3Aopen+label%3Anotion-of-best)
+label). The plan is to expose notions of best fit (i.e. metrics) for crystal
+generative modeling via
+[`matbench-genmetrics`](https://github.com/sparks-baird/matbench-genmetrics),
+which is being developed in parallel with but separate from `xtal2png`.
 
 ### Submit an issue
 
@@ -320,7 +334,8 @@ on [PyPI], the following steps can be used to release a new version for
 2. Tag the current commit on the main branch with a release tag, e.g., `v1.2.3`.
 3. Push the new tag to the upstream [repository],
    e.g., `git push upstream v1.2.3`
-4. Clean up the `dist` and `build` folders with `tox -e clean`
+4. Verify that the [corresponding GitHub action](https://github.com/sparks-baird/xtal2png/actions) completes successfully
+<!-- 4. Clean up the `dist` and `build` folders with `tox -e clean`
    (or `rm -rf dist build`)
    to avoid confusion with old builds and Sphinx docs.
 5. Run `tox -e build` and check that the files in `dist` have
@@ -328,7 +343,7 @@ on [PyPI], the following steps can be used to release a new version for
    Also check the sizes of the distributions, if they are too big (e.g., >
    500KB), unwanted clutter may have been accidentally included.
 6. Run `tox -e publish -- --repository pypi` and check that everything was
-   uploaded to [PyPI] correctly.
+   uploaded to [PyPI] correctly. -->
 
 A bot on `conda-forge` will recognize the new release on PyPI (typically within a
 few hours) and automatically open a pull request (PR) on [xtal2png-feedstock]. See
