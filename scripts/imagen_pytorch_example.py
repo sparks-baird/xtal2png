@@ -1,3 +1,6 @@
+from os import path
+from uuid import uuid4
+
 import numpy as np
 import torch
 from imagen_pytorch import Imagen, ImagenTrainer, SRUnet256, Unet
@@ -64,4 +67,8 @@ for u in (1, 2):
 
 images = trainer.sample(batch_size=16, return_pil_images=True)  # (16, 3, 128, 128)
 
+results_folder = path.join(
+    "data", "interim", "imagen-pytorch", f"fold={fold}", str(uuid4())[0:4] + ".pt"
+)
+trainer.save(results_folder)
 1 + 1

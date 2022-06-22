@@ -7,22 +7,32 @@ from mp_time_split.core import MPTimeSplit
 
 from xtal2png.core import XtalConverter
 
+# import numpy as np
+
+
 mpt = MPTimeSplit()
 mpt.load()
 
 fold = 0
 train_inputs, val_inputs, train_outputs, val_outputs = mpt.get_train_and_val_data(fold)
+# train_idx = np.random.permutation(len(train_inputs))
+# train_inputs = train_inputs.iloc[train_idx]
+# train_outputs = train_outputs.iloc[train_idx]
 
+channels = 1
 data_path = path.join("data", "preprocessed", "mp-time-split", f"fold={fold}")
 xc = XtalConverter(
-    save_dir=data_path, encode_as_primitive=True, decode_as_primitive=True
+    save_dir=data_path,
+    encode_as_primitive=True,
+    decode_as_primitive=True,
+    channels=channels,
 )
 xc.xtal2png(train_inputs.tolist())
 
-model = Unet(dim=64, dim_mults=(1, 2, 4, 8), channels=1).cuda()
+model = Unet(dim=64, dim_mults=(1, 2, 4, 8), channels=channels).cuda()
 
 diffusion = GaussianDiffusion(
-    model, channels=1, image_size=64, timesteps=1000, loss_type="l1"
+    model, channels=channels, image_size=64, timesteps=1000, loss_type="l1"
 ).cuda()
 
 train_batch_size = 32
