@@ -15,7 +15,7 @@ Encode/decode a crystal structure to/from a grayscale PNG image for direct use w
  aria-label="Issue sparks-baird/xtal2png on GitHub">Issue</a>
  <a class="github-button" href="https://github.com/sparks-baird/xtal2png/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss sparks-baird/xtal2png on GitHub">Discuss</a>
  <br><br>
- 
+
  <!-- ![GitHub Repo stars](https://img.shields.io/github/stars/sparks-baird/xtal2png?style=social) ![GitHub followers](https://img.shields.io/github/followers/sgbaird?style=social) ![GitHub issues](https://img.shields.io/github/issues-raw/sparks-baird/xtal2png) ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/sparks-baird/xtal2png) -->
 
 ## Contents
