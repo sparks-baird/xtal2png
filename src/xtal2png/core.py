@@ -18,7 +18,6 @@ from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from tqdm import tqdm
 
 from xtal2png import __version__
@@ -29,6 +28,7 @@ from xtal2png.utils.data import (
     get_image_mode,
     rgb_scaler,
     rgb_unscaler,
+    unit_cell_converter,
 )
 
 # from sklearn.preprocessing import MinMaxScaler
@@ -124,14 +124,16 @@ class XtalConverter:
         ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
         specified as a tuple, then ``angle_tolerance[0]`` applies to encoding and
         ``angle_tolerance[1]`` applies to decoding. By default 5.0.
-    encode_as_primitive : bool, optional
-        Encode structures as symmetrized, primitive structures. Uses ``symprec`` if
-        ``symprec`` is of type float, else uses ``symprec[0]`` if ``symprec`` is of type
-        tuple. Same applies for ``angle_tolerance``. By default True
-    decode_as_primitive : bool, optional
-        Decode structures as symmetrized, primitive structures. Uses ``symprec`` if
-        ``symprec`` is of type float, else uses ``symprec[1]`` if ``symprec`` is of type
-        tuple. Same applies for ``angle_tolerance``. By default True
+    encode_cell_type : Optional[str], optional
+        Encode structures as-is (None), or after applying a certain tranformation. Uses
+        ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
+        None
+    decode_cell_type : Optional[str], optional
+        Decode structures as-is (None), or after applying a certain tranformation. Uses
+        ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
+        None
     relax_on_decode: bool, optional
         Use m3gnet to relax the decoded crystal structures.
     channels : int, optional
@@ -166,8 +168,8 @@ class XtalConverter:
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
         symprec: Union[float, Tuple[float, float]] = 0.1,
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
-        encode_as_primitive: bool = True,
-        decode_as_primitive: bool = True,
+        encode_cell_type: Optional[str] = None,
+        decode_cell_type: Optional[str] = None,
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
@@ -199,8 +201,8 @@ class XtalConverter:
             self.encode_angle_tolerance = angle_tolerance[0]
             self.decode_angle_tolerance = angle_tolerance[1]
 
-        self.encode_as_primitive = encode_as_primitive
-        self.decode_as_primitive = decode_as_primitive
+        self.encode_cell_type = encode_cell_type
+        self.decode_cell_type = decode_cell_type
         self.relax_on_decode = relax_on_decode
 
         self.channels = channels
@@ -559,15 +561,12 @@ class XtalConverter:
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
         for s in self.tqdm_if_verbose(structures):
-            spa = SpacegroupAnalyzer(
+            s = unit_cell_converter(
                 s,
+                self.encode_cell_type,
                 symprec=self.encode_symprec,
                 angle_tolerance=self.encode_angle_tolerance,
-            )
-            if self.encode_as_primitive:
-                s = spa.get_primitive_standard_structure()
-            else:
-                s = spa.get_refined_structure()
+            )  # noqa: E501
 
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
@@ -987,24 +986,21 @@ class XtalConverter:
             lattice = Lattice.from_parameters(
                 a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma
             )
-            structure = Structure(lattice, at, fr)
+            s = Structure(lattice, at, fr)
 
             # REVIEW: round fractional coordinates to nearest multiple?
             if self.relax_on_decode:
-                relaxed_results = relaxer.relax(structure, verbose=self.verbose)
-                structure = relaxed_results["final_structure"]
+                relaxed_results = relaxer.relax(s, verbose=self.verbose)
+                s = relaxed_results["final_structure"]
 
-            spa = SpacegroupAnalyzer(
-                structure,
+            s = unit_cell_converter(
+                s,
+                self.decode_cell_type,
                 symprec=self.decode_symprec,
                 angle_tolerance=self.decode_angle_tolerance,
             )
-            if self.decode_as_primitive:
-                structure = spa.get_primitive_standard_structure()
-            else:
-                structure = spa.get_refined_structure()
 
-            S.append(structure)
+            S.append(s)
 
         if self.relax_on_decode:
             # restore default https://stackoverflow.com/a/51340381/13697228
