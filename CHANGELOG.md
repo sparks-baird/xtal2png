@@ -1,14 +1,5 @@
 # CHANGELOG
 
-## [v0.7.0](https://github.com/sparks-baird/xtal2png/releases/tag/v0.7.0) - 2022-06-23 04:40:25
-
-<!-- Release notes generated using configuration in .github/release.yml at v0.7.0 -->
-
-## What's Changed
-* convert encode/decode_as_primitive kwargs to encode/decode_cell_type kwargs by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/131
-
-**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.6.3...v0.7.0
-
 ## [v0.6.3](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.3) - 2022-06-23 04:09:02
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.6.3 -->
@@ -38,7 +29,6 @@
 - general:
   - refactor to unit_cell_converter function ([d7963fa](https://github.com/sparks-baird/xtal2png/commit/d7963fabf511031949e541f8095573fb878bf8c2)) ([#131](https://github.com/sparks-baird/xtal2png/pull/131))
   - refactor multiple for loops into single for loop and enhance mem efficiency ([1653229](https://github.com/sparks-baird/xtal2png/commit/1653229e7fc187c8d10f81cdd8e71a6dd54bc568)) ([#130](https://github.com/sparks-baird/xtal2png/pull/130))
-  - refactor to use rgb_scaling=False ([04ba552](https://github.com/sparks-baird/xtal2png/commit/04ba5525646dc2c7afa5e22e90855ea9998b9a4d)) ([#107](https://github.com/sparks-baird/xtal2png/pull/107))
 
 ## [v0.6.2](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.2) - 2022-06-20 18:47:21
 
@@ -57,6 +47,11 @@
 
 
 **Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.5.1...v0.6.2
+
+### Refactor
+
+- general:
+  - refactor to use rgb_scaling=False ([04ba552](https://github.com/sparks-baird/xtal2png/commit/04ba5525646dc2c7afa5e22e90855ea9998b9a4d)) ([#107](https://github.com/sparks-baird/xtal2png/pull/107))
 
 ## [v0.5.1](https://github.com/sparks-baird/xtal2png/releases/tag/v0.5.1) - 2022-06-18 02:40:01
 
