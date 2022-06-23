@@ -218,7 +218,8 @@ def unit_cell_converter(
         a pymatgen Structure.
     cell_type : Optional[str], optional
         The cell type as a str or None if leaving the structure as-is. Possible options
-        are "primitive_standard", "refined", "reduced", and None. By default None
+        are "primitive_standard", "conventional_standard", "refined", "reduced", and
+        None. By default None
 
     Returns
     -------
@@ -228,8 +229,8 @@ def unit_cell_converter(
     Raises
     ------
     ValueError
-        "Expected one of 'primitive_standard', 'refined', 'reduced' or None, got
-        {cell_type}"
+        "Expected one of 'primitive_standard', 'conventional_standard', 'refined',
+        'reduced' or None, got {cell_type}"
 
     Examples
     --------
@@ -242,12 +243,14 @@ def unit_cell_converter(
     )
     if cell_type == "primitive_standard":
         s = spa.get_primitive_standard_structure()
+    elif cell_type == "conventional_standard":
+        s = spa.get_conventional_standard_structure()
     elif cell_type == "refined":
         s = spa.get_refined_structure()
-    elif cell_type == "niggli":
+    elif cell_type == "reduced":
         s = s.get_reduced_structure()
     elif cell_type is not None:
         raise ValueError(
-            f"Expected one of 'primitive_standard', 'refined', 'reduced' or None, got {cell_type}"  # noqa: E501
+            f"Expected one of 'primitive_standard', 'conventional_standard', 'refined', 'reduced' or None, got {cell_type}"  # noqa: E501
         )
     return s
