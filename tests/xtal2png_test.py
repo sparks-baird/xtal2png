@@ -242,8 +242,8 @@ def test_primitive_encoding():
     xc = XtalConverter(
         symprec=0.1,
         angle_tolerance=5.0,
-        encode_as_primitive=True,
-        decode_as_primitive=False,
+        encode_cell_type="primitive_standard",
+        decode_cell_type=None,
         relax_on_decode=False,
     )
     input_structures = [
@@ -264,8 +264,8 @@ def test_primitive_decoding():
     xc = XtalConverter(
         symprec=0.1,
         angle_tolerance=5.0,
-        encode_as_primitive=False,
-        decode_as_primitive=True,
+        encode_cell_type=None,
+        decode_cell_type="primitive_standard",
         relax_on_decode=False,
     )
     input_structures = [
