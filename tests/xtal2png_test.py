@@ -150,7 +150,9 @@ def test_arrays_to_structures():
     xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
-    assert_structures_approximate_match(example_structures, structures)
+    assert_structures_approximate_match(
+        example_structures, structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -160,7 +162,9 @@ def test_arrays_to_structures_zero_one():
         example_structures, rgb_scaling=False
     )
     structures = xc.arrays_to_structures(data, id_data, id_mapper, rgb_scaling=False)
-    assert_structures_approximate_match(example_structures, structures)
+    assert_structures_approximate_match(
+        example_structures, structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -194,7 +198,9 @@ def test_png2xtal():
     xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=True, save=True)
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
 
 
 def test_png2xtal_single():
@@ -221,7 +227,9 @@ def test_png2xtal_three_channels():
     if img_shape != (64, 64, 3):
         raise ValueError(f"Expected image shape: (3, 64, 64), received: {img_shape}")
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
 
 
 def test_primitive_encoding():
