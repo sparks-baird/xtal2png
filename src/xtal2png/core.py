@@ -166,8 +166,8 @@ class XtalConverter:
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
         symprec: Union[float, Tuple[float, float]] = 0.1,
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
-        encode_as_primitive: bool = False,
-        decode_as_primitive: bool = False,
+        encode_as_primitive: bool = True,
+        decode_as_primitive: bool = True,
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
@@ -558,7 +558,6 @@ class XtalConverter:
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
-        sym_structures = []
         for s in self.tqdm_if_verbose(structures):
             spa = SpacegroupAnalyzer(
                 s,
@@ -569,11 +568,7 @@ class XtalConverter:
                 s = spa.get_primitive_standard_structure()
             else:
                 s = spa.get_refined_structure()
-            sym_structures.append(s)
 
-        structures = sym_structures
-
-        for s in self.tqdm_if_verbose(structures):
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
