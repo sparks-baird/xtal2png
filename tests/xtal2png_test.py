@@ -45,6 +45,11 @@ def assert_structures_approximate_match(
                 f"{i}-th original and decoded structures do not match according to StructureMatcher(comparator=ElementComparator()).fit(s, structure).\n\nOriginal (s): {s}\n\nDecoded (structure): {structure}"  # noqa: E501
             )
 
+        spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
+        s = spa.get_refined_structure()
+        spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
+        structure = spa.get_refined_structure()
+
         sm = StructureMatcher(primitive_cell=False, comparator=ElementComparator())
         s2 = sm.get_s2_like_s1(s, structure)
 
@@ -362,8 +367,3 @@ if __name__ == "__main__":
 1 + 1
 
 # %% Code Graveyard
-# from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-# spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
-# s = spa.get_refined_structure()
-# spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
-# structure = spa.get_refined_structure()
