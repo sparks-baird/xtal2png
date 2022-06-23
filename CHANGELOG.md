@@ -38,6 +38,7 @@
 - general:
   - refactor to unit_cell_converter function ([d7963fa](https://github.com/sparks-baird/xtal2png/commit/d7963fabf511031949e541f8095573fb878bf8c2)) ([#131](https://github.com/sparks-baird/xtal2png/pull/131))
   - refactor multiple for loops into single for loop and enhance mem efficiency ([1653229](https://github.com/sparks-baird/xtal2png/commit/1653229e7fc187c8d10f81cdd8e71a6dd54bc568)) ([#130](https://github.com/sparks-baird/xtal2png/pull/130))
+  - refactor to use rgb_scaling=False ([04ba552](https://github.com/sparks-baird/xtal2png/commit/04ba5525646dc2c7afa5e22e90855ea9998b9a4d)) ([#107](https://github.com/sparks-baird/xtal2png/pull/107))
 
 ## [v0.6.2](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.2) - 2022-06-20 18:47:21
 
@@ -56,11 +57,6 @@
 
 
 **Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.5.1...v0.6.2
-
-### Refactor
-
-- general:
-  - refactor to use rgb_scaling=False ([04ba552](https://github.com/sparks-baird/xtal2png/commit/04ba5525646dc2c7afa5e22e90855ea9998b9a4d)) ([#107](https://github.com/sparks-baird/xtal2png/pull/107))
 
 ## [v0.5.1](https://github.com/sparks-baird/xtal2png/releases/tag/v0.5.1) - 2022-06-18 02:40:01
 
