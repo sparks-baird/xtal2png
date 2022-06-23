@@ -219,7 +219,7 @@ def get_image_mode(d: np.ndarray) -> str:
     --------
     >>> d = np.zeros((1, 64, 64), dtype=np.uint8) # grayscale image
     >>> mode = get_image_mode(d)
-    OUTPUT
+    "L"
     """
     if d.ndim != 3:
         raise ValueError("expected an array with 3 dimensions, received {d.ndim} dims")
