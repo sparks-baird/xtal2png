@@ -172,7 +172,9 @@ def test_arrays_to_structures_single():
     xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays([example_structures[0]])
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
-    assert_structures_approximate_match([example_structures[0]], structures)
+    assert_structures_approximate_match(
+        [example_structures[0]], structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -207,7 +209,9 @@ def test_png2xtal_single():
     xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png([example_structures[0]], show=True, save=True)
     decoded_structures = xc.png2xtal(imgs, save=False)
-    assert_structures_approximate_match([example_structures[0]], decoded_structures)
+    assert_structures_approximate_match(
+        [example_structures[0]], decoded_structures, tol_multiplier=2.0
+    )
     return decoded_structures
 
 
@@ -216,7 +220,9 @@ def test_png2xtal_rgb_image():
     imgs = xc.xtal2png(example_structures, show=False, save=False)
     imgs = [img.convert("RGB") for img in imgs]
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
     return decoded_structures
 
 
