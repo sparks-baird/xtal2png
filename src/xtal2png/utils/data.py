@@ -192,7 +192,35 @@ def rgb_unscaler(
     return X_scaled
 
 
-def get_image_mode(d):
+def get_image_mode(d: np.ndarray) -> str:
+    """Get the image mode (i.e. "RGB" vs. grayscale ("L")) for an image array.
+
+    Parameters
+    ----------
+    d : np.ndarray
+        A NumPy array with 3 dimensions, where the first dimension corresponds to the
+      of image channels and the second and third dimensions correspond to the height and
+      width of the image.
+
+    Returns
+    -------
+    mode : str
+        "RGB" for 3-channel images and "L" for grayscale images.
+
+    Raises
+    ------
+    ValueError
+        "expected an array with 3 dimensions, received {d.ndim} dims"
+    ValueError
+        "Expected a single-channel or 3-channel array, but received a {d.ndim}-channel
+        array."
+
+    Examples
+    --------
+    >>> d = np.zeros((1, 64, 64), dtype=np.uint8) # grayscale image
+    >>> mode = get_image_mode(d)
+    OUTPUT
+    """
     if d.ndim != 3:
         raise ValueError("expected an array with 3 dimensions, received {d.ndim} dims")
     if d.shape[0] == 3:
