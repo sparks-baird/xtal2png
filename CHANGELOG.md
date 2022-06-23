@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## [v0.6.3](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.3) - 2022-06-23 04:09:02
+
+<!-- Release notes generated using configuration in .github/release.yml at v0.6.3 -->
+
+## What's Changed
+* encode/decode as primitive True by default (temporary fix) by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/130
+* update imagen-pytorch example by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/123
+
+### Other Changes
+* Update CONTRIBUTING.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/121
+* remove todo's from CONTRIBUTING.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/124
+* add badges and other image-to-image models to index.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/125
+* fixup badges in index.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/126
+* materials project feature ranges based on conventional unit cells by @hasan-sayeed in https://github.com/sparks-baird/xtal2png/pull/114
+* replace erroneous "made with pymatviz" with ase in paper.md by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/127
+
+
+**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.6.2...v0.6.3
+
+### Bug Fixes
+
+- general:
+  - fixup badges in index.md ([1fcf537](https://github.com/sparks-baird/xtal2png/commit/1fcf537c1b52474a8728e28d91b40bf8eafd76d3)) ([#126](https://github.com/sparks-baird/xtal2png/pull/126))
+
+### Refactor
+
+- general:
+  - refactor to unit_cell_converter function ([d7963fa](https://github.com/sparks-baird/xtal2png/commit/d7963fabf511031949e541f8095573fb878bf8c2)) ([#131](https://github.com/sparks-baird/xtal2png/pull/131))
+  - refactor multiple for loops into single for loop and enhance mem efficiency ([1653229](https://github.com/sparks-baird/xtal2png/commit/1653229e7fc187c8d10f81cdd8e71a6dd54bc568)) ([#130](https://github.com/sparks-baird/xtal2png/pull/130))
+
 ## [v0.6.2](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.2) - 2022-06-20 18:47:21
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.6.2 -->
