@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 coords = [[0, 0, 0], [0.75, 0.5, 0.75]]
 lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120, beta=90, gamma=60)
@@ -191,7 +192,35 @@ def rgb_unscaler(
     return X_scaled
 
 
-def get_image_mode(d):
+def get_image_mode(d: np.ndarray) -> str:
+    """Get the image mode (i.e. "RGB" vs. grayscale ("L")) for an image array.
+
+    Parameters
+    ----------
+    d : np.ndarray
+        A NumPy array with 3 dimensions, where the first dimension corresponds to the
+      of image channels and the second and third dimensions correspond to the height and
+      width of the image.
+
+    Returns
+    -------
+    mode : str
+        "RGB" for 3-channel images and "L" for grayscale images.
+
+    Raises
+    ------
+    ValueError
+        "expected an array with 3 dimensions, received {d.ndim} dims"
+    ValueError
+        "Expected a single-channel or 3-channel array, but received a {d.ndim}-channel
+        array."
+
+    Examples
+    --------
+    >>> d = np.zeros((1, 64, 64), dtype=np.uint8) # grayscale image
+    >>> mode = get_image_mode(d)
+    "L"
+    """
     if d.ndim != 3:
         raise ValueError("expected an array with 3 dimensions, received {d.ndim} dims")
     if d.shape[0] == 3:
@@ -204,3 +233,52 @@ def get_image_mode(d):
         )
 
     return mode
+
+
+def unit_cell_converter(
+    s: Structure, cell_type: Optional[str] = None, symprec=0.1, angle_tolerance=5.0
+):
+    """Convert from the original unit cell type to another unit cell via pymatgen.
+
+    Parameters
+    ----------
+    s : Structure
+        a pymatgen Structure.
+    cell_type : Optional[str], optional
+        The cell type as a str or None if leaving the structure as-is. Possible options
+        are "primitive_standard", "conventional_standard", "refined", "reduced", and
+        None. By default None
+
+    Returns
+    -------
+    s : Structure
+        The converted Structure.
+
+    Raises
+    ------
+    ValueError
+        "Expected one of 'primitive_standard', 'conventional_standard', 'refined',
+        'reduced' or None, got {cell_type}"
+
+    Examples
+    --------
+    >>> s = unit_cell_converter(s, cell_type="reduced")
+    """
+    spa = SpacegroupAnalyzer(
+        s,
+        symprec=symprec,
+        angle_tolerance=angle_tolerance,
+    )
+    if cell_type == "primitive_standard":
+        s = spa.get_primitive_standard_structure()
+    elif cell_type == "conventional_standard":
+        s = spa.get_conventional_standard_structure()
+    elif cell_type == "refined":
+        s = spa.get_refined_structure()
+    elif cell_type == "reduced":
+        s = s.get_reduced_structure()
+    elif cell_type is not None:
+        raise ValueError(
+            f"Expected one of 'primitive_standard', 'conventional_standard', 'refined', 'reduced' or None, got {cell_type}"  # noqa: E501
+        )
+    return s
