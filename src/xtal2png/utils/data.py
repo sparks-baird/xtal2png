@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 coords = [[0, 0, 0], [0.75, 0.5, 0.75]]
 lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120, beta=90, gamma=60)
@@ -204,3 +205,49 @@ def get_image_mode(d):
         )
 
     return mode
+
+
+def unit_cell_converter(
+    s: Structure, cell_type: Optional[str] = None, symprec=0.1, angle_tolerance=5.0
+):
+    """Convert from the original unit cell type to another unit cell via pymatgen.
+
+    Parameters
+    ----------
+    s : Structure
+        a pymatgen Structure.
+    cell_type : Optional[str], optional
+        The cell type as a str or None if leaving the structure as-is. Possible options
+        are "primitive_standard", "refined", "reduced", and None. By default None
+
+    Returns
+    -------
+    s : Structure
+        The converted Structure.
+
+    Raises
+    ------
+    ValueError
+        "Expected one of 'primitive_standard', 'refined', 'reduced' or None, got
+        {cell_type}"
+
+    Examples
+    --------
+    >>> s = unit_cell_converter(s, cell_type="reduced")
+    """
+    spa = SpacegroupAnalyzer(
+        s,
+        symprec=symprec,
+        angle_tolerance=angle_tolerance,
+    )
+    if cell_type == "primitive_standard":
+        s = spa.get_primitive_standard_structure()
+    elif cell_type == "refined":
+        s = spa.get_refined_structure()
+    elif cell_type == "niggli":
+        s = s.get_reduced_structure()
+    elif cell_type is not None:
+        raise ValueError(
+            f"Expected one of 'primitive_standard', 'refined', 'reduced' or None, got {cell_type}"  # noqa: E501
+        )
+    return s
