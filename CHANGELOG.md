@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v0.7.0](https://github.com/sparks-baird/xtal2png/releases/tag/v0.7.0) - 2022-06-23 04:40:25
+
+<!-- Release notes generated using configuration in .github/release.yml at v0.7.0 -->
+
+## What's Changed
+* convert encode/decode_as_primitive kwargs to encode/decode_cell_type kwargs by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/131
+
+**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.6.3...v0.7.0
+
 ## [v0.6.3](https://github.com/sparks-baird/xtal2png/releases/tag/v0.6.3) - 2022-06-23 04:09:02
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.6.3 -->
