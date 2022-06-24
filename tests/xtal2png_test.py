@@ -364,6 +364,15 @@ def test_distance_mask():
     return imgs
 
 
+def test_lower_tri_mask():
+    xc = XtalConverter(mask_types=["lower_tri"])
+    imgs = xc.xtal2png(example_structures)
+    if not np.all(xc.data[np.tril(xc.data[0, 0])] == 0):
+        raise ValueError("Lower triangle mask not applied correctly")
+
+    return imgs
+
+
 def test_mask_error():
     xc = XtalConverter(mask_types=["atom"])
     imgs = xc.xtal2png(example_structures)
@@ -379,6 +388,7 @@ def test_mask_error():
 
 
 if __name__ == "__main__":
+    test_lower_tri_mask()
     test_mask_error()
     test_distance_mask()
     test_xtal2png_three_channels()
