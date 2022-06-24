@@ -505,6 +505,11 @@ class XtalConverter:
         >>> xc.png2xtal(imgs)
         OUTPUT
         """
+        if not isinstance(images, list):
+            raise ValueError(
+                f"images (or filepaths) should be of type list, received {type(images)}"
+            )
+
         data_tmp = []
         if self.channels == 1:
             mode = "L"
