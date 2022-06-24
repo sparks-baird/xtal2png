@@ -352,10 +352,23 @@ def test_plot_and_save():
     plot_and_save("reports/figures/tmp", fig, mpl_kwargs={})
 
 
+def test_distance_mask():
+    xc = XtalConverter(mask_types=["distance"])
+    imgs = xc.structures_to_arrays(example_structures)
+    if not np.all(xc.data[xc.id_data == xc.id_mapper["distance"]] == 0):
+        raise ValueError("Distance mask not applied correctly (id_mapper)")
+
+    if not np.all(xc.data[:, :, 12:, 12:] == 0):
+        raise ValueError("Distance mask not applied correctly (hardcoded)")
+
+    return imgs
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_distance_mask()
     test_xtal2png_three_channels()
     test_png2xtal_three_channels()
     test_structures_to_arrays_zero_one()
