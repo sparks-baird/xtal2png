@@ -145,6 +145,11 @@ class XtalConverter:
         func:``XtalConverter().arrays_to_structures`` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
+    mask_types : List[str], optional
+        List of information types to mask out (assign as 0) from the array/image. values
+        are "atom", "frac", "latt_a", "latt_b", "latt_c", "angles", "volume",
+        "space_group", "distance", and None. If None, then no masking is applied. By
+        default, None.
 
     Examples
     --------
@@ -173,6 +178,7 @@ class XtalConverter:
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
+        mask_types: List[str] = None,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -212,6 +218,8 @@ class XtalConverter:
             self.tqdm_if_verbose = tqdm
         else:
             self.tqdm_if_verbose = lambda x: x
+
+        self.mask_types = mask_types
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -299,9 +307,29 @@ class XtalConverter:
         self,
         structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
-        fit_quantiles=(0.00, 0.99),
-        verbose=None,
+        fit_quantiles: Tuple[float, float] = (0.00, 0.99),
+        verbose: Optional[bool] = None,
     ):
+        """Find optimal range parameters for encoding crystal structures.
+
+        Parameters
+        ----------
+        structures : List[Union[Structure, str, "PathLike[str]"]]
+            List of pymatgen Structure objects.
+        y : NoneType, optional
+            No effect, for compatibility only, by default None
+        fit_quantiles : Tuple[float,float], optional
+            The lower and upper quantiles to use for fitting ranges to the data, by
+            default (0.00, 0.99)
+        verbose : Optional[bool], optional
+            Whether to print information about the fitted ranges. If None, then defaults
+            to ``self.verbose``. By default None
+
+        Examples
+        --------
+        >>> fit(structures, , y=None, fit_quantiles=(0.00, 0.99), verbose=None, )
+        OUTPUT
+        """
         verbose = self.verbose if verbose is None else verbose
 
         _, S = self.process_filepaths_or_structures(structures)
