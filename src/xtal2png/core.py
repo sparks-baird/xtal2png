@@ -18,7 +18,6 @@ from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from tqdm import tqdm
 from element_coder.encoder import encode
 from element_coder.decoder import decode
@@ -32,6 +31,7 @@ from xtal2png.utils.data import (
     get_image_mode,
     rgb_scaler,
     rgb_unscaler,
+    unit_cell_converter,
 )
 
 from functools import lru_cache
@@ -134,14 +134,16 @@ class XtalConverter:
         ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
         specified as a tuple, then ``angle_tolerance[0]`` applies to encoding and
         ``angle_tolerance[1]`` applies to decoding. By default 5.0.
-    encode_as_primitive : bool, optional
-        Encode structures as symmetrized, primitive structures. Uses ``symprec`` if
-        ``symprec`` is of type float, else uses ``symprec[0]`` if ``symprec`` is of type
-        tuple. Same applies for ``angle_tolerance``. By default True
-    decode_as_primitive : bool, optional
-        Decode structures as symmetrized, primitive structures. Uses ``symprec`` if
-        ``symprec`` is of type float, else uses ``symprec[1]`` if ``symprec`` is of type
-        tuple. Same applies for ``angle_tolerance``. By default True
+    encode_cell_type : Optional[str], optional
+        Encode structures as-is (None), or after applying a certain tranformation. Uses
+        ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
+        None
+    decode_cell_type : Optional[str], optional
+        Decode structures as-is (None), or after applying a certain tranformation. Uses
+        ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
+        None
     relax_on_decode: bool, optional
         Use m3gnet to relax the decoded crystal structures.
     channels : int, optional
@@ -180,9 +182,9 @@ class XtalConverter:
         save_dir: Union[str, "PathLike[str]"] = path.join("data", "preprocessed"),
         symprec: Union[float, Tuple[float, float]] = 0.1,
         angle_tolerance: Union[float, int, Tuple[float, float], Tuple[int, int]] = 5.0,
-        encode_as_primitive: bool = False,
-        decode_as_primitive: bool = False,
-        relax_on_decode: bool = True,
+        encode_cell_type: Optional[str] = None,
+        decode_cell_type: Optional[str] = None,
+        relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
         element_encoding: Optional[str] = "atomic",
@@ -215,12 +217,18 @@ class XtalConverter:
             self.encode_angle_tolerance = angle_tolerance[0]
             self.decode_angle_tolerance = angle_tolerance[1]
 
-        self.encode_as_primitive = encode_as_primitive
-        self.decode_as_primitive = decode_as_primitive
+        self.encode_cell_type = encode_cell_type
+        self.decode_cell_type = decode_cell_type
         self.relax_on_decode = relax_on_decode
 
         self.channels = channels
         self.verbose = verbose
+
+        if self.verbose:
+            self.tqdm_if_verbose = tqdm
+        else:
+            self.tqdm_if_verbose = lambda x: x
+            
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
     @property
@@ -502,7 +510,7 @@ class XtalConverter:
         S = self.arrays_to_structures(data)
 
         if save:
-            for s in S:
+            for s in self.tqdm_if_verbose(S):
                 fpath = path.join(self.save_dir, construct_save_name(s) + ".cif")
                 CifWriter(
                     s,
@@ -575,22 +583,14 @@ class XtalConverter:
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
-        sym_structures = []
-        for s in structures:
-            spa = SpacegroupAnalyzer(
+        for s in self.tqdm_if_verbose(structures):
+            s = unit_cell_converter(
                 s,
+                self.encode_cell_type,
                 symprec=self.encode_symprec,
                 angle_tolerance=self.encode_angle_tolerance,
-            )
-            if self.encode_as_primitive:
-                s = spa.get_primitive_standard_structure()
-            else:
-                s = spa.get_refined_structure()
-            sym_structures.append(s)
+            )  # noqa: E501
 
-        structures = sym_structures
-
-        for s in structures:
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
@@ -989,6 +989,7 @@ class XtalConverter:
 
         for dm in distance_matrix:
             np.fill_diagonal(dm, 0.0)
+
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
@@ -1000,22 +1001,25 @@ class XtalConverter:
                 from m3gnet.models import Relaxer
             except ImportError as e:
                 print(e)
-                print("For Windows users on Anaconda, you need to `pip install m3gnet`")
+                print(
+                    "For Windows users on Anaconda, you need to `pip install m3gnet` or set relax_on_decode=False."  # noqa: E501
+                )
             if not self.verbose:
                 tf.get_logger().setLevel(logging.ERROR)
             relaxer = Relaxer()  # This loads the default pre-trained model
 
         # build Structure-s
         S: List[Structure] = []
-        for i in range(len(atomic_symbols)):
+
+        num_structures = len(atomic_symbols)
+
+        for i in self.tqdm_if_verbose(range(num_structures)):
             at = atomic_symbols[i]
             fr = frac_coords[i]
-            # di = distance_matrix[i]
             site_ids = np.where(at > 0)
 
             at = at[site_ids]
             fr = fr[site_ids]
-            # di_cropped = di[site_ids[0]][:, site_ids[0]]
 
             a, b, c = latt_a[i], latt_b[i], latt_c[i]
             alpha, beta, gamma = angles[i]
@@ -1023,35 +1027,21 @@ class XtalConverter:
             lattice = Lattice.from_parameters(
                 a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma
             )
-            structure = Structure(lattice, at, fr)
+            s = Structure(lattice, at, fr)
 
             # REVIEW: round fractional coordinates to nearest multiple?
             if self.relax_on_decode:
-                relaxed_results = relaxer.relax(structure, verbose=self.verbose)
-                structure = relaxed_results["final_structure"]
+                relaxed_results = relaxer.relax(s, verbose=self.verbose)
+                s = relaxed_results["final_structure"]
 
-                # relax_results = relaxer.relax()
-                # final_structure = relax_results["final_structure"]
-                # final_energy = relax_results["trajectory"].energies[-1] / 2
-
-                # print(
-                #     f"Relaxed lattice parameter is
-                #     {final_structure.lattice.abc[0]:.3f} Å"
-                # )
-                # # TODO: print the initial energy as well (assuming it's available)
-                # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
-
-            spa = SpacegroupAnalyzer(
-                structure,
+            s = unit_cell_converter(
+                s,
+                self.decode_cell_type,
                 symprec=self.decode_symprec,
                 angle_tolerance=self.decode_angle_tolerance,
             )
-            if self.decode_as_primitive:
-                structure = spa.get_primitive_standard_structure()
-            else:
-                structure = spa.get_refined_structure()
 
-            S.append(structure)
+            S.append(s)
 
         if self.relax_on_decode:
             # restore default https://stackoverflow.com/a/51340381/13697228
@@ -1204,3 +1194,15 @@ if __name__ == "__main__":
     #     python -m xtal2png.core example.cif
     #
     run()
+
+# %% Code Graveyard
+# relax_results = relaxer.relax()
+# final_structure = relax_results["final_structure"]
+# final_energy = relax_results["trajectory"].energies[-1] / 2
+
+# print(
+#     f"Relaxed lattice parameter is
+#     {final_structure.lattice.abc[0]:.3f} Å"
+# )
+# # TODO: print the initial energy as well (assuming it's available)
+# print(f"Final energy is {final_energy.item(): .3f} eV/atom")

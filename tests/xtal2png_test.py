@@ -45,6 +45,11 @@ def assert_structures_approximate_match(
                 f"{i}-th original and decoded structures do not match according to StructureMatcher(comparator=ElementComparator()).fit(s, structure).\n\nOriginal (s): {s}\n\nDecoded (structure): {structure}"  # noqa: E501
             )
 
+        spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
+        s = spa.get_refined_structure()
+        spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
+        structure = spa.get_refined_structure()
+
         sm = StructureMatcher(primitive_cell=False, comparator=ElementComparator())
         s2 = sm.get_s2_like_s1(s, structure)
 
@@ -145,7 +150,9 @@ def test_arrays_to_structures():
     xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
-    assert_structures_approximate_match(example_structures, structures)
+    assert_structures_approximate_match(
+        example_structures, structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -155,7 +162,9 @@ def test_arrays_to_structures_zero_one():
         example_structures, rgb_scaling=False
     )
     structures = xc.arrays_to_structures(data, id_data, id_mapper, rgb_scaling=False)
-    assert_structures_approximate_match(example_structures, structures)
+    assert_structures_approximate_match(
+        example_structures, structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -163,7 +172,9 @@ def test_arrays_to_structures_single():
     xc = XtalConverter(relax_on_decode=False)
     data, id_data, id_mapper = xc.structures_to_arrays([example_structures[0]])
     structures = xc.arrays_to_structures(data, id_data, id_mapper)
-    assert_structures_approximate_match([example_structures[0]], structures)
+    assert_structures_approximate_match(
+        [example_structures[0]], structures, tol_multiplier=2.0
+    )
     return structures
 
 
@@ -189,14 +200,18 @@ def test_png2xtal():
     xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png(example_structures, show=True, save=True)
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
 
 
 def test_png2xtal_single():
     xc = XtalConverter(relax_on_decode=False)
     imgs = xc.xtal2png([example_structures[0]], show=True, save=True)
     decoded_structures = xc.png2xtal(imgs, save=False)
-    assert_structures_approximate_match([example_structures[0]], decoded_structures)
+    assert_structures_approximate_match(
+        [example_structures[0]], decoded_structures, tol_multiplier=2.0
+    )
     return decoded_structures
 
 
@@ -205,7 +220,9 @@ def test_png2xtal_rgb_image():
     imgs = xc.xtal2png(example_structures, show=False, save=False)
     imgs = [img.convert("RGB") for img in imgs]
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
     return decoded_structures
 
 
@@ -216,15 +233,17 @@ def test_png2xtal_three_channels():
     if img_shape != (64, 64, 3):
         raise ValueError(f"Expected image shape: (3, 64, 64), received: {img_shape}")
     decoded_structures = xc.png2xtal(imgs)
-    assert_structures_approximate_match(example_structures, decoded_structures)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
 
 
 def test_primitive_encoding():
     xc = XtalConverter(
         symprec=0.1,
         angle_tolerance=5.0,
-        encode_as_primitive=True,
-        decode_as_primitive=False,
+        encode_cell_type="primitive_standard",
+        decode_cell_type=None,
         relax_on_decode=False,
     )
     input_structures = [
@@ -245,8 +264,8 @@ def test_primitive_decoding():
     xc = XtalConverter(
         symprec=0.1,
         angle_tolerance=5.0,
-        encode_as_primitive=False,
-        decode_as_primitive=True,
+        encode_cell_type=None,
+        decode_cell_type="primitive_standard",
         relax_on_decode=False,
     )
     input_structures = [
@@ -362,8 +381,3 @@ if __name__ == "__main__":
 1 + 1
 
 # %% Code Graveyard
-# from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-# spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
-# s = spa.get_refined_structure()
-# spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
-# structure = spa.get_refined_structure()
