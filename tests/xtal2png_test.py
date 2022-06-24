@@ -387,7 +387,17 @@ def test_mask_error():
 # TODO: test_matplotlibify with assertion
 
 
+def test_normalize_lengths():
+    xc = XtalConverter(normalize_lengths_by_atoms=True)
+    data, id_data, id_mapper = xc.structures_to_arrays(
+        example_structures, rgb_scaling=False
+    )
+    np.mean(data[0][id_data[0] == id_mapper["a"]])
+    1 + 1
+
+
 if __name__ == "__main__":
+    test_normalize_lengths()
     test_lower_tri_mask()
     test_mask_error()
     test_distance_mask()
