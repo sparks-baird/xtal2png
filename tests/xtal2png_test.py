@@ -352,6 +352,14 @@ def test_plot_and_save():
     plot_and_save("reports/figures/tmp", fig, mpl_kwargs={})
 
 
+def test_max_sites():
+    xc = XtalConverter(max_sites=10)
+    imgs = xc.xtal2png(dummy_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(dummy_structures, decoded_structures)
+    return decoded_structures
+
+
 def test_distance_mask():
     xc = XtalConverter(mask_types=["distance"])
     imgs = xc.xtal2png(example_structures)
@@ -388,6 +396,7 @@ def test_mask_error():
 
 
 if __name__ == "__main__":
+    test_max_sites()
     test_lower_tri_mask()
     test_mask_error()
     test_distance_mask()
