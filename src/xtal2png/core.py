@@ -59,9 +59,9 @@ DISTANCE_ID = 9
 
 ATOM_KEY = "atom"
 FRAC_KEY = "frac"
-A_KEY = "latt_a"
-B_KEY = "latt_b"
-C_KEY = "latt_c"
+A_KEY = "a"
+B_KEY = "b"
+C_KEY = "c"
 ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
@@ -159,7 +159,7 @@ class XtalConverter:
         Whether to print verbose debugging information or not.
     mask_types : List[str], optional
         List of information types to mask out (assign as 0) from the array/image. values
-        are "atom", "frac", "latt_a", "latt_b", "latt_c", "angles", "volume",
+        are "atom", "frac", "a", "b", "c", "angles", "volume",
         "space_group", "distance", and None. If None, then no masking is applied. By
         default, None.
 
