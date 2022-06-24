@@ -354,7 +354,7 @@ def test_plot_and_save():
 
 def test_distance_mask():
     xc = XtalConverter(mask_types=["distance"])
-    imgs = xc.structures_to_arrays(example_structures)
+    imgs = xc.xtal2png(example_structures)
     if not np.all(xc.data[xc.id_data == xc.id_mapper["distance"]] == 0):
         raise ValueError("Distance mask not applied correctly (id_mapper)")
 
@@ -364,10 +364,22 @@ def test_distance_mask():
     return imgs
 
 
+def test_mask_error():
+    xc = XtalConverter(mask_types=["atom"])
+    imgs = xc.xtal2png(example_structures)
+
+    decoded_structures = xc.png2xtal(imgs)
+
+    for s in decoded_structures:
+        if s.num_sites > 0:
+            raise ValueError("Atom mask should have wiped out atomic sites.")
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_mask_error()
     test_distance_mask()
     test_xtal2png_three_channels()
     test_png2xtal_three_channels()
