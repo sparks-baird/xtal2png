@@ -66,8 +66,9 @@ ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
+LOWER_TRI_KEY = "lower_tri"
 
-KEYS = [
+SUPPORTED_MASK_KEYS = [
     ATOM_KEY,
     FRAC_KEY,
     A_KEY,
@@ -77,6 +78,7 @@ KEYS = [
     VOLUME_KEY,
     SPACE_GROUP_KEY,
     DISTANCE_KEY,
+    LOWER_TRI_KEY,
 ]
 
 
@@ -159,9 +161,9 @@ class XtalConverter:
         Whether to print verbose debugging information or not.
     mask_types : List[str], optional
         List of information types to mask out (assign as 0) from the array/image. values
-        are "atom", "frac", "a", "b", "c", "angles", "volume",
-        "space_group", "distance", and None. If None, then no masking is applied. By
-        default, None.
+        are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
+        "distance", "diagonal", and None. If None, then no masking is applied. If
+        "diagonal" is present, then zeros out the lower triangle. By default, None.
 
     Examples
     --------
@@ -231,10 +233,10 @@ class XtalConverter:
         else:
             self.tqdm_if_verbose = lambda x: x
 
-        unsupported_mask_types = np.setdiff1d(mask_types, KEYS).tolist()
+        unsupported_mask_types = np.setdiff1d(mask_types, SUPPORTED_MASK_KEYS).tolist()
         if unsupported_mask_types != []:
             raise ValueError(
-                f"{unsupported_mask_types} is/are not a valid mask type. Expected one of {KEYS}. Received {mask_types}"  # noqa: E501
+                f"{unsupported_mask_types} is/are not a valid mask type. Expected one of {SUPPORTED_MASK_KEYS}. Received {mask_types}"  # noqa: E501
             )
 
         self.mask_types = mask_types
@@ -766,11 +768,19 @@ class XtalConverter:
         data = np.expand_dims(data, 1)
         id_data = np.expand_dims(id_data, 1)
 
+        for mask_type in self.mask_types:
+            if mask_type == LOWER_TRI_KEY:
+                for d in data:
+                    if d.shape[1] != d.shape[2]:
+                        raise ValueError(
+                            f"Expected square matrix in last two dimensions, received {d.shape}"  # noqa: E501
+                        )
+                    d[:, np.mask_indices(d.shape[1], np.tril)] = 0.0
+            else:
+                data[id_data == id_mapper[mask_type]] = 0.0
+
         data = np.repeat(data, self.channels, 1)
         id_data = np.repeat(id_data, self.channels, 1)
-
-        for mask_type in self.mask_types:
-            data[id_data == id_mapper[mask_type]] = 0.0
 
         return data, id_data, id_mapper
 
