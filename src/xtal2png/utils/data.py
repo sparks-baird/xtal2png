@@ -64,9 +64,63 @@ def element_wise_scaler(
     data_min, data_max = data_range
     feature_min, feature_max = feature_range
     # following modified from:
-    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
+    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html # noqa:E501
     X_std = (X - data_min) / (data_max - data_min)
     X_scaled = X_std * (feature_max - feature_min) + feature_min
+    return X_scaled
+
+
+def element_wise_scalers(
+    X: ArrayLike,
+    feature_ranges: Optional[Sequence] = None,
+    data_ranges: Optional[Sequence] = None,
+):
+    """Scale parameters according to prespecified sets of min and max (``data_ranges``).
+
+    ``feature_ranges`` is comparable to ``feature_range`` from MinMaxScaler.
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Features to be scaled element-wise.
+    feature_ranges : Sequence
+        The scaled values will span the range of ``feature_ranges`` on a per X element
+        basis (i.e. element_wise_scaler(X[0], feature_ranges[0], data_ranges[0])))
+    data_ranges : Sequence
+        Expected bounds for the data, e.g. 0 to 117 for periodic elements. The scaled
+        values will span the range of ``data_ranges`` on a per X element basis (i.e.
+        element_wise_scaler(X[0], feature_ranges[0], data_ranges[0])))
+
+    Returns
+    -------
+    X_scaled
+        Element-wise scaled values.
+
+    Examples
+    --------
+    >>> element_wise_scalers([[1, 2], [3, 4]], feature_ranges=[[1, 4],[2, 4]],
+    ... data_ranges=[[0, 8],[2, 8]])
+    """
+    if not isinstance(X, np.ndarray):
+        X = np.array(X)
+
+    num_samples = X.shape[0]
+    if data_ranges is None:
+        data_ranges = [None] * num_samples
+
+    if feature_ranges is None:
+        feature_ranges = [None] * num_samples
+
+    X_scaled = np.array(
+        [
+            element_wise_scaler(x, fr, dr)
+            for x, dr, fr in zip(X, data_ranges, feature_ranges)
+        ]
+    )
     return X_scaled
 
 
@@ -104,7 +158,6 @@ def element_wise_unscaler(
     ... )
     array([[1., 2.],
        [3., 4.]])
-
     """
     if not isinstance(X_scaled, np.ndarray):
         X_scaled = np.array(X_scaled)
@@ -112,11 +165,58 @@ def element_wise_unscaler(
     data_min, data_max = data_range
     feature_min, feature_max = feature_range
     # following modified from:
-    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
+    # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html # noqa:E501
 
     # inverse transform, checked against Mathematica
     X_std = (X_scaled - feature_min) / (feature_max - feature_min)
     X = data_min + (data_max - data_min) * X_std
+    return X
+
+
+def element_wise_unscalers(
+    X_scaled: ArrayLike,
+    feature_ranges: Sequence,
+    data_ranges: Sequence,
+):
+    """Unscale parameters via prespecified sets of min and max (``data_ranges``).
+
+    ``feature_ranges`` is comparable to ``feature_range`` from MinMaxScaler.
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Features to be scaled element-wise.
+    feature_ranges : Sequence
+        The unscaled values will span the range of ``feature_ranges`` on a per X element
+        basis (i.e. element_wise_scaler(X[0], feature_ranges[0], data_ranges[0])))
+    data_ranges : Sequence
+        Expected bounds for the data, e.g. 0 to 117 for periodic elements. The unscaled
+        values will span the range of ``data_ranges`` on a per X element basis (i.e.
+        element_wise_scaler(X[0], feature_ranges[0], data_ranges[0])))
+
+    Returns
+    -------
+    X
+        Element-wise unscaled values.
+
+    Examples
+    --------
+    >>> element_wise_scalers([[1, 2], [3, 4]], feature_ranges=[[1, 4],[2, 4]],
+    ... data_ranges=[[0, 8],[2, 8]])
+    """
+    if not isinstance(X_scaled, np.ndarray):
+        X_scaled = np.array(X_scaled)
+
+    X = np.array(
+        [
+            element_wise_unscaler(x, fr, dr)
+            for x, dr, fr in zip(X_scaled, data_ranges, feature_ranges)
+        ]
+    )
     return X
 
 
@@ -156,6 +256,45 @@ def rgb_scaler(
     return X_scaled
 
 
+def rgb_scalers(
+    X: ArrayLike,
+    data_ranges: Optional[Sequence] = None,
+):
+    """Scale parameters according to RGB scale (0 to 255).
+
+    ``feature_ranges`` is fixed to [[0, 255]]*X.shape[0], ``data_range`` is either
+    specified or fitted based on min/max.
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Features to be scaled element-wise.
+    data_ranges : Optional[Sequence]
+        Ranges to use in place of np.min(X) and np.max(X) as in ``MinMaxScaler``.
+
+    Returns
+    -------
+    X_scaled
+        Element-wise scaled values.
+
+    Examples
+    --------
+    >>> rgb_scaler([[1, 2], [3, 4]], data_ranges=[[0, 8],[1, 8]])
+    """
+    if not isinstance(X, np.ndarray):
+        X = np.array(X)
+    rgb_ranges = [0, 255] * X.shape[0]
+    X_scaled = element_wise_scalers(
+        X, data_ranges=data_ranges, feature_ranges=rgb_ranges
+    )
+    X_scaled = np.round(X_scaled).astype(int)
+    return X_scaled
+
+
 def rgb_unscaler(
     X: ArrayLike,
     data_range: Sequence,
@@ -189,6 +328,46 @@ def rgb_unscaler(
     """
     rgb_range = [0, 255]
     X_scaled = element_wise_unscaler(X, data_range=data_range, feature_range=rgb_range)
+    return X_scaled
+
+
+def rgb_unscalers(
+    X: ArrayLike,
+    data_ranges: Sequence,
+):
+    """Unscale parameters from their RGB scale (0 to 255), (loop of rgb_unscaler).
+
+    ``feature_range`` is fixed to [0, 255], ``data_range`` is either specified or
+    calculated based on min and max.
+
+    See Also
+    --------
+    sklearn.preprocessing.MinMaxScaler : Scale each feature to a given range.
+
+    Parameters
+    ----------
+    X : ArrayLike
+        Element-wise scaled values.
+    data_ranges : Optional[Sequence]
+        Ranges to use in place of np.min(X) and np.max(X) as in ``class:MinMaxScaler``.
+
+    Returns
+    -------
+    X
+        Unscaled features.
+
+    Examples
+    --------
+    >>> rgb_unscaler([[32, 64], [32, 64]], data_ranges=[[0, 8],[2,16]])
+    array([[1, 2],
+          [3, 4]])
+    """
+    if not isinstance(X, np.ndarray):
+        X = np.array(X)
+    rgb_ranges = [0, 255] * X.shape[0]
+    X_scaled = element_wise_unscalers(
+        X, data_ranges=data_ranges, feature_ranges=rgb_ranges
+    )
     return X_scaled
 
 
