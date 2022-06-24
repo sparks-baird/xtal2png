@@ -393,10 +393,17 @@ def test_normalize_lengths():
         example_structures, rgb_scaling=False
     )
     np.mean(data[0][id_data[0] == id_mapper["a"]])
+    # WIP
+
+    xc = XtalConverter(normalize_lengths_by_atoms=True)
+    imgs = xc.xtal2png(example_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(example_structures, decoded_structures)
     1 + 1
 
 
 if __name__ == "__main__":
+    test_normalize_lengths()
     test_normalize_lengths()
     test_lower_tri_mask()
     test_mask_error()
