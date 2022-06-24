@@ -67,6 +67,18 @@ VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
 
+KEYS = [
+    ATOM_KEY,
+    FRAC_KEY,
+    A_KEY,
+    B_KEY,
+    C_KEY,
+    ANGLES_KEY,
+    VOLUME_KEY,
+    SPACE_GROUP_KEY,
+    DISTANCE_KEY,
+]
+
 
 def construct_save_name(s: Structure) -> str:
     save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
@@ -178,7 +190,7 @@ class XtalConverter:
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
-        mask_types: List[str] = None,
+        mask_types: List[str] = [],
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -218,6 +230,12 @@ class XtalConverter:
             self.tqdm_if_verbose = tqdm
         else:
             self.tqdm_if_verbose = lambda x: x
+
+        unsupported_mask_types = np.setdiff1d(mask_types, KEYS).tolist()
+        if unsupported_mask_types != []:
+            raise ValueError(
+                f"{unsupported_mask_types} is/are not a valid mask type. Expected one of {KEYS}. Received {mask_types}"  # noqa: E501
+            )
 
         self.mask_types = mask_types
 
@@ -745,6 +763,9 @@ class XtalConverter:
 
         data = np.repeat(data, self.channels, 1)
         id_data = np.repeat(id_data, self.channels, 1)
+
+        for mask_type in self.mask_types:
+            data[id_data == id_mapper[mask_type]] = 0.0
 
         return data, id_data, id_mapper
 
