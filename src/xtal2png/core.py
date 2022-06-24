@@ -674,9 +674,15 @@ class XtalConverter:
             # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
             atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
             frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
-            a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
-            b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
-            c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
+
+            if self.normalize_lengths_by_atoms:
+                # a_scaled = rgb_scalers(latt_a, data_ranges=latt_a * scale)
+                1 + 1
+            else:
+                a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
+                b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
+                c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
+
             angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
             volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
             space_group_scaled = rgb_scaler(
