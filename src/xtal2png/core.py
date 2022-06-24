@@ -164,6 +164,9 @@ class XtalConverter:
         are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
         "distance", "diagonal", and None. If None, then no masking is applied. If
         "diagonal" is present, then zeros out the lower triangle. By default, None.
+    normalize_lengths_by_atoms : bool, optional
+        Whether to normalize the lengths of the lattice parameters by the cubed root of
+        the number of atoms.
 
     Examples
     --------
@@ -193,6 +196,7 @@ class XtalConverter:
         channels: int = 1,
         verbose: bool = True,
         mask_types: List[str] = [],
+        normalize_lengths_by_atoms: bool = True,
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -240,6 +244,7 @@ class XtalConverter:
             )
 
         self.mask_types = mask_types
+        self.normalize_lengths_by_atoms = normalize_lengths_by_atoms
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -612,6 +617,7 @@ class XtalConverter:
         volume: List[float] = []
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
+        num_sites: List[float] = []
 
         for s in self.tqdm_if_verbose(structures):
             s = unit_cell_converter(
@@ -626,6 +632,7 @@ class XtalConverter:
                 raise ValueError(
                     f"crystal supplied with {n_sites} sites, which is more than {self.max_sites} sites. Remove the offending crystal(s), increase `max_sites`, or use a more compact cell_type (see encode_cell_type and decode_cell_type kwargs)."  # noqa: E501
                 )
+            num_sites.append(n_sites)
             atomic_numbers.append(
                 np.pad(
                     list(s.atomic_numbers),
@@ -654,6 +661,12 @@ class XtalConverter:
 
         frac_coords = np.stack(frac_coords_tmp)
         distance_matrix = np.stack(distance_matrix_tmp)
+
+        if self.normalize_lengths_by_atoms:
+            scale = np.cbrt(np.array(num_sites))
+            latt_a = np.array(latt_a) / scale
+            latt_b = np.array(latt_b) / scale
+            latt_c = np.array(latt_c) / scale
 
         if rgb_scaling:
             # REVIEW: consider using modified pettifor scale instead of atomic numbers
@@ -952,6 +965,7 @@ class XtalConverter:
         a_scaled = np.mean(a_scaled_tmp, axis=1, where=a_scaled_tmp != 0)
         b_scaled = np.mean(b_scaled_tmp, axis=1, where=b_scaled_tmp != 0)
         c_scaled = np.mean(c_scaled_tmp, axis=1, where=c_scaled_tmp != 0)
+
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
 
         volume_scaled = np.mean(volume_scaled_tmp, axis=1)
@@ -1011,6 +1025,13 @@ class XtalConverter:
 
         for dm in distance_matrix:
             np.fill_diagonal(dm, 0.0)
+
+        if self.normalize_lengths_by_atoms:
+            num_sites = [len(at) for at in atomic_numbers]
+            scale = np.cbrt(np.array(num_sites))
+            latt_a = latt_a * scale
+            latt_b = latt_b * scale
+            latt_c = latt_c * scale
 
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
