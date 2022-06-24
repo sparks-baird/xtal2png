@@ -352,10 +352,19 @@ def test_plot_and_save():
     plot_and_save("reports/figures/tmp", fig, mpl_kwargs={})
 
 
+def test_max_sites():
+    xc = XtalConverter(max_sites=10)
+    imgs = xc.xtal2png(dummy_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(dummy_structures, decoded_structures)
+    return decoded_structures
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_max_sites()
     test_xtal2png_three_channels()
     test_png2xtal_three_channels()
     test_structures_to_arrays_zero_one()
