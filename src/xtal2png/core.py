@@ -59,13 +59,27 @@ DISTANCE_ID = 9
 
 ATOM_KEY = "atom"
 FRAC_KEY = "frac"
-A_KEY = "latt_a"
-B_KEY = "latt_b"
-C_KEY = "latt_c"
+A_KEY = "a"
+B_KEY = "b"
+C_KEY = "c"
 ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
+LOWER_TRI_KEY = "lower_tri"
+
+SUPPORTED_MASK_KEYS = [
+    ATOM_KEY,
+    FRAC_KEY,
+    A_KEY,
+    B_KEY,
+    C_KEY,
+    ANGLES_KEY,
+    VOLUME_KEY,
+    SPACE_GROUP_KEY,
+    DISTANCE_KEY,
+    LOWER_TRI_KEY,
+]
 
 
 def construct_save_name(s: Structure) -> str:
@@ -145,6 +159,11 @@ class XtalConverter:
         func:``XtalConverter().arrays_to_structures`` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
+    mask_types : List[str], optional
+        List of information types to mask out (assign as 0) from the array/image. values
+        are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
+        "distance", "diagonal", and None. If None, then no masking is applied. If
+        "diagonal" is present, then zeros out the lower triangle. By default, None.
 
     Examples
     --------
@@ -173,6 +192,7 @@ class XtalConverter:
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
+        mask_types: List[str] = [],
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -212,6 +232,14 @@ class XtalConverter:
             self.tqdm_if_verbose = tqdm
         else:
             self.tqdm_if_verbose = lambda x: x
+
+        unsupported_mask_types = np.setdiff1d(mask_types, SUPPORTED_MASK_KEYS).tolist()
+        if unsupported_mask_types != []:
+            raise ValueError(
+                f"{unsupported_mask_types} is/are not a valid mask type. Expected one of {SUPPORTED_MASK_KEYS}. Received {mask_types}"  # noqa: E501
+            )
+
+        self.mask_types = mask_types
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -299,9 +327,29 @@ class XtalConverter:
         self,
         structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
-        fit_quantiles=(0.00, 0.99),
-        verbose=None,
+        fit_quantiles: Tuple[float, float] = (0.00, 0.99),
+        verbose: Optional[bool] = None,
     ):
+        """Find optimal range parameters for encoding crystal structures.
+
+        Parameters
+        ----------
+        structures : List[Union[Structure, str, "PathLike[str]"]]
+            List of pymatgen Structure objects.
+        y : NoneType, optional
+            No effect, for compatibility only, by default None
+        fit_quantiles : Tuple[float,float], optional
+            The lower and upper quantiles to use for fitting ranges to the data, by
+            default (0.00, 0.99)
+        verbose : Optional[bool], optional
+            Whether to print information about the fitted ranges. If None, then defaults
+            to ``self.verbose``. By default None
+
+        Examples
+        --------
+        >>> fit(structures, , y=None, fit_quantiles=(0.00, 0.99), verbose=None, )
+        OUTPUT
+        """
         verbose = self.verbose if verbose is None else verbose
 
         _, S = self.process_filepaths_or_structures(structures)
@@ -719,6 +767,17 @@ class XtalConverter:
 
         data = np.expand_dims(data, 1)
         id_data = np.expand_dims(id_data, 1)
+
+        for mask_type in self.mask_types:
+            if mask_type == LOWER_TRI_KEY:
+                for d in data:
+                    if d.shape[1] != d.shape[2]:
+                        raise ValueError(
+                            f"Expected square matrix in last two dimensions, received {d.shape}"  # noqa: E501
+                        )
+                    d[:, np.mask_indices(d.shape[1], np.tril)] = 0.0
+            else:
+                data[id_data == id_mapper[mask_type]] = 0.0
 
         data = np.repeat(data, self.channels, 1)
         id_data = np.repeat(id_data, self.channels, 1)
