@@ -19,7 +19,7 @@ from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
-from element_coder import encode, decode
+from element_coder import encode_many, decode_many
 from element_coder.utils import get_range
 
 from xtal2png import __version__
@@ -597,10 +597,7 @@ class XtalConverter:
                 )
             element_encoding.append(
                 np.pad(
-                    [
-                        encode(atomic_number, self.element_encoding)
-                        for atomic_number in s.atomic_numbers
-                    ],
+                    encode_many(s.atomic_numbers, self.element_encoding),
                     (0, self.max_sites - n_sites),
                 ).tolist()
             )
@@ -928,12 +925,16 @@ class XtalConverter:
 
         if rgb_scaling:
             # ToDo: expose the distance options for the decoding
-            atomic_symbols = [
-                decode(encoding, self.element_encoding)
+            unscaled_atom_encodings = [
+                encoding
                 for encoding in rgb_unscaler(
-                    atom_scaled,
-                    data_range=self._element_encoding_range,
+                    atom_scaled, data_range=self._element_encoding_range
                 )
+            ]
+
+            atomic_symbols = [
+                decode_many(encoding, self.element_encoding)
+                for encoding in unscaled_atom_encodings
             ]
             frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
             latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
@@ -951,11 +952,17 @@ class XtalConverter:
             )
         else:
             feature_range = (0.0, 1.0)
-            atomic_symbols = [
-                decode(encoding, self.element_encoding)
+            unscaled_atom_encodings = [
+                encoding
                 for encoding in element_wise_unscaler(
-                    atom_scaled, feature_range=feature_range, data_range=self.atom_range
+                    atom_scaled,
+                    feature_range=feature_range,
+                    data_range=self._element_encoding_range,
                 )
+            ]
+            atomic_symbols = [
+                decode_many(encoding, self.element_encoding)
+                for encoding in unscaled_atom_encodings
             ]
             frac_coords = element_wise_unscaler(
                 frac_scaled, feature_range=feature_range, data_range=self.frac_range
@@ -1015,7 +1022,7 @@ class XtalConverter:
         for i in self.tqdm_if_verbose(range(num_structures)):
             at = atomic_symbols[i]
             fr = frac_coords[i]
-            site_ids = np.where(at > 0)
+            site_ids = np.where(np.array(unscaled_atom_encodings[i]) > 0)
 
             at = at[site_ids]
             fr = fr[site_ids]
