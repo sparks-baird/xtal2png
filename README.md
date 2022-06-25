@@ -21,30 +21,33 @@ The latest advances in machine learning are often in natural language such as wi
 
 After getting preliminary results, you get to decide whether it's worth it to you to take on the higher-cost/higher-expertise task of modifying the codebase and using a more customized approach. Or, you can stick with the results of `xtal2png`. It's up to you!
 
-## Quick Start
+## Getting Started
+
 ### Installation
+
 ```bash
-conda env create -n xtal2png -c conda-forge xtal2png
+conda create -n xtal2png -c conda-forge xtal2png m3gnet
 conda activate xtal2png
 ```
-
+> NOTE: `m3gnet` is an optional dependency that performs surrogate DFT relaxation.
 ### Example
-```python
-# a list of `pymatgen.core.structure.Structure` objects
-from xtal2png.utils.data import example_structures
-from xtal2png.core import XtalConverter
 
-xc = XtalConverter()  # DFT surrogate relaxation via m3gnet by default
+```python
+# example_structures is a list of `pymatgen.core.structure.Structure` objects
+from xtal2png import XtalConverter, example_structures
+
+xc = XtalConverter(relax_on_decode=True)
 data = xc.xtal2png(example_structures, show=True, save=True)
 relaxed_decoded_structures = xc.png2xtal(data, save=False)
 
 
-xc = XtalConverter(relax_on_decode=False)
+xc = XtalConverter(relax_on_decode=False)  # default behavior
 data = xc.xtal2png(example_structures, show=True, save=True)
 decoded_structures = xc.png2xtal(data, save=False)
 ```
 
 ### Output
+
 ```python
 print(example_structures[0], decoded_structures[0], relaxed_decoded_structures[0])
 ```
@@ -118,15 +121,18 @@ The before and after structures match within an expected tolerance; note the rou
 ## Installation
 
 ### Anaconda (`conda`) installation (recommended)
+
 (2022-05-23, conda-forge installation still pending, fallback to `pip install xtal2png` as separate command)
 
 Create and activate a new `conda` environment named `xtal2png` (`-n`) that will search for and install the `xtal2png` package from the `conda-forge` Anaconda channel (`-c`).
+
 ```bash
 conda env create -n xtal2png -c conda-forge xtal2png
 conda activate xtal2png
 ```
 
 Alternatively, in an already activated environment:
+
 ```bash
 conda install -c conda-forge xtal2png
 ```
@@ -134,7 +140,9 @@ conda install -c conda-forge xtal2png
 If you run into conflicts with packages you are integrating with `xtal2png`, please try installing all packages in a single line of code (or two if mixing `conda` and `pip` packages in the same environment) and/or installing with `mamba` ([source](https://stackoverflow.com/a/69137255/13697228)).
 
 ### PyPI (`pip`) installation
+
 Create and activate a new `conda` environment named `xtal2png` (`-n`) with `python==3.9.*` or your preferred Python version, then install `xtal2png` via `pip`.
+
 ```bash
 conda env create -n xtal2png python==3.9.*
 conda activate xtal2png
@@ -142,45 +150,51 @@ pip install xtal2png
 ```
 
 ## Editable installation
+
 In order to set up the necessary environment:
 
 1. clone and enter the repository via:
+
    ```bash
    git clone https://github.com/sparks-baird/xtal2png.git
    cd xtal2png
    ```
 
 2. create and activate a new conda environment (optional, but recommended)
+
    ```bash
    conda env create --name xtal2png python==3.9.*
    conda activate xtal2png
    ```
 
 3. perform an editable (`-e`) installation in the current directory (`.`):
+
    ```bash
    pip install -e .
    ```
 
 > **_NOTE:_**  Some changes, e.g. in `setup.cfg`, might require you to run `pip install -e .` again.
 
-
 Optional and needed only once after `git clone`:
 
 3. install several [pre-commit] git hooks with:
+
    ```bash
    pre-commit install
    # You might also want to run `pre-commit autoupdate`
    ```
+
    and checkout the configuration under `.pre-commit-config.yaml`.
    The `-n, --no-verify` flag of `git commit` can be used to deactivate pre-commit hooks temporarily.
 
 4. install [nbstripout] git hooks to remove the output cells of committed notebooks with:
+
    ```bash
    nbstripout --install --attributes notebooks/.gitattributes
    ```
+
    This is useful to avoid large diffs due to plots in your notebooks.
    A simple `nbstripout --uninstall` will revert these changes.
-
 
 Then take a look into the `scripts` and `notebooks` folders.
 
@@ -198,7 +212,6 @@ Then take a look into the `scripts` and `notebooks` folders.
    ```bash
    conda env update -f environment.lock.yml --prune
    ``` -->
-
 
 ## Command Line Interface (CLI)
 
@@ -323,18 +336,23 @@ This project has been set up using [PyScaffold] 4.2.1 and the [dsproject extensi
 [dsproject extension]: https://github.com/pyscaffold/pyscaffoldext-dsproject
 
 To create the same starting point for this repository, as of 2022-06-01 on Windows you will need the development versions of PyScaffold and extensions, however this will not be necessary once certain bugfixes have been introduced in the next stable releases:
+
 ```bash
 pip install git+https://github.com/pyscaffold/pyscaffold.git git+https://github.com/pyscaffold/pyscaffoldext-dsproject.git git+https://github.com/pyscaffold/pyscaffoldext-markdown.git
 ```
 
 The following `pyscaffold` command creates a starting point for this repository:
+
 ```bash
 putup xtal2png --github-actions --markdown --dsproj
 ```
+
 Alternatively, you can edit a file interactively and update and uncomment relevant lines, which saves some of the additional setup:
+
 ```bash
 putup --interactive xtal2png
 ```
 
 ## Attributions
+
 - [@michaeldalverson](https://github.com/michaeldalverson) for iterating through various representations during extensive work with crystal GANs. The base representation for `xtal2png` (see [#output](https://github.com/sparks-baird/xtal2png#output)) closely follows a recent iteration (2022-06-13), taking the first layer ($1\times64\times64$) of the $4\times64\times64$ representation and replacing a buffer column/row of zeros with unit cell volume.
