@@ -154,10 +154,18 @@ class XtalConverter:
         func:``XtalConverter().arrays_to_structures`` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
-    element_encoding : str, optional
+    element_encoding : str
         How to encode the element. Can be one of `element_coder.data.coding_data._PROPERTY_KEYS`
         (e.g., `mod_pettifor`, `atomic`, `pettifor`, `X`). Defaults to `atomic`
         (which encodes elements as atomic numbers).
+    element_decoding_metric: Union[str, callable]
+        Metric to measure distance between (noisy) input encoding and tabulated encodings.
+        If a string, the distance function can be 'braycurtis', 'canberra', 'chebyshev',
+        'cityblock', 'correlation', 'cosine', 'dice', 'euclidean', 'hamming', 'jaccard',
+        'jensenshannon', 'kulsinski', 'kulczynski1', 'mahalanobis', 'matching', 'minkowski',
+        'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath',
+        'sqeuclidean', 'yule'. Defaults to "euclidean".
+
 
     Examples
     --------
@@ -186,7 +194,8 @@ class XtalConverter:
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
-        element_encoding: Optional[str] = "atomic",
+        element_encoding: str = "atomic",
+        element_decoding_metric: Union[str, callable] = "euclidean",
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -201,6 +210,7 @@ class XtalConverter:
         self.max_sites = max_sites
         self.save_dir = save_dir
         self.element_encoding = element_encoding
+        self.element_decoding_metric = element_decoding_metric
 
         if isinstance(symprec, (float, int)):
             self.encode_symprec = symprec
@@ -933,7 +943,9 @@ class XtalConverter:
             ]
 
             atomic_symbols = [
-                decode_many(encoding, self.element_encoding)
+                decode_many(
+                    encoding, self.element_encoding, metric=self.element_decoding_metric
+                )
                 for encoding in unscaled_atom_encodings
             ]
             frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
@@ -961,7 +973,9 @@ class XtalConverter:
                 )
             ]
             atomic_symbols = [
-                decode_many(encoding, self.element_encoding)
+                decode_many(
+                    encoding, self.element_encoding, metric=self.element_decoding_metric
+                )
                 for encoding in unscaled_atom_encodings
             ]
             frac_coords = element_wise_unscaler(
