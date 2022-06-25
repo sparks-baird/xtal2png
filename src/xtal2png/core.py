@@ -19,8 +19,7 @@ from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
-from element_coder.encoder import encode
-from element_coder.decoder import decode
+from element_coder import encode, decode
 from element_coder.utils import get_range
 
 from xtal2png import __version__
@@ -102,7 +101,7 @@ class XtalConverter:
     Parameters
     ----------
     atom_range : Tuple[int, int], optional
-        Expected range for atomic number, by default (0, 117)
+        Expected range for atomic number, by default (1, 118)
     frac_range : Tuple[float, float], optional
         Expected range for fractional coordinates, by default (0.0, 1.0)
     a_range : Tuple[float, float], optional
@@ -169,7 +168,7 @@ class XtalConverter:
 
     def __init__(
         self,
-        atom_range: Tuple[int, int] = (0, 117),
+        atom_range: Tuple[int, int] = (1, 118),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         a_range: Tuple[float, float] = (2.0, 15.3),
         b_range: Tuple[float, float] = (2.0, 15.0),
@@ -228,7 +227,7 @@ class XtalConverter:
             self.tqdm_if_verbose = tqdm
         else:
             self.tqdm_if_verbose = lambda x: x
-            
+
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
     @property
@@ -355,7 +354,7 @@ class XtalConverter:
             dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
 
         atoms = np.array(atomic_numbers, dtype="object")
-        self.atom_range = (min(np.min(atoms)), max(np.max(atoms)))
+        self.atom_range = atoms
         self.space_group_range = (np.min(space_group), np.max(space_group))
 
         self.num_sites = np.max(num_sites)
