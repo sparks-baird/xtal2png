@@ -292,7 +292,7 @@ def test_primitive_decoding():
 def test_fit():
     xc = XtalConverter(relax_on_decode=False)
     xc.fit(example_structures + dummy_structures)
-    assert_array_equal((14, 82), xc.atom_range)
+    assert_array_equal((14, 82), xc._atom_range)
     assert_allclose((3.84, 12.718448099999998), xc.a_range)
     assert_allclose((3.395504, 11.292530369999998), xc.b_range)
     assert_allclose((3.84, 10.6047314973), xc.c_range)
