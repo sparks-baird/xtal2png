@@ -58,7 +58,7 @@ A_ID = 3
 B_ID = 4
 C_ID = 5
 ANGLES_ID = 6
-VOLUME_ID = 7
+NUM_SITES_ID = 7
 SPACE_GROUP_ID = 8
 DISTANCE_ID = 9
 
@@ -68,7 +68,7 @@ A_KEY = "a"
 B_KEY = "b"
 C_KEY = "c"
 ANGLES_KEY = "angles"
-VOLUME_KEY = "volume"
+NUM_SITES_KEY = "num_sites"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
 LOWER_TRI_KEY = "lower_tri"
@@ -80,7 +80,7 @@ SUPPORTED_MASK_KEYS = [
     B_KEY,
     C_KEY,
     ANGLES_KEY,
-    VOLUME_KEY,
+    NUM_SITES_KEY,
     SPACE_GROUP_KEY,
     DISTANCE_KEY,
     LOWER_TRI_KEY,
@@ -88,8 +88,8 @@ SUPPORTED_MASK_KEYS = [
 
 
 def construct_save_name(s: Structure) -> str:
-    """Construct savename based on formula, volume, and a uid."""
-    save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
+    """Construct savename based on formula, space group, and a uid."""
+    save_name = f"{s.formula.replace(' ', '')},space-group={int(np.round(s.get_space_group_info()[1]))},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
 
 
@@ -128,8 +128,8 @@ class XtalConverter:
         Expected range for lattice parameter length c, by default (2.0, 36.0)
     angles_range : Tuple[float, float], optional
         Expected range for lattice parameter angles, by default (0.0, 180.0)
-    volume_range : Tuple[float, float], optional
-        Expected range for unit cell volumes, by default (0.0, 1000.0)
+    num_sites_range : Tuple[float, float], optional
+        Expected range for unit cell num_sites, by default (0, 52)
     space_group_range : Tuple[int, int], optional
         Expected range for space group numbers, by default (1, 230)
     distance_range : Tuple[float, float], optional
@@ -185,7 +185,7 @@ class XtalConverter:
         'sokalsneath', 'sqeuclidean', 'yule'. Defaults to "euclidean".
     mask_types : List[str], optional
         List of information types to mask out (assign as 0) from the array/image. values
-        are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
+        are "atom", "frac", "a", "b", "c", "angles", "num_sites", "space_group",
         "distance", "diagonal", and None. If None, then no masking is applied. If
         "diagonal" is present, then zeros out the lower triangle. By default, None.
 
@@ -204,7 +204,7 @@ class XtalConverter:
         b_range: Tuple[float, float] = (2.0, 15.0),
         c_range: Tuple[float, float] = (2.0, 36.0),
         angles_range: Tuple[float, float] = (0.0, 180.0),
-        volume_range: Tuple[float, float] = (0.0, 1500.0),
+        num_sites_range: Tuple[float, float] = (0, 52),
         space_group_range: Tuple[int, int] = (1, 230),
         distance_range: Tuple[float, float] = (0.0, 18.0),
         max_sites: int = 52,
@@ -227,7 +227,7 @@ class XtalConverter:
         self.b_range = b_range
         self.c_range = c_range
         self.angles_range = angles_range
-        self.volume_range = volume_range
+        self.num_sites_range = num_sites_range
         self.space_group_range = space_group_range
         self.distance_range = distance_range
         self.max_sites = max_sites
@@ -394,7 +394,7 @@ class XtalConverter:
         b = [s.lattice.b for s in S]
         c = [s.lattice.c for s in S]
         space_group = [s.get_space_group_info()[1] for s in S]
-        volume = [s.lattice.volume for s in S]
+        num_sites = [len(s.sites) for s in S]
         distance = [s.distance_matrix for s in S]
         num_sites = [len(list(s.sites)) for s in S]
 
@@ -404,7 +404,7 @@ class XtalConverter:
             print("range of b is: ", min(b), "-", max(b))
             print("range of c is: ", min(c), "-", max(c))
             print("range of space_group is: ", min(space_group), "-", max(space_group))
-            print("range of volume is: ", min(volume), "-", max(volume))
+            print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
             print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
 
         dis_min_tmp = []
@@ -426,7 +426,7 @@ class XtalConverter:
                 a=a,
                 b=b,
                 c=c,
-                volume=volume,
+                num_sites=num_sites,
                 min_distance=dis_min_tmp,
                 max_distance=dis_max_tmp,
             )
@@ -645,7 +645,7 @@ class XtalConverter:
         latt_b: List[float] = []
         latt_c: List[float] = []
         angles: List[List[float]] = []
-        volume: List[float] = []
+        num_sites: List[float] = []
         space_group: List[int] = []
         distance_matrix_tmp: List[NDArray[np.float64]] = []
 
@@ -675,7 +675,7 @@ class XtalConverter:
             latt_b.append(s._lattice.b)
             latt_c.append(s._lattice.c)
             angles.append(list(s._lattice.angles))
-            volume.append(s.volume)
+            num_sites.append(len(s.sites))
             space_group.append(s.get_space_group_info()[1])
 
             if n_sites != s.distance_matrix.shape[0]:
@@ -706,7 +706,7 @@ class XtalConverter:
             b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
             c_scaled = rgb_scaler(latt_c, data_range=self.c_range)
             angles_scaled = rgb_scaler(angles, data_range=self.angles_range)
-            volume_scaled = rgb_scaler(volume, data_range=self.volume_range)
+            num_sites_scaled = rgb_scaler(num_sites, data_range=self.num_sites_range)
             space_group_scaled = rgb_scaler(
                 space_group, data_range=self.space_group_range
             )
@@ -743,8 +743,8 @@ class XtalConverter:
             angles_scaled = element_wise_scaler(
                 angles, feature_range=feature_range, data_range=self.angles_range
             )
-            volume_scaled = element_wise_scaler(
-                volume, feature_range=feature_range, data_range=self.volume_range
+            num_sites_scaled = element_wise_scaler(
+                num_sites, feature_range=feature_range, data_range=self.num_sites_range
             )
             space_group_scaled = element_wise_scaler(
                 space_group,
@@ -763,8 +763,8 @@ class XtalConverter:
         b_arr = np.repeat(np.expand_dims(b_scaled, (1, 2)), self.max_sites, axis=1)
         c_arr = np.repeat(np.expand_dims(c_scaled, (1, 2)), self.max_sites, axis=1)
         angles_arr = np.repeat(np.expand_dims(angles_scaled, 1), self.max_sites, axis=1)
-        volume_arr = np.repeat(
-            np.expand_dims(volume_scaled, (1, 2)), self.max_sites, axis=1
+        num_sites_arr = np.repeat(
+            np.expand_dims(num_sites_scaled, (1, 2)), self.max_sites, axis=1
         )
         space_group_arr = np.repeat(
             np.expand_dims(space_group_scaled, (1, 2)), self.max_sites, axis=1
@@ -778,7 +778,7 @@ class XtalConverter:
             b_arr,
             c_arr,
             angles_arr,
-            volume_arr,
+            num_sites_arr,
             space_group_arr,
             distance_arr,
         )
@@ -790,7 +790,7 @@ class XtalConverter:
             B_KEY: B_ID,
             C_KEY: C_ID,
             ANGLES_KEY: ANGLES_ID,
-            VOLUME_KEY: VOLUME_ID,
+            NUM_SITES_KEY: NUM_SITES_ID,
             SPACE_GROUP_KEY: SPACE_GROUP_ID,
             DISTANCE_KEY: DISTANCE_ID,
         }
@@ -802,7 +802,7 @@ class XtalConverter:
             np.ones_like(b_arr) * B_ID,
             np.ones_like(c_arr) * C_ID,
             np.ones_like(angles_arr) * ANGLES_ID,
-            np.ones_like(volume_arr) * VOLUME_ID,
+            np.ones_like(num_sites_arr) * NUM_SITES_ID,
             np.ones_like(space_group_arr) * SPACE_GROUP_ID,
             np.ones_like(distance_arr) * DISTANCE_ID,
         ]
@@ -835,7 +835,7 @@ class XtalConverter:
         b_arr,
         c_arr,
         angles_arr,
-        volume_arr,
+        num_sites,
         space_group_arr,
         distance_arr,
     ) -> NDArray:
@@ -846,7 +846,7 @@ class XtalConverter:
             b_arr,
             c_arr,
             angles_arr,
-            volume_arr,
+            num_sites,
             space_group_arr,
         ]
         zero_pad = sum([arr.shape[2] for arr in arrays])
@@ -863,7 +863,7 @@ class XtalConverter:
                     b_arr,
                     c_arr,
                     angles_arr,
-                    volume_arr,
+                    num_sites,
                     space_group_arr,
                 ],
             ]
@@ -876,7 +876,7 @@ class XtalConverter:
                 b_arr,
                 c_arr,
                 angles_arr,
-                volume_arr,
+                num_sites,
                 space_group_arr,
             ]
         )
@@ -930,7 +930,7 @@ class XtalConverter:
             b_arr,
             c_arr,
             angles_arr,
-            volume_arr,
+            num_sites_arr,
             space_group_arr,
         ) = avgs
 
@@ -941,7 +941,7 @@ class XtalConverter:
             b_arr,
             c_arr,
             angles_arr,
-            volume_arr,
+            num_sites_arr,
             space_group_arr,
             distance_arr,
         )
@@ -987,7 +987,7 @@ class XtalConverter:
             b_scaled_tmp,
             c_scaled_tmp,
             angles_scaled_tmp,
-            volume_scaled_tmp,
+            num_sites_scaled_tmp,
             space_group_scaled_tmp,
             distance_scaled,
         ) = [np.squeeze(arr, axis=2) if arr.shape[2] == 1 else arr for arr in arrays]
@@ -997,7 +997,7 @@ class XtalConverter:
         c_scaled = np.mean(c_scaled_tmp, axis=1, where=c_scaled_tmp != 0)
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
 
-        volume_scaled = np.mean(volume_scaled_tmp, axis=1)
+        num_sites_scaled = np.mean(num_sites_scaled_tmp, axis=1)
         space_group_scaled = np.round(np.mean(space_group_scaled_tmp, axis=1)).astype(
             int
         )
@@ -1023,8 +1023,8 @@ class XtalConverter:
             latt_c = rgb_unscaler(c_scaled, data_range=self.c_range)
             angles = rgb_unscaler(angles_scaled, data_range=self.angles_range)
 
-            # # volume, space_group, distance_matrix unecessary for making Structure
-            volume = rgb_unscaler(volume_scaled, data_range=self.volume_range)
+            # # num_sites, space_group, distance_matrix unecessary for making Structure
+            num_sites = rgb_unscaler(num_sites_scaled, data_range=self.num_sites_range)
             space_group = rgb_unscaler(
                 space_group_scaled, data_range=self.space_group_range
             )
@@ -1062,8 +1062,10 @@ class XtalConverter:
             angles = element_wise_unscaler(
                 angles_scaled, feature_range=feature_range, data_range=self.angles_range
             )
-            volume = element_wise_unscaler(
-                volume_scaled, feature_range=feature_range, data_range=self.volume_range
+            num_sites = element_wise_unscaler(
+                num_sites_scaled,
+                feature_range=feature_range,
+                data_range=self.num_sites_range,
             )
             space_group = element_wise_unscaler(
                 space_group_scaled,
@@ -1080,7 +1082,7 @@ class XtalConverter:
             np.fill_diagonal(dm, 0.0)
 
         # technically unused, but to avoid issue with pre-commit for now:
-        volume, space_group, distance_matrix
+        num_sites, space_group, distance_matrix
 
         # TODO: tweak lattice parameters to match predicted space group rules
 
