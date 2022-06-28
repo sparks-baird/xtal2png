@@ -2,25 +2,26 @@
 import argparse
 import logging
 import sys
+from functools import lru_cache
 from glob import glob
 
 # from itertools import zip_longest
 from os import PathLike, path
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from warnings import warn
 
 import numpy as np
 import pandas as pd
+from element_coder import decode_many, encode_many
+from element_coder.utils import get_range
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
-from element_coder import encode_many, decode_many
-from element_coder.utils import get_range
 
 from xtal2png import __version__
 from xtal2png.utils.data import (
@@ -32,8 +33,6 @@ from xtal2png.utils.data import (
     rgb_unscaler,
     unit_cell_converter,
 )
-
-from functools import lru_cache
 
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -63,13 +62,27 @@ DISTANCE_ID = 9
 
 ATOM_KEY = "atom"
 FRAC_KEY = "frac"
-A_KEY = "latt_a"
-B_KEY = "latt_b"
-C_KEY = "latt_c"
+A_KEY = "a"
+B_KEY = "b"
+C_KEY = "c"
 ANGLES_KEY = "angles"
 VOLUME_KEY = "volume"
 SPACE_GROUP_KEY = "space_group"
 DISTANCE_KEY = "distance"
+LOWER_TRI_KEY = "lower_tri"
+
+SUPPORTED_MASK_KEYS = [
+    ATOM_KEY,
+    FRAC_KEY,
+    A_KEY,
+    B_KEY,
+    C_KEY,
+    ANGLES_KEY,
+    VOLUME_KEY,
+    SPACE_GROUP_KEY,
+    DISTANCE_KEY,
+    LOWER_TRI_KEY,
+]
 
 
 def construct_save_name(s: Structure) -> str:
@@ -155,17 +168,23 @@ class XtalConverter:
     verbose: bool, optional
         Whether to print verbose debugging information or not.
     element_encoding : str
-        How to encode the element. Can be one of `element_coder.data.coding_data._PROPERTY_KEYS`
-        (e.g., `mod_pettifor`, `atomic`, `pettifor`, `X`). Defaults to `atomic`
-        (which encodes elements as atomic numbers).
+        How to encode the element. Can be one of
+        `element_coder.data.coding_data._PROPERTY_KEYS` (e.g., `mod_pettifor`, `atomic`,
+        `pettifor`, `X`). Defaults to `atomic` (which encodes elements as atomic
+        numbers).
     element_decoding_metric: Union[str, callable]
-        Metric to measure distance between (noisy) input encoding and tabulated encodings.
+        Metric to measure distance between (noisy) input encoding and tabulated
+        encodings.
         If a string, the distance function can be 'braycurtis', 'canberra', 'chebyshev',
         'cityblock', 'correlation', 'cosine', 'dice', 'euclidean', 'hamming', 'jaccard',
-        'jensenshannon', 'kulsinski', 'kulczynski1', 'mahalanobis', 'matching', 'minkowski',
-        'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath',
-        'sqeuclidean', 'yule'. Defaults to "euclidean".
-
+        'jensenshannon', 'kulsinski', 'kulczynski1', 'mahalanobis', 'matching',
+        'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener',
+        'sokalsneath', 'sqeuclidean', 'yule'. Defaults to "euclidean".
+    mask_types : List[str], optional
+        List of information types to mask out (assign as 0) from the array/image. values
+        are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
+        "distance", "diagonal", and None. If None, then no masking is applied. If
+        "diagonal" is present, then zeros out the lower triangle. By default, None.
 
     Examples
     --------
@@ -195,7 +214,8 @@ class XtalConverter:
         channels: int = 1,
         verbose: bool = True,
         element_encoding: str = "atomic",
-        element_decoding_metric: Union[str, callable] = "euclidean",
+        element_decoding_metric: Union[str, Callable] = "euclidean",
+        mask_types: List[str] = [],
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
         self.atom_range = atom_range
@@ -237,6 +257,14 @@ class XtalConverter:
             self.tqdm_if_verbose = tqdm
         else:
             self.tqdm_if_verbose = lambda x: x
+
+        unsupported_mask_types = np.setdiff1d(mask_types, SUPPORTED_MASK_KEYS).tolist()
+        if unsupported_mask_types != []:
+            raise ValueError(
+                f"{unsupported_mask_types} is/are not a valid mask type. Expected one of {SUPPORTED_MASK_KEYS}. Received {mask_types}"  # noqa: E501
+            )
+
+        self.mask_types = mask_types
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
 
@@ -331,9 +359,29 @@ class XtalConverter:
         self,
         structures: List[Union[Structure, str, "PathLike[str]"]],
         y=None,
-        fit_quantiles=(0.00, 0.99),
-        verbose=None,
+        fit_quantiles: Tuple[float, float] = (0.00, 0.99),
+        verbose: Optional[bool] = None,
     ):
+        """Find optimal range parameters for encoding crystal structures.
+
+        Parameters
+        ----------
+        structures : List[Union[Structure, str, "PathLike[str]"]]
+            List of pymatgen Structure objects.
+        y : NoneType, optional
+            No effect, for compatibility only, by default None
+        fit_quantiles : Tuple[float,float], optional
+            The lower and upper quantiles to use for fitting ranges to the data, by
+            default (0.00, 0.99)
+        verbose : Optional[bool], optional
+            Whether to print information about the fitted ranges. If None, then defaults
+            to ``self.verbose``. By default None
+
+        Examples
+        --------
+        >>> fit(structures, , y=None, fit_quantiles=(0.00, 0.99), verbose=None, )
+        OUTPUT
+        """
         verbose = self.verbose if verbose is None else verbose
 
         _, S = self.process_filepaths_or_structures(structures)
@@ -491,6 +539,11 @@ class XtalConverter:
         >>> xc.png2xtal(imgs)
         OUTPUT
         """
+        if not isinstance(images, list):
+            raise ValueError(
+                f"images (or filepaths) should be of type list, received {type(images)}"
+            )
+
         data_tmp = []
         if self.channels == 1:
             mode = "L"
@@ -603,7 +656,7 @@ class XtalConverter:
             n_sites = len(s.atomic_numbers)
             if n_sites > self.max_sites:
                 raise ValueError(
-                    f"crystal supplied with {n_sites} sites, which is more than {self.max_sites} sites. Remove crystal or increase `max_sites`."  # noqa
+                    f"crystal supplied with {n_sites} sites, which is more than {self.max_sites} sites. Remove the offending crystal(s), increase `max_sites`, or use a more compact cell_type (see encode_cell_type and decode_cell_type kwargs)."  # noqa: E501
                 )
             element_encoding.append(
                 np.pad(
@@ -638,7 +691,8 @@ class XtalConverter:
             # REVIEW: consider using modified pettifor scale instead of atomic numbers
             # REVIEW: consider using feature_range=atom_range or 2*atom_range
             # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
-            # ToDo: the range below is not optimal. For this the fit should return a list of all the elements
+            # ToDo: the range below is not optimal. For this the fit should return a
+            # list of all the elements
             atom_scaled = rgb_scaler(
                 element_encoding,
                 data_range=self._element_encoding_range,
@@ -752,6 +806,17 @@ class XtalConverter:
 
         data = np.expand_dims(data, 1)
         id_data = np.expand_dims(id_data, 1)
+
+        for mask_type in self.mask_types:
+            if mask_type == LOWER_TRI_KEY:
+                for d in data:
+                    if d.shape[1] != d.shape[2]:
+                        raise ValueError(
+                            f"Expected square matrix in last two dimensions, received {d.shape}"  # noqa: E501
+                        )
+                    d[:, np.mask_indices(d.shape[1], np.tril)] = 0.0
+            else:
+                data[id_data == id_mapper[mask_type]] = 0.0
 
         data = np.repeat(data, self.channels, 1)
         id_data = np.repeat(id_data, self.channels, 1)
