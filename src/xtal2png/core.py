@@ -2,17 +2,22 @@
 import argparse
 import logging
 import sys
+from functools import lru_cache
 from glob import glob
+from itertools import chain
 
 # from itertools import zip_longest
 from os import PathLike, path
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from warnings import warn
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
+from element_coder import decode_many, encode_many
+from element_coder.utils import get_range
 from numpy.typing import NDArray
 from PIL import Image
 from pymatgen.core.lattice import Lattice
@@ -83,8 +88,14 @@ SUPPORTED_MASK_KEYS = [
 
 
 def construct_save_name(s: Structure) -> str:
+    """Construct savename based on formula, volume, and a uid."""
     save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
+
+
+@lru_cache(maxsize=None)
+def _element_encoding_range_cached(elements, encoding_type):
+    return get_range(elements, encoding_type)
 
 
 class XtalConverter:
@@ -106,7 +117,7 @@ class XtalConverter:
     Parameters
     ----------
     atom_range : Tuple[int, int], optional
-        Expected range for atomic number, by default (0, 117)
+        Expected range for atomic number, by default (1, 118)
     frac_range : Tuple[float, float], optional
         Expected range for fractional coordinates, by default (0.0, 1.0)
     a_range : Tuple[float, float], optional
@@ -159,6 +170,19 @@ class XtalConverter:
         func:``XtalConverter().arrays_to_structures`` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
+    element_encoding : str
+        How to encode the element. Can be one of
+        `element_coder.data.coding_data._PROPERTY_KEYS` (e.g., `mod_pettifor`, `atomic`,
+        `pettifor`, `X`). Defaults to `atomic` (which encodes elements as atomic
+        numbers).
+    element_decoding_metric: Union[str, callable]
+        Metric to measure distance between (noisy) input encoding and tabulated
+        encodings.
+        If a string, the distance function can be 'braycurtis', 'canberra', 'chebyshev',
+        'cityblock', 'correlation', 'cosine', 'dice', 'euclidean', 'hamming', 'jaccard',
+        'jensenshannon', 'kulsinski', 'kulczynski1', 'mahalanobis', 'matching',
+        'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener',
+        'sokalsneath', 'sqeuclidean', 'yule'. Defaults to "euclidean".
     mask_types : List[str], optional
         List of information types to mask out (assign as 0) from the array/image. values
         are "atom", "frac", "a", "b", "c", "angles", "volume", "space_group",
@@ -174,7 +198,7 @@ class XtalConverter:
 
     def __init__(
         self,
-        atom_range: Tuple[int, int] = (0, 117),
+        atom_range: Union[Tuple[int, int], npt.ArrayLike] = (1, 118),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         a_range: Tuple[float, float] = (2.0, 15.3),
         b_range: Tuple[float, float] = (2.0, 15.0),
@@ -192,6 +216,8 @@ class XtalConverter:
         relax_on_decode: bool = False,
         channels: int = 1,
         verbose: bool = True,
+        element_encoding: str = "atomic",
+        element_decoding_metric: Union[str, Callable] = "euclidean",
         mask_types: List[str] = [],
     ):
         """Instantiate an XtalConverter object with desired ranges and ``max_sites``."""
@@ -206,6 +232,8 @@ class XtalConverter:
         self.distance_range = distance_range
         self.max_sites = max_sites
         self.save_dir = save_dir
+        self.element_encoding = element_encoding
+        self.element_decoding_metric = element_decoding_metric
 
         if isinstance(symprec, (float, int)):
             self.encode_symprec = symprec
@@ -242,6 +270,13 @@ class XtalConverter:
         self.mask_types = mask_types
 
         Path(save_dir).mkdir(exist_ok=True, parents=True)
+
+    @property
+    def _element_encoding_range(self):
+        # We do *not* use cached_property as the result might change as
+        # the users calls fit. However, we still want to cache, as we reuse
+        # the result of this method for both encoding and decoding.
+        return _element_encoding_range_cached(self.atom_range, self.element_encoding)
 
     def xtal2png(
         self,
@@ -286,7 +321,6 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-
         save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
@@ -380,7 +414,9 @@ class XtalConverter:
             dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
 
         atoms = np.array(atomic_numbers, dtype="object")
-        self.atom_range = (min(np.min(atoms)), max(np.max(atoms)))
+        uniq_atoms = np.unique(list(chain(*atomic_numbers)))
+        self._atom_range = [np.min(uniq_atoms), np.max(uniq_atoms)]
+        self.atom_range = atoms
         self.space_group_range = (np.min(space_group), np.max(space_group))
 
         self.num_sites = np.max(num_sites)
@@ -556,7 +592,7 @@ class XtalConverter:
         self,
         structures: Sequence[Structure],
         rgb_scaling=True,
-    ):
+    ) -> Tuple[NDArray, NDArray, Dict[str, int]]:
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
@@ -603,7 +639,7 @@ class XtalConverter:
             raise ValueError("`structures` should be a list of pymatgen Structure(s)")
 
         # extract crystallographic information
-        atomic_numbers: List[List[int]] = []
+        element_encoding: List[List[int]] = []
         frac_coords_tmp: List[NDArray] = []
         latt_a: List[float] = []
         latt_b: List[float] = []
@@ -626,9 +662,9 @@ class XtalConverter:
                 raise ValueError(
                     f"crystal supplied with {n_sites} sites, which is more than {self.max_sites} sites. Remove the offending crystal(s), increase `max_sites`, or use a more compact cell_type (see encode_cell_type and decode_cell_type kwargs)."  # noqa: E501
                 )
-            atomic_numbers.append(
+            element_encoding.append(
                 np.pad(
-                    list(s.atomic_numbers),
+                    encode_many(s.atomic_numbers, self.element_encoding),
                     (0, self.max_sites - n_sites),
                 ).tolist()
             )
@@ -659,7 +695,12 @@ class XtalConverter:
             # REVIEW: consider using modified pettifor scale instead of atomic numbers
             # REVIEW: consider using feature_range=atom_range or 2*atom_range
             # REVIEW: since it introduces a sort of non-linearity b.c. of rounding
-            atom_scaled = rgb_scaler(atomic_numbers, data_range=self.atom_range)
+            # ToDo: the range below is not optimal. For this the fit should return a
+            # list of all the elements
+            atom_scaled = rgb_scaler(
+                element_encoding,
+                data_range=self._element_encoding_range,
+            )  # noqa
             frac_scaled = rgb_scaler(frac_coords, data_range=self.frac_range)
             a_scaled = rgb_scaler(latt_a, data_range=self.a_range)
             b_scaled = rgb_scaler(latt_b, data_range=self.b_range)
@@ -683,7 +724,9 @@ class XtalConverter:
         else:
             feature_range = (0.0, 1.0)
             atom_scaled = element_wise_scaler(
-                atomic_numbers, feature_range=feature_range, data_range=self.atom_range
+                element_encoding,
+                feature_range=feature_range,
+                data_range=self._element_encoding_range,
             )
             frac_scaled = element_wise_scaler(
                 frac_coords, feature_range=feature_range, data_range=self.frac_range
@@ -795,7 +838,7 @@ class XtalConverter:
         volume_arr,
         space_group_arr,
         distance_arr,
-    ):
+    ) -> NDArray:
         arrays = [
             atom_arr,
             frac_arr,
@@ -909,7 +952,7 @@ class XtalConverter:
         id_data: Optional[np.ndarray] = None,
         id_mapper: Optional[dict] = None,
         rgb_scaling: bool = True,
-    ):
+    ) -> List[Structure]:
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
         Parameters
@@ -960,7 +1003,20 @@ class XtalConverter:
         )
 
         if rgb_scaling:
-            atomic_numbers = rgb_unscaler(atom_scaled, data_range=self.atom_range)
+            # ToDo: expose the distance options for the decoding
+            unscaled_atom_encodings = [
+                encoding
+                for encoding in rgb_unscaler(
+                    atom_scaled, data_range=self._element_encoding_range
+                )
+            ]
+
+            atomic_symbols = [
+                decode_many(
+                    encoding, self.element_encoding, metric=self.element_decoding_metric
+                )
+                for encoding in unscaled_atom_encodings
+            ]
             frac_coords = rgb_unscaler(frac_scaled, data_range=self.frac_range)
             latt_a = rgb_unscaler(a_scaled, data_range=self.a_range)
             latt_b = rgb_unscaler(b_scaled, data_range=self.b_range)
@@ -977,9 +1033,20 @@ class XtalConverter:
             )
         else:
             feature_range = (0.0, 1.0)
-            atomic_numbers = element_wise_unscaler(
-                atom_scaled, feature_range=feature_range, data_range=self.atom_range
-            )
+            unscaled_atom_encodings = [
+                encoding
+                for encoding in element_wise_unscaler(
+                    atom_scaled,
+                    feature_range=feature_range,
+                    data_range=self._element_encoding_range,
+                )
+            ]
+            atomic_symbols = [
+                decode_many(
+                    encoding, self.element_encoding, metric=self.element_decoding_metric
+                )
+                for encoding in unscaled_atom_encodings
+            ]
             frac_coords = element_wise_unscaler(
                 frac_scaled, feature_range=feature_range, data_range=self.frac_range
             )
@@ -1015,8 +1082,6 @@ class XtalConverter:
         # technically unused, but to avoid issue with pre-commit for now:
         volume, space_group, distance_matrix
 
-        atomic_numbers = np.round(atomic_numbers).astype(int)
-
         # TODO: tweak lattice parameters to match predicted space group rules
 
         if self.relax_on_decode:
@@ -1034,12 +1099,13 @@ class XtalConverter:
 
         # build Structure-s
         S: List[Structure] = []
-        num_structures = len(atomic_numbers)
+
+        num_structures = len(atomic_symbols)
 
         for i in self.tqdm_if_verbose(range(num_structures)):
-            at = atomic_numbers[i]
+            at = atomic_symbols[i]
             fr = frac_coords[i]
-            site_ids = np.where(at > 0)
+            site_ids = np.where(np.array(unscaled_atom_encodings[i]) > 0)
 
             at = at[site_ids]
             fr = fr[site_ids]

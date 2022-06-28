@@ -292,7 +292,7 @@ def test_primitive_decoding():
 def test_fit():
     xc = XtalConverter(relax_on_decode=False)
     xc.fit(example_structures + dummy_structures)
-    assert_array_equal((14, 82), xc.atom_range)
+    assert_array_equal((5, 82), xc._atom_range)
     assert_allclose((3.84, 12.718448099999998), xc.a_range)
     assert_allclose((3.395504, 11.292530369999998), xc.b_range)
     assert_allclose((3.84, 10.6047314973), xc.c_range)
@@ -392,10 +392,20 @@ def test_mask_error():
             raise ValueError("Atom mask should have wiped out atomic sites.")
 
 
+def test_png2xtal_element_coder():
+    xc = XtalConverter(element_encoding="mod_pettifor", relax_on_decode=False)
+    imgs = xc.xtal2png(example_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_png2xtal_element_coder()
     test_max_sites()
     test_lower_tri_mask()
     test_mask_error()
