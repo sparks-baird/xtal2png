@@ -28,7 +28,9 @@ def test_encode_dir():
 
 
 def test_decode_single():
-    fpath = path.join("data", "preprocessed", "Zn8B8Pb4O24,volume=623,uid=b62a.png")
+    fpath = path.join(
+        "data", "preprocessed", "examples", "Zn8B8Pb4O24,volume=623,uid=b62a.png"
+    )
     args = ["--decode", "--path", fpath, "--save-dir", "tmp"]
     main(args)
 
