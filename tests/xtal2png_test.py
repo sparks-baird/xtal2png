@@ -352,10 +352,64 @@ def test_plot_and_save():
     plot_and_save("reports/figures/tmp", fig, mpl_kwargs={})
 
 
+def test_max_sites():
+    xc = XtalConverter(max_sites=10)
+    imgs = xc.xtal2png(dummy_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(dummy_structures, decoded_structures)
+    return decoded_structures
+
+
+def test_distance_mask():
+    xc = XtalConverter(mask_types=["distance"])
+    imgs = xc.xtal2png(example_structures)
+    if not np.all(xc.data[xc.id_data == xc.id_mapper["distance"]] == 0):
+        raise ValueError("Distance mask not applied correctly (id_mapper)")
+
+    if not np.all(xc.data[:, :, 12:, 12:] == 0):
+        raise ValueError("Distance mask not applied correctly (hardcoded)")
+
+    return imgs
+
+
+def test_lower_tri_mask():
+    xc = XtalConverter(mask_types=["lower_tri"])
+    imgs = xc.xtal2png(example_structures)
+    if not np.all(xc.data[np.tril(xc.data[0, 0])] == 0):
+        raise ValueError("Lower triangle mask not applied correctly")
+
+    return imgs
+
+
+def test_mask_error():
+    xc = XtalConverter(mask_types=["atom"])
+    imgs = xc.xtal2png(example_structures)
+
+    decoded_structures = xc.png2xtal(imgs)
+
+    for s in decoded_structures:
+        if s.num_sites > 0:
+            raise ValueError("Atom mask should have wiped out atomic sites.")
+
+
+def test_png2xtal_element_coder():
+    xc = XtalConverter(element_encoding="mod_pettifor", relax_on_decode=False)
+    imgs = xc.xtal2png(example_structures)
+    decoded_structures = xc.png2xtal(imgs)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_png2xtal_element_coder()
+    test_max_sites()
+    test_lower_tri_mask()
+    test_mask_error()
+    test_distance_mask()
     test_xtal2png_three_channels()
     test_png2xtal_three_channels()
     test_structures_to_arrays_zero_one()
