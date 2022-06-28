@@ -396,7 +396,6 @@ class XtalConverter:
         space_group = [s.get_space_group_info()[1] for s in S]
         num_sites = [len(s.sites) for s in S]
         distance = [s.distance_matrix for s in S]
-        num_sites = [len(list(s.sites)) for s in S]
 
         if verbose:
             print("range of atomic_numbers is: ", min(a), "-", max(a))
@@ -404,7 +403,6 @@ class XtalConverter:
             print("range of b is: ", min(b), "-", max(b))
             print("range of c is: ", min(c), "-", max(c))
             print("range of space_group is: ", min(space_group), "-", max(space_group))
-            print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
             print("range of num_sites is: ", min(num_sites), "-", max(num_sites))
 
         dis_min_tmp = []
@@ -418,6 +416,7 @@ class XtalConverter:
         self._atom_range = [np.min(uniq_atoms), np.max(uniq_atoms)]
         self.atom_range = atoms
         self.space_group_range = (np.min(space_group), np.max(space_group))
+        self.num_sites_range = (np.min(num_sites), np.max(num_sites))
 
         self.num_sites = np.max(num_sites)
 
@@ -426,7 +425,6 @@ class XtalConverter:
                 a=a,
                 b=b,
                 c=c,
-                num_sites=num_sites,
                 min_distance=dis_min_tmp,
                 max_distance=dis_max_tmp,
             )
