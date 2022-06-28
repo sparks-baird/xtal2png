@@ -34,7 +34,7 @@ def test_decode_single():
 
 
 def test_decode_dir():
-    fpath = path.join("data", "preprocessed")
+    fpath = path.join("data", "preprocessed", "examples")
     args = ["--decode", "--path", fpath, "--save-dir", "tmp"]
     main(args)
 
