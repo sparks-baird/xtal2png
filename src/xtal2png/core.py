@@ -4,15 +4,17 @@ import logging
 import sys
 from functools import lru_cache
 from glob import glob
+from itertools import chain
 
 # from itertools import zip_longest
 from os import PathLike, path
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from warnings import warn
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from element_coder import decode_many, encode_many
 from element_coder.utils import get_range
@@ -86,6 +88,7 @@ SUPPORTED_MASK_KEYS = [
 
 
 def construct_save_name(s: Structure) -> str:
+    """Construct savename based on formula, volume, and a uid."""
     save_name = f"{s.formula.replace(' ', '')},volume={int(np.round(s.volume))},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
 
@@ -195,7 +198,7 @@ class XtalConverter:
 
     def __init__(
         self,
-        atom_range: Tuple[int, int] = (1, 118),
+        atom_range: Union[Tuple[int, int], npt.ArrayLike] = (1, 118),
         frac_range: Tuple[float, float] = (0.0, 1.0),
         a_range: Tuple[float, float] = (2.0, 15.3),
         b_range: Tuple[float, float] = (2.0, 15.0),
@@ -318,7 +321,6 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-
         save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
@@ -412,6 +414,8 @@ class XtalConverter:
             dis_max_tmp.append(max(distance[d][np.nonzero(distance[d])]))
 
         atoms = np.array(atomic_numbers, dtype="object")
+        uniq_atoms = np.unique(list(chain(*atomic_numbers)))
+        self._atom_range = [np.min(uniq_atoms), np.max(uniq_atoms)]
         self.atom_range = atoms
         self.space_group_range = (np.min(space_group), np.max(space_group))
 
@@ -588,7 +592,7 @@ class XtalConverter:
         self,
         structures: Sequence[Structure],
         rgb_scaling=True,
-    ):
+    ) -> Tuple[NDArray, NDArray, Dict[str, int]]:
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
         ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
@@ -834,7 +838,7 @@ class XtalConverter:
         volume_arr,
         space_group_arr,
         distance_arr,
-    ):
+    ) -> NDArray:
         arrays = [
             atom_arr,
             frac_arr,
@@ -948,7 +952,7 @@ class XtalConverter:
         id_data: Optional[np.ndarray] = None,
         id_mapper: Optional[dict] = None,
         rgb_scaling: bool = True,
-    ):
+    ) -> List[Structure]:
         """Convert scaled crystal (xtal) arrays to pymatgen Structures.
 
         Parameters
