@@ -14,3 +14,10 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+# Public API
+
+from xtal2png.core import XtalConverter
+from xtal2png.utils.data import dummy_structures, example_structures
+
+__all__ = ["XtalConverter", "dummy_structures", "example_structures"]
