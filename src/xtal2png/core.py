@@ -394,7 +394,7 @@ class XtalConverter:
         b = [s.lattice.b for s in S]
         c = [s.lattice.c for s in S]
         space_group = [s.get_space_group_info()[1] for s in S]
-        num_sites = [len(s.sites) for s in S]
+        num_sites = [s.num_sites for s in S]
         distance = [s.distance_matrix for s in S]
 
         if verbose:
@@ -525,7 +525,7 @@ class XtalConverter:
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
-    ):
+    ) -> List[Structure]:
         """Decode PNG files as Structure objects.
 
         Parameters
@@ -673,7 +673,7 @@ class XtalConverter:
             latt_b.append(s._lattice.b)
             latt_c.append(s._lattice.c)
             angles.append(list(s._lattice.angles))
-            num_sites.append(len(s.sites))
+            num_sites.append(s.num_sites)
             space_group.append(s.get_space_group_info()[1])
 
             if n_sites != s.distance_matrix.shape[0]:
@@ -806,6 +806,10 @@ class XtalConverter:
         ]
         id_data = self.assemble_blocks(*id_blocks)
 
+        # apply num_sites mask (zero out bottom and RHS blocks past num_sites)
+        data = self.apply_num_sites_mask(data, num_sites)
+        id_data = self.apply_num_sites_mask(id_data, num_sites)
+
         data = np.expand_dims(data, 1)
         id_data = np.expand_dims(id_data, 1)
 
@@ -885,20 +889,23 @@ class XtalConverter:
         return data
 
     def disassemble_blocks(
-        self, data, id_data: Optional[NDArray] = None, id_mapper: Optional[dict] = None
+        self,
+        data,
+        # id_data: Optional[NDArray] = None,
+        # id_mapper: Optional[dict] = None,
     ):
-        if (id_data is None) is not (id_mapper is None):
-            raise ValueError(
-                f"id_data (type: {type(id_data)}) and id_mapper (type: {type(id_mapper)}) should either both be assigned or both be None."  # noqa
-            )
-        elif id_data is None and id_mapper is None:
-            _, id_data, id_mapper = self.structures_to_arrays(dummy_structures)
+        # TODO: implement a more robust solution using id_data and id_mapper
 
-        assert (
-            id_data is not None and id_mapper is not None
-        ), "id_data and id_mapper should not be None at this point"
+        # if (id_data is None) is not (id_mapper is None):
+        #     raise ValueError(
+        #         f"id_data (type: {type(id_data)}) and id_mapper (type: {type(id_mapper)}) should either both be assigned or both be None."  # noqa
+        #     )
+        # elif id_data is None and id_mapper is None:
+        #     _, id_data, id_mapper = self.structures_to_arrays(dummy_structures)
 
-        [a.shape for a in np.array_split(data, [12], axis=1)]
+        # assert (
+        #     id_data is not None and id_mapper is not None
+        # ), "id_data and id_mapper should not be None at this point"
 
         zero_pad = 12
         left_arr, right_arr = np.array_split(data, [zero_pad], axis=1)
@@ -974,9 +981,38 @@ class XtalConverter:
 
         # convert to single channel and remove singleton dimension before disassembly
         data = np.mean(data, axis=1)
-        if id_data is not None:
-            id_data = np.mean(id_data, axis=1)
-        arrays = self.disassemble_blocks(data, id_data=id_data, id_mapper=id_mapper)
+
+        # to extract num_sites for preprocess masking of data
+        if id_data is None and id_mapper is None:
+            _, id_data, id_mapper = self.structures_to_arrays(dummy_structures)
+
+        if id_data is None or id_mapper is None:  # for mypy
+            raise ValueError("id_data and id_mapper should not be None at this point")
+
+        id_data = np.mean(id_data, axis=1)
+        assert id_data is not None, "id_data should not be None at this point"
+
+        num_sites = [d[id_data[0] == id_mapper[NUM_SITES_KEY]] for d in data]
+        num_sites = [ns[np.where(ns > 0)] for ns in num_sites]
+        num_sites = [np.mean(ns) for ns in num_sites]
+
+        if rgb_scaling:
+            num_sites = rgb_unscaler(num_sites, data_range=self.num_sites_range)
+        else:
+            num_sites = element_wise_unscaler(
+                num_sites, feature_range=(0.0, 1.0), data_range=self.num_sites_range
+            )
+        assert isinstance(num_sites, np.ndarray)
+        num_sites = np.round(num_sites).astype(int)
+
+        data = self.apply_num_sites_mask(data, num_sites)
+
+        # for decoding final crystal structure
+        arrays = self.disassemble_blocks(
+            data,
+            #  id_data=id_data,
+            #  id_mapper=id_mapper
+        )
 
         (
             atom_scaled,
@@ -985,7 +1021,7 @@ class XtalConverter:
             b_scaled_tmp,
             c_scaled_tmp,
             angles_scaled_tmp,
-            num_sites_scaled_tmp,
+            _,
             space_group_scaled_tmp,
             distance_scaled,
         ) = [np.squeeze(arr, axis=2) if arr.shape[2] == 1 else arr for arr in arrays]
@@ -995,7 +1031,7 @@ class XtalConverter:
         c_scaled = np.mean(c_scaled_tmp, axis=1, where=c_scaled_tmp != 0)
         angles_scaled = np.mean(angles_scaled_tmp, axis=1, where=angles_scaled_tmp != 0)
 
-        num_sites_scaled = np.mean(num_sites_scaled_tmp, axis=1)
+        # num_sites_scaled = np.mean(num_sites_scaled_tmp, axis=1)
         space_group_scaled = np.round(np.mean(space_group_scaled_tmp, axis=1)).astype(
             int
         )
@@ -1022,7 +1058,8 @@ class XtalConverter:
             angles = rgb_unscaler(angles_scaled, data_range=self.angles_range)
 
             # # num_sites, space_group, distance_matrix unecessary for making Structure
-            num_sites = rgb_unscaler(num_sites_scaled, data_range=self.num_sites_range)
+            # num_sites = rgb_unscaler(num_sites_scaled,
+            # data_range=self.num_sites_range)
             space_group = rgb_unscaler(
                 space_group_scaled, data_range=self.space_group_range
             )
@@ -1060,11 +1097,11 @@ class XtalConverter:
             angles = element_wise_unscaler(
                 angles_scaled, feature_range=feature_range, data_range=self.angles_range
             )
-            num_sites = element_wise_unscaler(
-                num_sites_scaled,
-                feature_range=feature_range,
-                data_range=self.num_sites_range,
-            )
+            # num_sites = element_wise_unscaler(
+            #     num_sites_scaled,
+            #     feature_range=feature_range,
+            #     data_range=self.num_sites_range,
+            # )
             space_group = element_wise_unscaler(
                 space_group_scaled,
                 feature_range=feature_range,
@@ -1076,11 +1113,16 @@ class XtalConverter:
                 data_range=self.distance_range,
             )
 
-        for dm in distance_matrix:
+        # num_sites = np.round(num_sites).astype(int)
+
+        for dm, ns in zip(distance_matrix, num_sites):
             np.fill_diagonal(dm, 0.0)
+            # mask bottom and RHS via num_sites
+            dm[ns:, :] = 0.0
+            dm[:, ns:] = 0.0
 
         # technically unused, but to avoid issue with pre-commit for now:
-        num_sites, space_group, distance_matrix
+        space_group, distance_matrix
 
         # TODO: tweak lattice parameters to match predicted space group rules
 
@@ -1103,12 +1145,9 @@ class XtalConverter:
         num_structures = len(atomic_symbols)
 
         for i in self.tqdm_if_verbose(range(num_structures)):
-            at = atomic_symbols[i]
-            fr = frac_coords[i]
-            site_ids = np.where(np.array(unscaled_atom_encodings[i]) > 0)
-
-            at = at[site_ids]
-            fr = fr[site_ids]
+            ns = num_sites[i]
+            at = atomic_symbols[i][:ns]
+            fr = frac_coords[i][:ns]
 
             a, b, c = latt_a[i], latt_b[i], latt_c[i]
             alpha, beta, gamma = angles[i]
@@ -1137,6 +1176,16 @@ class XtalConverter:
             sys.stdout = sys.__stdout__
 
         return S
+
+    def apply_num_sites_mask(self, data, num_sites):
+        tot = data.shape[-1]
+        for d, ns in zip(data, num_sites):
+            filler_dim = tot - self.max_sites  # i.e. 12
+            # apply mask to bottom and RHS blocks
+            d[:, filler_dim + ns :] = 0.0
+            d[filler_dim + ns :, :] = 0.0
+
+        return data
 
 
 # ---- CLI ----
@@ -1295,3 +1344,15 @@ if __name__ == "__main__":
 # )
 # # TODO: print the initial energy as well (assuming it's available)
 # print(f"Final energy is {final_energy.item(): .3f} eV/atom")
+
+# uae = np.array(unscaled_atom_encodings[i][:ns])
+# site_ids = np.where(uae > 0)
+
+# at = at[site_ids]
+# fr = fr[site_ids]
+
+# # TODO: apply num_sites mask
+# _, num_sites_upp = self.num_sites_range
+# mask = np.zeros(self.max_sites, dtype=bool)
+# mask[:num_sites_upp, :num_sites_upp] = True
+# mask = ~mask
