@@ -382,14 +382,14 @@ def test_lower_tri_mask():
 
 
 def test_mask_error():
-    xc = XtalConverter(mask_types=["atom"])
+    xc = XtalConverter(mask_types=["num_sites"])
     imgs = xc.xtal2png(example_structures)
 
     decoded_structures = xc.png2xtal(imgs)
 
     for s in decoded_structures:
         if s.num_sites > 0:
-            raise ValueError("Atom mask should have wiped out atomic sites.")
+            raise ValueError("Num sites mask should have wiped out atomic sites.")
 
 
 def test_png2xtal_element_coder():
@@ -401,10 +401,47 @@ def test_png2xtal_element_coder():
     )
 
 
+def test_num_sites_mask():
+    xc = XtalConverter(relax_on_decode=False)
+    data, id_data, id_mapper = xc.structures_to_arrays(example_structures)
+    decoded_structures = xc.arrays_to_structures(data, id_data, id_mapper)
+
+    num_sites = [d[idd == id_mapper["num_sites"]] for d, idd in zip(data, id_data)]
+    num_sites = [ns[np.where(ns > 0)] for ns in num_sites]
+    num_sites = rgb_unscaler(num_sites, xc.num_sites_range)
+    num_sites = [np.round(np.mean(ns)).astype(int) for ns in num_sites]
+
+    for i, (ns, s, ds) in enumerate(
+        zip(num_sites, example_structures, decoded_structures)
+    ):
+        if ns != s.num_sites:
+            raise ValueError(
+                f"Num sites not encoded correctly for entry {i}. Received {ns}. Expected: {s.num_sites}"  # noqa: E501
+            )
+        if ds.num_sites != s.num_sites:
+            raise ValueError(
+                f"Num sites not decoded correctly for entry {i}. Received {ds.num_sites}. Expected: {s.num_sites}"  # noqa: E501
+            )
+
+    for ns, d in zip(num_sites, data):
+        mask = np.zeros(d.shape, dtype=bool)
+        mx = mask.shape[1]
+        ms = xc.max_sites
+        filler_dim = mx - ms  # i.e. 12
+        # apply mask to bottom and RHS blocks
+        mask[:, :, filler_dim + ns :] = True
+        mask[:, filler_dim + ns :, :] = True
+        if not np.all(d[mask] == 0):
+            raise ValueError(
+                f"Num sites mask not applied correctly. Received: {d}. Expected all zeros for bottom and RHS (last {ns} entries of each)."  # noqa: E501
+            )
+
+
 # TODO: test_matplotlibify with assertion
 
 
 if __name__ == "__main__":
+    test_num_sites_mask()
     test_png2xtal_element_coder()
     test_max_sites()
     test_lower_tri_mask()
