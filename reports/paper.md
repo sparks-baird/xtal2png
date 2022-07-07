@@ -95,7 +95,7 @@ instructions on the repository, assuming the instructions can be run without err
 While there are other invertible representations for crystal structures
 [@xieCrystalDiffusionVariational2022,@renInvertibleCrystallographicRepresentation2022a]
 as well as cross-domain conversions such as converting between molecules as strings
-[@weiningerSMILESChemicalLanguage1988], to our knowledge, this is the first package that
+[@weiningerSMILESChemicalLanguage1988,@selfies], to our knowledge, this is the first package that
 enables conversion between a crystal structure and an image file format.
 
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
