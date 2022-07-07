@@ -46,9 +46,10 @@ diffusion models. `xtal2png` encodes and decodes crystal structures via grayscal
 images (see e.g. \autoref{fig:64-bit}) by writing and reading the necessary information
 for crystal reconstruction (unit cell, atomic elements, atomic coordinates) as a square
 matrix of numbers, respectively. This is akin to making/reading a QR code for crystal
-structures. This allows you, as a materials informatics practitioner, to get streamlined
-results for new state-of-the-art image-based machine learning models applied to crystal
-structure.
+structures, where the `xtal2png` representation is an invertible representation. The
+ability to feed these images directly into image-based pipelines allows you, as a
+materials informatics practitioner, to get streamlined results for new state-of-the-art
+image-based machine learning models applied to crystal structure.
 
 ![A real-size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
 
@@ -64,12 +65,13 @@ informatics (chemical-formula-based predictions) was not publicly realized until
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
-Another example of state-of-the-art algorithm domain transfer is refactoring image-processing models for crystal structure applications, with
-introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (preprint)
-[@xieCrystalGraphConvolutional2017], and peer-reviewed domain transferred
-[@xieCrystalGraphConvolutional2018] publication dates of Sep 2016, Oct 2017, and Apr
-2018, respectively. Here, we focus on the latter application: state-of-the-art domain
-transfer from image-processing to crystal structure.
+Another example of state-of-the-art algorithm domain transfer is refactoring
+image-processing models for crystal structure applications, with introduction, domain
+transfer (preprint), and peer-reviewed domain transferred publication dates of Sep 2016,
+Oct 2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
+[@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
+respectively. Here, we focus on the latter application: state-of-the-art domain transfer
+from image-processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to encode/decode a crystal structure to/from a
 grayscale PNG image for direct use with image-based machine learning models. Let's take
