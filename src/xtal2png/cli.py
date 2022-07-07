@@ -1,3 +1,4 @@
+from cProfile import run
 import logging
 import os
 from glob import glob
@@ -7,6 +8,24 @@ import click
 from xtal2png import __version__
 
 from .core import XtalConverter, _logger, setup_logging
+
+from click.exceptions import UsageError
+from click._compat import get_text_stderr
+from click.utils import echo
+
+
+def _show_usage_error(self, file=None):
+    if file is None:
+        file = get_text_stderr()
+    color = None
+
+    echo("Error: %s" % self.format_message(), file=file, color=color)
+    if self.ctx is not None:
+        color = self.ctx.color
+        echo("\n\n" + self.ctx.get_help() + "\n", file=file, color=color)
+
+
+UsageError.show = _show_usage_error
 
 
 @click.command("cli")
@@ -39,22 +58,24 @@ from .core import XtalConverter, _logger, setup_logging
 @click.option(
     "--decode", "runtype", flag_value="decode", help="Decode PNG images to CIF files."
 )
-@click.option("--verbose", "-v", is_flag=True, help="Set loglevel to INFO.")
-@click.option("--very-verbose", "-vv", is_flag=True, help="Set loglevel to INFO.")
+@click.option("--verbose", "-v", help="Set loglevel to INFO.")
+@click.option("--very-verbose", "-vv", help="Set loglevel to INFO.")
 def cli(version, path, save_dir, runtype, verbose, very_verbose):
     """
     xtal2png command line interface.
     """
     if version:
         click.echo("xtal2png version: {}".format(__version__))
-
+        return
     if verbose:
         setup_logging(loglevel=logging.INFO)
     elif very_verbose:
         setup_logging(loglevel=logging.DEBUG)
 
-    _logger.debug("Beginning conversion to PNG format")
+    if not runtype:
+        raise UsageError("Please specify --encode or --decode.")
 
+    _logger.debug("Beginning conversion to PNG format")
     if runtype == "encode":
         if (
             path is None
@@ -65,13 +86,14 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
             )
             == 0
         ):
-            click.echo(
+            raise UsageError(
                 "Please specify a path to a CIF file or directory containing CIF files."
             )
-            return
 
         if save_dir is None:
-            click.echo("Please specify a path to a directory to save the PNG files.")
+            raise UsageError(
+                "Please specify a path to a directory to save the PNG files."
+            )
             return
 
         xc = XtalConverter(save_dir=save_dir)
@@ -82,12 +104,14 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
             if os.path.isdir(path)
             else path.endswith("png")
         ):
-            click.echo(
+            raise UsageError(
                 "Please specify a path to a PNG file or directory containing PNG files."
             )
             return
         if save_dir is None:
-            click.echo("Please specify a path to a directory to save the CIF files.")
+            raise UsageError(
+                "Please specify a path to a directory to save the CIF files."
+            )
             return
 
         xc = XtalConverter(save_dir=save_dir)

@@ -6,7 +6,8 @@ from xtal2png.cli import cli
 
 
 def test_encode_single():
-    fpath = path.join("src", "xtal2png", "utils", "Zn2B2PbO6.cif")
+    fpath = path.abspath(path.join("src", "xtal2png", "utils", "Zn2B2PbO6.cif"))
+
     args = ["--encode", "--path", fpath, "--save-dir", "tmp"]
 
     runner = CliRunner()
@@ -15,7 +16,7 @@ def test_encode_single():
 
 
 def test_encode_dir():
-    fpath = path.join("src", "xtal2png", "utils")
+    fpath = path.abspath(path.join("src", "xtal2png", "utils"))
     args = ["--encode", "--path", fpath, "--save-dir", path.join("tmp", "tmp")]
     runner = CliRunner()
     result = runner.invoke(cli, args)
