@@ -21,7 +21,20 @@ aria-label="Issue sparks-baird/xtal2png on GitHub">Issue</a>
 <a class="github-button" href="https://github.com/sparks-baird/xtal2png/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss sparks-baird/xtal2png on GitHub">Discuss</a>
 <br><br>
 
-> Manuscript coming soon! (est. July 22, 2022)
+The latest advances in machine learning are often in natural language such as with long
+short-term memory networks (LSTMs) and transformers or image processing such as with
+generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
+diffusion models; however, transfering these advances to adjacent domains such as
+materials informatics often takes years. `xtal2png` encodes and decodes crystal
+structures via grayscale PNG images (see e.g. \autoref{fig:64-bit}) by writing and
+reading the necessary information for crystal reconstruction (unit cell, atomic
+elements, atomic coordinates) as a square matrix of numbers, respectively. This is akin
+to making/reading a QR code for crystal structures, where the `xtal2png` representation
+is invertible. The ability to feed these images directly into image-based pipelines
+allows you, as a materials informatics practitioner, to get streamlined results for new
+state-of-the-art image-based machine learning models applied to crystal structure.
+
+> Manuscript coming soon!
 
  <!-- ![GitHub Repo stars](https://img.shields.io/github/stars/sparks-baird/xtal2png?style=social) ![GitHub followers](https://img.shields.io/github/followers/sgbaird?style=social) ![GitHub issues](https://img.shields.io/github/issues-raw/sparks-baird/xtal2png) ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/sparks-baird/xtal2png) -->
 
