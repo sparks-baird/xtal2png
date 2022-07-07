@@ -118,6 +118,8 @@ The before and after structures match within an expected tolerance; note the rou
 | --- | --- | --- |
 | ![Zn8B8Pb4O24,volume=623,uid=bc2d](https://user-images.githubusercontent.com/45469701/169936372-e14a8bba-698a-4fc9-9d4b-fc5e1de7d67f.png) | <img src=https://user-images.githubusercontent.com/45469701/169936297-57f5afb6-c4ae-4d8a-8cbb-33dcaf190b98.png width=400> | <img src=https://user-images.githubusercontent.com/45469701/169937021-f6f60169-6965-4db1-9bbd-e8744521d570.png width=400> |
 
+Additional examples can be found in [the docs](https://xtal2png.readthedocs.io/en/latest/examples.html).
+
 ## Limitations and Design Considerations
 
 There are some limitations and design considerations for `xtal2png`. While the round-off
@@ -140,6 +142,8 @@ matrix is additional information that can help the models to capture the essence
 particular crystal structures. In a future implementation, we plan to reconstruct
 Euclidean coordinates from the distance matrices and homogenize (e.g. via weighted
 averaging) the explicit fractional coordinates with the reconstructed coordinates.
+
+We also selected default
 
 ## Installation
 
