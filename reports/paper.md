@@ -58,30 +58,30 @@ for crystal reconstruction (unit cell, atomic elements, atomic coordinates) as a
 matrix of numbers, respectively. This is akin to making/reading a QR code for crystal
 structures, where the `xtal2png` representation is an invertible representation. The
 ability to feed these images directly into image-based pipelines allows you, as a
-materials informatics practitioner, to get streamlined results for new state-of-the-art
+material informatics practitioner, to get streamlined results for new state-of-the-art
 image-based machine learning models applied to crystal structure.
 
-![A real-size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
+![A real size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
 
 # Statement of need
 
 Using a state-of-the-art method in a separate domain with a custom data representation
 is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYou2017
 introduced the revolutionary natural language processing transformer architecture in Jun
-2017; yet the application of transformers to the adjacent domain of materials
+2017; yet the application of transformers to the adjacent domain of material
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019/early 2020
 [@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
 2020/ mid-2021
 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
-Another example of state-of-the-art algorithm domain transfer is refactoring
-image-processing models for crystal structure applications, with introduction, domain
+Another example of a state-of-the-art algorithm domain transfer is refactoring
+image-processing models for crystal structure applications, with the introduction, domain
 transfer (preprint), and peer-reviewed domain transferred publication dates of Sep 2016,
 Oct 2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
 [@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
 respectively. Here, we focus on the latter application: state-of-the-art domain transfer
-from image-processing to crystal structure.
+from image processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
 and a grayscale PNG image for direct use with image-based machine learning models. Let's
@@ -90,7 +90,7 @@ Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
 generation, conditional inpainting, and conditional JPEG restoration tasks with
 correlaries for crystal generation, structure prediction, and structure relaxation,
-respectively. Rather than dig into the code spending hours, days, or weeks modifying,
+respectively. Rather than dig into the code and spending hours, days, or weeks modifying,
 debugging, and playing GitHub phone tag with the developers before you can (maybe) get
 preliminary results, `xtal2png` lets you get those results using the default
 instructions on the repository, assuming the instructions can be run without error.
@@ -102,10 +102,10 @@ enables conversion between a crystal structure and an image file format.
 
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
 
-`xtal2png` was designed to be easy-to-use by both
+`xtal2png` was designed to be easy to use by both
 "[Pythonistas](https://en.wiktionary.org/wiki/Pythonista)" and entry-level coders alike.
 `xtal2png` provides a straightforward Python application programming interface (API) and
-command line interface (CLI). `xtal2png` relies on `pymatgen.core.structure.Structure`
+command-line interface (CLI). `xtal2png` relies on `pymatgen.core.structure.Structure`
 [@ongPythonMaterialsGenomics2013] objects for representing crystal structures and also
 supports reading crystallographic information files (CIFs) from directories. `xtal2png`
 encodes crystallographic information related to the unit cell, crystallographic
@@ -136,10 +136,10 @@ save significant user time of code refactoring and adaptation during the process
 obtaining preliminary results on a newly released model. After obtaining preliminary
 results, you get to decide whether it's worth it to you to take on the
 higher-cost/higher-expertise task of modifying the codebase and using a more customized
-approach. Or, you can stick with the results of xtal2png. It's up to you!
+approach. Or you can stick with the results of xtal2png. It's up to you!
 
 We plan to apply `xtal2png` to a probabilistic diffusion generative model as a
-proof-of-concept and present our findings in the near future.
+proof of concept and present our findings in the near future.
 
 <!-- ![Caption for example figure.\label{fig:example}](figure.png) -->
 
