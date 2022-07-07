@@ -73,15 +73,22 @@ Oct 2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
 respectively. Here, we focus on the latter application: state-of-the-art domain transfer
 from image-processing to crystal structure.
 
-`xtal2png` is a Python package that allows you to encode/decode a crystal structure to/from a
-grayscale PNG image for direct use with image-based machine learning models. Let's take
-[Google's image-to-image diffusion model,
+`xtal2png` is a Python package that allows you to convert between a crystal structure
+and a grayscale PNG image for direct use with image-based machine learning models. Let's
+take [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
-[@sahariaPaletteImagetoImageDiffusion2022]. Rather than dig into the code spending
-hours, days, or weeks modifying, debugging, and playing GitHub phone tag with the
-developers before you can (maybe) get preliminary results, `xtal2png` lets you get those
-results using the default instructions on the repository, assuming the instructions can
-be run without error.
+[@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
+generation, conditional inpainting, and conditional JPEG restoration tasks with
+correlaries for crystal generation, structure prediction, and structure relaxation,
+respectively. Rather than dig into the code spending hours, days, or weeks modifying,
+debugging, and playing GitHub phone tag with the developers before you can (maybe) get
+preliminary results, `xtal2png` lets you get those results using the default
+instructions on the repository, assuming the instructions can be run without error.
+While there are other invertible representations for crystal structure
+[@xieCrystalDiffusionVariational2022,@renInvertibleCrystallographicRepresentation2022a]
+as well as cross-domain conversions such as converting between molecules as strings
+[@weiningerSMILESChemicalLanguage1988], to our knowledge, this is the first package that
+enables conversion between a crystal structure and an image file format.
 
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
 
@@ -96,17 +103,30 @@ symmetry, and atomic elements and coordinates which are each scaled individually
 according to the information type. An upscaled version of the PNG image and a legend of
 the representation are given in \autoref{fig:example-and-legend}. Due to the encoding of
 numerical values as grayscale PNG images (allowable values are integers between 0 and
-255), a small round-off error is present during a single round of encoding and decoding.
+255), a round-off error is present during a single round of encoding and decoding.
 An example comparing an original vs. decoded structure is given in
 \autoref{fig:original-decoded}.
+
+There are some limitations and design considerations for `xtal2png` which are described
+in `xtal2png`'s [documentation](https://xtal2png.readthedocs.io/en/latest/index.html) in
+the Overview section.
+
+At this time, it is unclear to what extent deviation from the aforementioned design
+choices will affect performance. We intend to use hyperparameter optimization to
+determine an optimal configuration for crystal structure generation tasks using the
+`xtal2png` representation.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
 [`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $Zn_2B_2PbO_6$. Images were generated using [ase visualizations](https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html). \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the representation lies in being able to directly use the PNG
 representation with image-based models which often do not directly support custom
-dataset types, potentially saving days or weeks during the process of obtaining
-preliminary results on a newly released model.
+dataset types. We expect the use of `xtal2png` as a screening tool for such models to
+save significant user time of code refactoring and adaptation during the process of
+obtaining preliminary results on a newly released model. After obtaining preliminary
+results, you get to decide whether it's worth it to you to take on the
+higher-cost/higher-expertise task of modifying the codebase and using a more customized
+approach. Or, you can stick with the results of xtal2png. It's up to you!
 
 We plan to apply `xtal2png` to a probabilistic diffusion generative model as a
 proof-of-concept and present our findings in the near future.
