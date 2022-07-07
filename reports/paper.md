@@ -82,7 +82,7 @@ respectively. Here, we focus on the latter application: state-of-the-art domain 
 from image processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
-and a grayscale PNG image for direct use with image-based machine learning models. Let's
+and a (grayscale) PNG image for direct use with image-based machine learning models. Let's
 take [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
