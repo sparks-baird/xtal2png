@@ -29,8 +29,14 @@ After getting preliminary results, you get to decide whether it's worth it to yo
 conda create -n xtal2png -c conda-forge xtal2png m3gnet
 conda activate xtal2png
 ```
-> NOTE: `m3gnet` is an optional dependency that performs surrogate DFT relaxation.
+> NOTE: [`m3gnet`](https://github.com/materialsvirtuallab/m3gnet) is an optional dependency that performs surrogate DFT relaxation.
+
 ### Example
+
+Here, we use the top-level
+[`XtalConverter`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter)
+class with and without optional relaxation via
+[`m3gnet`](https://github.com/materialsvirtuallab/m3gnet).
 
 ```python
 # example_structures is a list of `pymatgen.core.structure.Structure` objects
@@ -121,10 +127,11 @@ The before and after structures match within an expected tolerance; note the rou
 ## Limitations and Design Considerations
 
 There are some limitations and design considerations for `xtal2png`. While the round-off
-error is a necessary evil for encoding to a PNG file format, the unrounded NumPy arrays
-can be used directly instead if supported by the image model of interest. We choose a
+error is a necessary evil for encoding to a [PNG file format](https://en.wikipedia.org/wiki/Portable_Network_Graphics), the unrounded NumPy arrays
+can be used directly instead if supported by the image model of interest via
+[`structures_to_arrays`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter.structures_to_arrays) and [`arrays_to_structures`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.XtalConverter.arrays_to_structures). We choose a
 $64\times64$ representation by default which supports up to 52 sites within a unit cell.
-The maximum number of sites can be adjusted which changes the size of the
+The maximum number of sites [`max_sites`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter) can be adjusted which changes the size of the
 representation. A square representation is used for greater compatibility with the
 common limitation of image-based models supporting only square image arrays. The choice
 of the default sidelength as a base-2 number (i.e. $2^6$) reflects common conventions of
@@ -140,6 +147,8 @@ matrix is additional information that can help the models to capture the essence
 particular crystal structures. In a future implementation, we plan to reconstruct
 Euclidean coordinates from the distance matrices and homogenize (e.g. via weighted
 averaging) the explicit fractional coordinates with the reconstructed coordinates.
+
+See the docs for the full list of customizable parameters that `XtalConverter` takes.
 
 ## Installation
 
