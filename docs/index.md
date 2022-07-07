@@ -44,6 +44,7 @@ state-of-the-art image-based machine learning models applied to crystal structur
 :maxdepth: 2
 
 Overview <readme>
+Examples <examples>
 Contributions & Help <contributing>
 License <license>
 Authors <authors>
