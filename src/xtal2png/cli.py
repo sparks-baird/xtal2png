@@ -1,17 +1,15 @@
-from cProfile import run
 import logging
 import os
 from glob import glob
 
 import click
+from click._compat import get_text_stderr
+from click.exceptions import UsageError
+from click.utils import echo
 
 from xtal2png import __version__
 
 from .core import XtalConverter, _logger, setup_logging
-
-from click.exceptions import UsageError
-from click._compat import get_text_stderr
-from click.utils import echo
 
 
 def _show_usage_error(self, file=None):
@@ -26,6 +24,32 @@ def _show_usage_error(self, file=None):
 
 
 UsageError.show = _show_usage_error
+
+
+def check_save_dir(save_dir):
+    if save_dir is None:
+        raise UsageError("Please specify a path to a directory to save the PNG files.")
+
+
+def check_path(path, extension):
+    if path is None:
+        raise UsageError(
+            f"Please specify a path to a {extension} file or "
+            "directory containing {extension} files."
+        )
+
+
+def check_files(path, extension):
+    if os.path.isdir(path):
+        files = glob(os.path.join(path, f"*.{extension}"))
+        if not files:
+            raise UsageError(f"No {extension.upper()} files found in directory: {path}")
+    elif os.path.isfile(path):
+        if not path.endswith(f".{extension}"):
+            raise UsageError(f"File must have .{extension} extension: {path}")
+        files = [path]
+
+    return files
 
 
 @click.command("cli")
@@ -69,53 +93,30 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
         return
     if verbose:
         setup_logging(loglevel=logging.INFO)
-    elif very_verbose:
+    if very_verbose:
         setup_logging(loglevel=logging.DEBUG)
 
     if not runtype:
         raise UsageError("Please specify --encode or --decode.")
 
     _logger.debug("Beginning conversion to PNG format")
+
     if runtype == "encode":
-        if (
-            path is None
-            or (
-                len(glob(os.path.join(path, "*.cif")))
-                if os.path.isdir(path)
-                else path.endswith("cif")
-            )
-            == 0
-        ):
-            raise UsageError(
-                "Please specify a path to a CIF file or directory containing CIF files."
-            )
+        check_path(path, "CIF")
+        check_save_dir(save_dir)
 
-        if save_dir is None:
-            raise UsageError(
-                "Please specify a path to a directory to save the PNG files."
-            )
-            return
+        files = check_files(path, "cif")
 
         xc = XtalConverter(save_dir=save_dir)
-        xc.xtal2png(path, save=True)
+        xc.xtal2png(files, save=True)
     elif runtype == "decode":
-        if path is None or (
-            len(glob(os.path.join(path, "*.png")))
-            if os.path.isdir(path)
-            else path.endswith("png")
-        ):
-            raise UsageError(
-                "Please specify a path to a PNG file or directory containing PNG files."
-            )
-            return
-        if save_dir is None:
-            raise UsageError(
-                "Please specify a path to a directory to save the CIF files."
-            )
-            return
+        check_path(path, "PNG")
+        check_save_dir(save_dir)
+
+        files = check_files(path, "png")
 
         xc = XtalConverter(save_dir=save_dir)
-        xc.png2xtal(path, save=True)
+        xc.png2xtal(files, save=True)
 
 
 if __name__ == "__main__":
