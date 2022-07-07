@@ -1,10 +1,11 @@
-import click
-from xtal2png import __version__
-from .core import setup_logging
 import logging
-from .core import _logger
-from .core import XtalConverter
 from glob import glob
+
+import click
+
+from xtal2png import __version__
+
+from .core import XtalConverter, _logger, setup_logging
 
 
 @click.command("cli")

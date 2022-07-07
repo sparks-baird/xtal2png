@@ -2,7 +2,6 @@
 import logging
 import sys
 from functools import lru_cache
-from glob import glob
 from itertools import chain
 
 # from itertools import zip_longest
@@ -24,7 +23,6 @@ from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
 
-from xtal2png import __version__
 from xtal2png.utils.data import (
     dummy_structures,
     element_wise_scaler,
