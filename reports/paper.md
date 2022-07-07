@@ -21,10 +21,11 @@ authors:
   - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    affiliation: "1,2" # (Multiple affiliations must be quoted)
   - name: Colton Seegmiller
-  - equal-contrib: false
-  - affiliation: "4" # (Multiple affiliations must be quoted)
+    orcid: 0000-0001-9511-2918
+    equal-contrib: false
+    affiliation: "4" # (Multiple affiliations must be quoted)
   - name: Taylor D. Sparks
     orcid: 0000-0001-8020-7711
     equal-contrib: false
