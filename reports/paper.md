@@ -92,7 +92,7 @@ respectively. Rather than dig into the code and spending hours, days, or weeks m
 debugging, and playing GitHub phone tag with the developers before you can (maybe) get
 preliminary results, `xtal2png` lets you get those results using the default
 instructions on the repository, assuming the instructions can be run without error.
-While there are other invertible representations for crystal structure
+While there are other invertible representations for crystal structures
 [@xieCrystalDiffusionVariational2022,@renInvertibleCrystallographicRepresentation2022a]
 as well as cross-domain conversions such as converting between molecules as strings
 [@weiningerSMILESChemicalLanguage1988], to our knowledge, this is the first package that
