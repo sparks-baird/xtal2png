@@ -59,7 +59,7 @@ matrix of numbers, respectively. This is akin to making/reading a QR code for cr
 structures, where the `xtal2png` representation is an invertible representation. The
 ability to feed these images directly into image-based pipelines allows you, as a
 material informatics practitioner, to get streamlined results for new state-of-the-art
-image-based machine learning models applied to crystal structure.
+image-based machine learning models applied to crystal structures.
 
 ![A real size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
 
@@ -110,7 +110,7 @@ encodes crystallographic information related to the unit cell, crystallographic
 symmetry, and atomic elements and coordinates which are each scaled individually
 according to the information type. An upscaled version of the PNG image and a legend of
 the representation are given in \autoref{fig:example-and-legend}. Due to the encoding of
-numerical values as grayscale PNG images (allowable values are integers between 0 and
+numerical values as PNG images (allowable values are integers between 0 and
 255), a round-off error is present during a single round of encoding and decoding.
 An example comparing an original vs. decoded structure is given in
 \autoref{fig:original-decoded}.
