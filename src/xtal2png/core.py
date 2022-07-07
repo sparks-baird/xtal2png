@@ -137,16 +137,16 @@ class XtalConverter:
     max_sites : int, optional
         Maximum number of sites to accomodate in encoding, by default 52
     save_dir : Union[str, 'PathLike[str]']
-        Directory to save PNG files via :func:``xtal2png``,
+        Directory to save PNG files via :func:`xtal2png`,
         by default path.join("data", "interim")
     symprec : Union[float, Tuple[float, float]], optional
         The symmetry precision to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        :func:`pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure`. If
         specified as a tuple, then ``symprec[0]`` applies to encoding and ``symprec[1]``
         applies to decoding. By default 0.1.
     angle_tolerance : Union[float, int, Tuple[float, float], Tuple[int, int]], optional
         The angle tolerance (degrees) to use when decoding `pymatgen` structures via
-        ``func:pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure``. If
+        :func:`pymatgen.symmetry.analyzer.SpaceGroupAnalyzer.get_refined_structure`. If
         specified as a tuple, then ``angle_tolerance[0]`` applies to encoding and
         ``angle_tolerance[1]`` applies to decoding. By default 5.0.
     encode_cell_type : Optional[str], optional
@@ -164,10 +164,10 @@ class XtalConverter:
     channels : int, optional
         Number of channels, a positive integer. Typically choices would be 1 (grayscale)
         or 3 (RGB), and are the only compatible choices when using
-        func:``XtalConverter().xtal2png`` and func:``XtalConverter().png2xtal``. For
+        :func:`XtalConverter().xtal2png` and :func:`XtalConverter().png2xtal`. For
         positive integers other than 1 or 3, use
-        func:``XtalConverter().structures_to_arrays`` and
-        func:``XtalConverter().arrays_to_structures`` directly instead.
+        :func:`XtalConverter().structures_to_arrays` and
+        :func:`XtalConverter().arrays_to_structures` directly instead.
     verbose: bool, optional
         Whether to print verbose debugging information or not.
     element_encoding : str
