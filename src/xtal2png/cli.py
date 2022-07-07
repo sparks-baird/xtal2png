@@ -1,4 +1,5 @@
 import logging
+import os
 from glob import glob
 
 import click
@@ -55,7 +56,15 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
     _logger.debug("Beginning conversion to PNG format")
 
     if runtype == "encode":
-        if path is None or len(glob(path / "*.cif")) == 0:
+        if (
+            path is None
+            or (
+                len(glob(os.path.join(path, "*.cif")))
+                if os.path.isdir(path)
+                else path.endswith("cif")
+            )
+            == 0
+        ):
             click.echo(
                 "Please specify a path to a CIF file or directory containing CIF files."
             )
@@ -68,7 +77,11 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
         xc = XtalConverter(save_dir=save_dir)
         xc.xtal2png(path, save=True)
     elif runtype == "decode":
-        if path is None or len(glob(path / "*.png")) == 0:
+        if path is None or (
+            len(glob(os.path.join(path, "*.png")))
+            if os.path.isdir(path)
+            else path.endswith("png")
+        ):
             click.echo(
                 "Please specify a path to a PNG file or directory containing PNG files."
             )
