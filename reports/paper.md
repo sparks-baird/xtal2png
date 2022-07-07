@@ -52,13 +52,13 @@ bibliography: paper.bib
 The latest advances in machine learning are often in natural language such as with long
 short-term memory networks (LSTMs) and transformers or image processing such as with
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
-diffusion models. `xtal2png` encodes and decodes crystal structures via grayscale PNG
+diffusion models. `xtal2png` encodes and decodes crystal structures via PNG
 images (see e.g. \autoref{fig:64-bit}) by writing and reading the necessary information
 for crystal reconstruction (unit cell, atomic elements, atomic coordinates) as a square
 matrix of numbers, respectively. This is akin to making/reading a QR code for crystal
 structures, where the `xtal2png` representation is an invertible representation. The
 ability to feed these images directly into image-based pipelines allows you, as a
-material informatics practitioner, to get streamlined results for new state-of-the-art
+materials informatics practitioner, to get streamlined results for new state-of-the-art
 image-based machine learning models applied to crystal structures.
 
 ![A real size $64\times64$ pixel `xtal2png` representation of a crystal structure.\label{fig:64-bit}](figures/Zn8B8Pb4O24,volume=623,uid=bc2d.png)
@@ -68,35 +68,38 @@ image-based machine learning models applied to crystal structures.
 Using a state-of-the-art method in a separate domain with a custom data representation
 is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYou2017
 introduced the revolutionary natural language processing transformer architecture in Jun
-2017; yet the application of transformers to the adjacent domain of material
+2017; yet the application of transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
-2019 [@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
-approximately two-and-a-half years later, with peer-reviewed publications dating to late
-2020 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
-Another example of a state-of-the-art algorithm domain transfer is refactoring
-image-processing models for crystal structure applications, with the introduction of domain
-transfer (preprint), and peer-reviewed domain transferred publication dates of Sep 2016,
-Oct 2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
+2019 [@goodallPredictingMaterialsProperties2019], approximately two-and-a-half years
+later, with peer-reviewed publications dating to late 2020
+[@goodallPredictingMaterialsProperties2020]. Interestingly, a nearly identical
+implementation was being developed concurrently in a different research group with
+slightly later public release [@wangCompositionallyrestrictedAttentionbasedNetwork2020]
+and publication [@wangCompositionallyRestrictedAttentionbased2021] dates. Another
+example of a state-of-the-art algorithm domain transfer is refactoring image-processing
+models for crystal structure applications, with the introduction of domain transfer
+(preprint), and peer-reviewed domain transferred publication dates of Sep 2016, Oct
+2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
 [@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
 respectively. Here, we focus on the latter application: state-of-the-art domain transfer
 from image processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
-and a (grayscale) PNG image for direct use with image-based machine learning models. Let's
-take [Google's image-to-image diffusion model,
+and a PNG image for direct use with image-based machine learning models. Let's take
+[Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
-generation, conditional inpainting, and conditional JPEG restoration tasks with
-correlates for crystal generation, structure prediction, and structure relaxation,
-respectively. Rather than dig into the code and spending hours, days, or weeks modifying,
-debugging, and playing GitHub phone tag with the developers before you can (maybe) get
-preliminary results, `xtal2png` lets you get those results using the default
-instructions on the repository, assuming the instructions can be run without error.
-While there are other invertible representations for crystal structures
-[@xieCrystalDiffusionVariational2022,@renInvertibleCrystallographicRepresentation2022a]
+generation, conditional inpainting, and conditional image restoration tasks with
+corresponding applications in crystal generation, structure prediction, and structure
+relaxation, respectively. Rather than dig into the code and spending hours, days, or
+weeks modifying, debugging, and playing GitHub phone tag with the developers before you
+can (maybe) get preliminary results, `xtal2png` lets you get those results using the
+default instructions on the repository, assuming the instructions can be run without
+error. While there are other invertible representations for crystal structures
+[@xieCrystalDiffusionVariational2022;@renInvertibleCrystallographicRepresentation2022a]
 as well as cross-domain conversions such as converting between molecules as strings
-[@weiningerSMILESChemicalLanguage1988,@selfies], to our knowledge, this is the first package that
-enables conversion between a crystal structure and an image file format.
+[@weiningerSMILESChemicalLanguage1988,@selfies], to our knowledge, this is the first
+package that enables conversion between a crystal structure and an image file format.
 
 ![(a) upscaled example image and (b) legend of the `xtal2png` encoding.\label{fig:example-and-legend}](figures/example-and-legend.png)
 
