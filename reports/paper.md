@@ -70,13 +70,11 @@ is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYo
 introduced the revolutionary natural language processing transformer architecture in Jun
 2017; yet the application of transformers to the adjacent domain of material
 informatics (chemical-formula-based predictions) was not publicly realized until late
-2019/early 2020
-[@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
+2019 [@goodallPredictingMaterialsProperties2019;@wangCompositionallyrestrictedAttentionbasedNetwork2020],
 approximately two-and-a-half years later, with peer-reviewed publications dating in late
-2020/ mid-2021
-[@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
+2020 [@goodallPredictingMaterialsProperties2020;@wangCompositionallyRestrictedAttentionbased2021].
 Another example of a state-of-the-art algorithm domain transfer is refactoring
-image-processing models for crystal structure applications, with the introduction, domain
+image-processing models for crystal structure applications, with the introduction of domain
 transfer (preprint), and peer-reviewed domain transferred publication dates of Sep 2016,
 Oct 2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
 [@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
