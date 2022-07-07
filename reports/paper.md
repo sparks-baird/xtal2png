@@ -42,7 +42,7 @@ bibliography: paper.bib
 The latest advances in machine learning are often in natural language such as with long
 short-term memory networks (LSTMs) and transformers or image processing such as with
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
-diffusion models. Using `xtal2png` [@xtal2png] to encode/decode crystal structures via grayscale PNG images (see
+diffusion models. Using `xtal2png` to encode/decode crystal structures via grayscale PNG images (see
 e.g. \autoref{fig:64-bit}) is akin to making/reading a QR code for crystal structures.
 This allows you, as a materials informatics practitioner, to get streamlined results for
 new state-of-the-art image-based machine learning models applied to crystal structure.
@@ -68,7 +68,7 @@ introduction [@kipfSemisupervisedClassificationGraph2016], domain transfer (prep
 2018, respectively. Here, we focus on the latter application: state-of-the-art domain
 transfer from image-processing to crystal structure.
 
-`xtal2png` [@xtal2png]
+`xtal2png`
 ([https://github.com/sparks-baird/xtal2png](https://github.com/sparks-baird/xtal2png))
 is a Python package that allows you to encode/decode a crystal structure to/from a
 grayscale PNG image for direct use with image-based machine learning models. Let's take
