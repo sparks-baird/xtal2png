@@ -13,16 +13,18 @@ from .core import XtalConverter, _logger, setup_logging
 @click.option(
     "--path",
     "-p",
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        dir_okay=True,
+        file_okay=True,
+        readable=True,
+    ),
     help="Crystallographic information file (CIF) filepath "
     " (extension must be .cif or .CIF)"
     " or path to directory containing .cif files or processed PNG filepath"
     " or path to directory containing processed .png files "
     "(extension must be .png or .PNG). "
     "Assumes CIFs if --encode flag is used. Assumes PNGs if --decode flag is used.",
-    dir_okay=True,
-    file_okay=True,
-    readable=True,
 )
 @click.option(
     "--save-dir",
