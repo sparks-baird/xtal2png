@@ -118,6 +118,29 @@ The before and after structures match within an expected tolerance; note the rou
 | --- | --- | --- |
 | ![Zn8B8Pb4O24,volume=623,uid=bc2d](https://user-images.githubusercontent.com/45469701/169936372-e14a8bba-698a-4fc9-9d4b-fc5e1de7d67f.png) | <img src=https://user-images.githubusercontent.com/45469701/169936297-57f5afb6-c4ae-4d8a-8cbb-33dcaf190b98.png width=400> | <img src=https://user-images.githubusercontent.com/45469701/169937021-f6f60169-6965-4db1-9bbd-e8744521d570.png width=400> |
 
+## Limitations and Design Considerations
+
+There are some limitations and design considerations for `xtal2png`. While the round-off
+error is a necessary evil for encoding to a PNG file format, the unrounded NumPy arrays
+can be used directly instead if supported by the image model of interest. We choose a
+$64\times64$ representation by default which supports up to 52 sites within a unit cell.
+The maximum number of sites can be adjusted which changes the size of the
+representation. A square representation is used for greater compatibility with the
+common limitation of image-based models supporting only square image arrays. The choice
+of the default sidelength as a base-2 number (i.e. $2^6$) reflects common conventions of
+low-resolution images for image-based machine learning tasks. While the
+distance matrix does not directly contribute to the reconstruction in the current
+implementation of `xtal2png`, it serves a number of purposes. First, similar to the unit
+cell volume and space group information, it can provide additional guidance to the
+algorithm. A corresponding example would be the role of background vs. foreground in
+classification of wolves vs. huskies; oftentimes classification algorithms will pay
+attention to the background (such as presence of snow) in predicting the animal class.
+Likewise, providing contextual information such as volume, space group, and a distance
+matrix is additional information that can help the models to capture the essence of
+particular crystal structures. In a future implementation, we plan to reconstruct
+Euclidean coordinates from the distance matrices and homogenize (e.g. via weighted
+averaging) the explicit fractional coordinates with the reconstructed coordinates.
+
 ## Installation
 
 ### Anaconda (`conda`) installation (recommended)
