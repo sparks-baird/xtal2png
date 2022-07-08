@@ -1,3 +1,4 @@
+ipykernel
 myst-parser[linkify]
 nbsphinx
 nbsphinx-link
