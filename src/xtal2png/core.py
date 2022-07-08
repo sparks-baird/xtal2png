@@ -593,7 +593,7 @@ class XtalConverter:
     ) -> Tuple[NDArray, NDArray, Dict[str, int]]:
         """Convert pymatgen Structure to scaled 3D array of crystallographic info.
 
-        ``atomic_numbers`` and ``distance_matrix` get padded or cropped as appropriate,
+        ``atomic_numbers`` and ``distance_matrix`` get padded or cropped as appropriate,
         as these depend on the number of sites in the structure.
 
         Parameters
