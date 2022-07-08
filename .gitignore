@@ -57,3 +57,6 @@ xtal2png/meta.yaml
 tmp/**
 results/**/model-*.pt
 results/**/sample-*.png
+notebooks/data/external/structures.pkl
+reports/figures/tmp.png
+reports/figures/tmp.html

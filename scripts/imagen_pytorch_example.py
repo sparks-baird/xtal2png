@@ -7,7 +7,7 @@ from mp_time_split.core import MPTimeSplit
 
 from xtal2png.core import XtalConverter
 
-low_mem = True
+low_mem = False
 max_batch_size = 16
 
 mpt = MPTimeSplit()
