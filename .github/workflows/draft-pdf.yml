@@ -4,6 +4,11 @@ on:
       - 'reports/paper.md'
       - 'reports/paper.bib'
       - 'reports/figures/**'
+  pull_request:
+    paths:
+      - 'reports/paper.md'
+      - 'reports/paper.bib'
+      - 'reports/figures/**'
 
 jobs:
   paper:

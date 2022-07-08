@@ -1,0 +1,34 @@
+atom_range * 2 float + 1 constraint
+a_range * 2 float + 1 constraint
+b_range * 2 float + 1 constraint
+volume_range * 2 float + 1 constraint
+distance_distance_range float * 2 + 1 constraint
+symprec * 2 float + 1 constraint
+angle_tolerance * 2 float + 1 constraint
+
+-- 14 float parameters, 7 constraints
+
+max_sites * 1 integer
+channels : categorical/(integer?), 2 options (could have as a somewhat unconstrained integer variable when using e.g. imagen-pytorch)
+
+-- 2 integer parameters
+
+relax_on_decode, categorical/boolean, 2 options
+volume_mask, space_group_mask, distance_mask, lower_tri_mask - 4 boolean
+
+5 boolean parameters
+
+element_coder, categorical, ~5 options (?)
+# fit, categorical/boolean, 2 options
+encode_cell_type, categorical, 5 options
+decode_cell_type (fix to encode_cell_type)
+
+2 categorical parameters, each with ~5 options
+
+Validity, Uniqueness, Novelty
+
+3 objectives
+
+14+2+5+2 = 23
+
+23 parameters, 7 constraints, and 3 objectives

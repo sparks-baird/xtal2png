@@ -1,8 +1,11 @@
 from importlib.resources import read_text
 from typing import Optional, Sequence
+from warnings import warn
 
 import numpy as np
+from numpy.testing import assert_allclose, assert_equal
 from numpy.typing import ArrayLike
+from pymatgen.analysis.structure_matcher import ElementComparator, StructureMatcher
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -282,3 +285,101 @@ def unit_cell_converter(
             f"Expected one of 'primitive_standard', 'conventional_standard', 'refined', 'reduced' or None, got {cell_type}"  # noqa: E501
         )
     return s
+
+
+RGB_TOL = 1 / 255  # should this be 256?
+RGB_LOOSE_TOL = 1.5 / 255
+
+
+def assert_structures_approximate_match(
+    example_structures, structures, tol_multiplier=1.0
+):
+    for i, (s, structure) in enumerate(zip(example_structures, structures)):
+        dummy_matcher = StructureMatcher()
+        ltol = dummy_matcher.ltol * tol_multiplier
+        stol = dummy_matcher.stol * tol_multiplier
+        angle_tol = dummy_matcher.angle_tol * tol_multiplier
+        sm = StructureMatcher(
+            ltol=ltol,
+            stol=stol,
+            angle_tol=angle_tol,
+            comparator=ElementComparator(),
+        )
+        is_match = sm.fit(s, structure)
+        if not is_match:
+            warn(
+                f"{i}-th original and decoded structures do not match according to StructureMatcher(comparator=ElementComparator()).fit(s, structure).\n\nOriginal (s): {s}\n\nDecoded (structure): {structure}"  # noqa: E501
+            )
+
+        spa = SpacegroupAnalyzer(s, symprec=0.1, angle_tolerance=5.0)
+        s = spa.get_refined_structure()
+        spa = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5.0)
+        structure = spa.get_refined_structure()
+
+        sm = StructureMatcher(primitive_cell=False, comparator=ElementComparator())
+        s2 = sm.get_s2_like_s1(s, structure)
+
+        a_check = s._lattice.a
+        b_check = s._lattice.b
+        c_check = s._lattice.c
+        angles_check = s._lattice.angles
+        atomic_numbers_check = s.atomic_numbers
+        frac_coords_check = s.frac_coords
+        space_group_check = s.get_space_group_info()[1]
+
+        latt_a = s2._lattice.a
+        latt_b = s2._lattice.b
+        latt_c = s2._lattice.c
+        angles = s2._lattice.angles
+        atomic_numbers = s2.atomic_numbers
+        frac_coords = s2.frac_coords
+        space_group = s.get_space_group_info()[1]
+
+        assert_allclose(
+            a_check,
+            latt_a,
+            rtol=RGB_LOOSE_TOL * tol_multiplier,
+            err_msg="lattice parameter length `a` not all close",
+        )
+
+        assert_allclose(
+            b_check,
+            latt_b,
+            rtol=RGB_LOOSE_TOL * tol_multiplier,
+            err_msg="lattice parameter length `b` not all close",
+        )
+
+        assert_allclose(
+            c_check,
+            latt_c,
+            rtol=RGB_LOOSE_TOL * 2 * tol_multiplier,
+            err_msg="lattice parameter length `c` not all close",
+        )
+
+        assert_allclose(
+            angles_check,
+            angles,
+            rtol=RGB_LOOSE_TOL * tol_multiplier,
+            err_msg="lattice parameter angles not all close",
+        )
+
+        assert_allclose(
+            atomic_numbers_check,
+            atomic_numbers,
+            rtol=RGB_LOOSE_TOL * tol_multiplier,
+            err_msg="atomic numbers not all close",
+        )
+
+        # use atol since frac_coords values are between 0 and 1
+        assert_allclose(
+            frac_coords_check,
+            frac_coords,
+            atol=RGB_TOL * tol_multiplier,
+            err_msg="atomic numbers not all close",
+        )
+
+        assert_equal(
+            space_group_check,
+            space_group,
+            err_msg=f"space groups do not match. Original: {space_group_check}. Decoded: {space_group}.",  # noqa: E501
+        )
