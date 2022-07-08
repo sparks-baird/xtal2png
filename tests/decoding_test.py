@@ -74,11 +74,8 @@ def test_png2xtal_rgb_image():
 def test_png2xtal_from_saved_images():
     xc = XtalConverter()
     xc.xtal2png(example_structures, show=False, save=True)
-    fpaths = [path.join(xc.save_dir, savename) for savename in xc.savenames]
-    saved_imgs = []
-    for fpath in fpaths:
-        with Image.open(fpath) as img:
-            saved_imgs.append(img)
+    fpaths = [path.join(xc.save_dir, savename + ".png") for savename in xc.savenames]
+    saved_imgs = [Image.open(fpath) for fpath in fpaths]
 
     decoded_structures = xc.png2xtal(saved_imgs)
     assert_structures_approximate_match(
