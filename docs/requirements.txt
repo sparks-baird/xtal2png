@@ -1,5 +1,6 @@
 myst-parser[linkify]
 nbsphinx
+nbsphinx-link
 sphinx>=3.2.1
 sphinx_copybutton
 sphinx_rtd_theme
