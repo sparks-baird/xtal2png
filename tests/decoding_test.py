@@ -65,3 +65,22 @@ def test_png2xtal_rgb_image():
         example_structures, decoded_structures, tol_multiplier=2.0
     )
     return decoded_structures
+
+
+# def test_png2xtal_from_loaded_images():
+#     imgs = []
+#     with Image.open("tests/V4Ni2Se8,volume=243,uid=8b92.png") as img:
+#         datum = list(img.getdata())
+#         imgs.append(img)
+#     with Image.open("tests/Zn8B8Pb4O24,volume=623,uid=b62a.png") as img:
+#         datum2 = list(img.getdata())
+#         imgs.append(img)
+
+#     data = [datum, datum2]
+
+#     xc = XtalConverter()
+#     decoded_structures = xc.png2xtal(imgs)
+#     assert_structures_approximate_match(
+#         example_structures, decoded_structures, tol_multiplier=2.0
+#     )
+#     return decoded_structures
