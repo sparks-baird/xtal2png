@@ -68,6 +68,7 @@ def test_png2xtal_rgb_image():
 
 
 # def test_png2xtal_from_loaded_images():
+#     # TODO: implement this once API is stable (i.e. 1.0.0+)
 #     imgs = []
 #     with Image.open("tests/V4Ni2Se8,volume=243,uid=8b92.png") as img:
 #         datum = list(img.getdata())
