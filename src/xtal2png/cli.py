@@ -8,8 +8,7 @@ from click.exceptions import UsageError
 from click.utils import echo
 
 from xtal2png import __version__
-
-from .core import XtalConverter, _logger, setup_logging
+from xtal2png.core import XtalConverter, _logger, setup_logging
 
 
 def _show_usage_error(self, file=None):
@@ -23,7 +22,7 @@ def _show_usage_error(self, file=None):
         echo("\n\n" + self.ctx.get_help() + "\n", file=file, color=color)
 
 
-UsageError.show = _show_usage_error
+UsageError.show = _show_usage_error  # type: ignore
 
 
 def check_save_dir(save_dir):
