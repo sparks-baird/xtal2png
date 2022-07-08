@@ -4,7 +4,7 @@
 ```
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 
 notebooks/1.0-xtal2png-tutorial
 notebooks/2.0-materials-project-feature-ranges
