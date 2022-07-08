@@ -128,16 +128,25 @@ Additional examples can be found in [the docs](https://xtal2png.readthedocs.io/e
 
 ## Limitations and Design Considerations
 
-There are some limitations and design considerations for `xtal2png`. While the round-off
+There are some limitations and design considerations for `xtal2png`. Here, we cover round-off error, image dimensions, contextual features, and customization.
+
+### Round-off
+While the round-off
 error is a necessary evil for encoding to a [PNG file format](https://en.wikipedia.org/wiki/Portable_Network_Graphics), the unrounded NumPy arrays
 can be used directly instead if supported by the image model of interest via
-[`structures_to_arrays`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter.structures_to_arrays) and [`arrays_to_structures`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.XtalConverter.arrays_to_structures). We choose a
+[`structures_to_arrays`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter.structures_to_arrays) and [`arrays_to_structures`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.XtalConverter.arrays_to_structures).
+
+### Image dimensions
+We choose a
 $64\times64$ representation by default which supports up to 52 sites within a unit cell.
 The maximum number of sites [`max_sites`](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter) can be adjusted which changes the size of the
 representation. A square representation is used for greater compatibility with the
 common limitation of image-based models supporting only square image arrays. The choice
 of the default sidelength as a base-2 number (i.e. $2^6$) reflects common conventions of
-low-resolution images for image-based machine learning tasks. While the
+low-resolution images for image-based machine learning tasks.
+
+### Contextual features
+While the
 distance matrix does not directly contribute to the reconstruction in the current
 implementation of `xtal2png`, it serves a number of purposes. First, similar to the unit
 cell volume and space group information, it can provide additional guidance to the
@@ -150,7 +159,8 @@ particular crystal structures. In a future implementation, we plan to reconstruc
 Euclidean coordinates from the distance matrices and homogenize (e.g. via weighted
 averaging) the explicit fractional coordinates with the reconstructed coordinates.
 
-See the docs for the full list of customizable parameters that `XtalConverter` takes.
+### Customization
+See the [docs](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2png.core.XtalConverter) for the full list of customizable parameters that `XtalConverter` takes.
 
 ## Installation
 
