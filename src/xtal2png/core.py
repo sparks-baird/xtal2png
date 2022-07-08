@@ -1,9 +1,7 @@
 """Crystal to PNG conversion core functions and scripts."""
-import argparse
 import logging
 import sys
 from functools import lru_cache
-from glob import glob
 from itertools import chain
 
 # from itertools import zip_longest
@@ -25,7 +23,6 @@ from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
 
-from xtal2png import __version__
 from xtal2png.utils.data import (
     dummy_structures,
     element_wise_scaler,
@@ -1184,74 +1181,6 @@ class XtalConverter:
         return data
 
 
-# ---- CLI ----
-# The functions defined in this section are wrappers around the main Python
-# API allowing them to be called directly from the terminal as a CLI
-# executable/script.
-
-
-def parse_args(args):
-    """Parse command line parameters.
-
-    Args:
-      args (List[str]): command line parameters as list of strings
-          (for example  ``["--help"]``).
-
-    Returns:
-      :obj:`argparse.Namespace`: command line parameters namespace
-    """
-    parser = argparse.ArgumentParser(description="Crystal to PNG encoder/decoder.")
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="xtal2png {ver}".format(ver=__version__),
-    )
-    parser.add_argument(
-        "-p",
-        "--path",
-        dest="fpath",
-        help="Crystallographic information file (CIF) filepath (extension must be .cif or .CIF) or path to directory containing .cif files or processed PNG filepath or path to directory containing processed .png files (extension must be .png or .PNG). Assumes CIFs if --encode flag is used. Assumes PNGs if --decode flag is used.",  # noqa: E501
-        type=str,
-        metavar="STRING",
-    )
-    parser.add_argument(
-        "-s",
-        "--save-dir",
-        dest="save_dir",
-        default=".",
-        help="Directory to save processed PNG files or decoded CIFs to.",
-        type=str,
-        metavar="STRING",
-    )
-    parser.add_argument(
-        "--encode",
-        action="store_true",
-        help="Encode CIF files as PNG images.",
-    )
-    parser.add_argument(
-        "--decode",
-        action="store_true",
-        help="Decode PNG images as CIF files.",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        dest="loglevel",
-        help="set loglevel to INFO",
-        action="store_const",
-        const=logging.INFO,
-    )
-    parser.add_argument(
-        "-vv",
-        "--very-verbose",
-        dest="loglevel",
-        help="set loglevel to DEBUG",
-        action="store_const",
-        const=logging.DEBUG,
-    )
-    return parser.parse_args(args)
-
-
 def setup_logging(loglevel):
     """Setup basic logging
 
@@ -1263,71 +1192,6 @@ def setup_logging(loglevel):
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-
-def main(args):
-    """Wrapper allowing :func:`XtalConverter()` :func:`xtal2png()` and
-    :func:`png2xtal()` methods to be called with string arguments in a CLI fashion.
-
-    Args:
-      args (List[str]): command line parameters as list of strings
-          (for example  ``["--verbose", "example.cif"]``).
-    """
-    args = parse_args(args)
-    setup_logging(args.loglevel)
-    _logger.debug("Beginning conversion to PNG format")
-
-    if args.encode and args.decode:
-        raise ValueError("Specify --encode or --decode, not both.")
-
-    if args.encode:
-        ext = ".cif"
-    elif args.decode:
-        ext = ".png"
-    else:
-        raise ValueError("Specify at least one of --encode or --decode")
-
-    if Path(args.fpath).suffix in [ext, ext.upper()]:
-        fpaths = [args.fpath]
-    elif path.isdir(args.fpath):
-        fpaths = glob(path.join(args.fpath, f"*{ext}"))
-        if fpaths == []:
-            raise ValueError(
-                f"Assuming --path input is directory to files. No files of type {ext} present in {args.fpath}"  # noqa: E501
-            )
-    else:
-        raise ValueError(
-            f"Input should be a path to a single {ext} file or a path to a directory containing {ext} file(s). Received: {args.fpath}"  # noqa: E501
-        )
-
-    xc = XtalConverter(save_dir=args.save_dir)
-    if args.encode:
-        xc.xtal2png(fpaths, save=True)
-    elif args.decode:
-        xc.png2xtal(fpaths, save=True)
-
-    _logger.info("Script ends here")
-
-
-def run():
-    """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`
-
-    This function can be used as entry point to create console scripts with setuptools.
-    """
-    main(sys.argv[1:])
-
-
-if __name__ == "__main__":
-    # ^  This is a guard statement that will prevent the following code from
-    #    being executed in the case someone imports this file instead of
-    #    executing it as a script.
-    #    https://docs.python.org/3/library/__main__.html
-
-    # After installing your project with pip, users can also run your Python
-    # modules as scripts via the ``-m`` flag, as defined in PEP 338::
-    #
-    #     python -m xtal2png.core example.cif
-    #
-    run()
 
 # %% Code Graveyard
 # relax_results = relaxer.relax()

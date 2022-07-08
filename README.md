@@ -120,8 +120,8 @@ PeriodicSite: Zn (4.1218, 5.7810, 6.9693) [0.8200, 0.4993, 0.6499]
 </table>
 
 The before and after structures match within an expected tolerance; note the round-off error due to encoding numerical data as RGB images which has a coarse resolution of approximately `1/255 = 0.00392`. Note also that the decoded version lacks charge states. The QR-code-like intermediate PNG image is also provided in original size and a scaled version for a better viewing experience:
-| 64x64 pixels | Scaled for Better Viewing ([tool credit](https://lospec.com/pixel-art-scaler/)) | Legend |
-| --- | --- | --- |
+| 64x64 pixels                                                                                                                              | Scaled for Better Viewing ([tool credit](https://lospec.com/pixel-art-scaler/))                                           | Legend                                                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | ![Zn8B8Pb4O24,volume=623,uid=bc2d](https://user-images.githubusercontent.com/45469701/169936372-e14a8bba-698a-4fc9-9d4b-fc5e1de7d67f.png) | <img src=https://user-images.githubusercontent.com/45469701/169936297-57f5afb6-c4ae-4d8a-8cbb-33dcaf190b98.png width=400> | <img src=https://user-images.githubusercontent.com/45469701/169937021-f6f60169-6965-4db1-9bbd-e8744521d570.png width=400> |
 
 Additional examples can be found in [the docs](https://xtal2png.readthedocs.io/en/latest/examples.html).
@@ -257,30 +257,29 @@ how to access the help for the CLI and a few examples to get you started.
 You can see the usage information of the `xtal2png` CLI script via:
 
 ```bash
-(xtal2png) PS C:\Users\sterg\Documents\GitHub\sparks-baird\xtal2png> xtal2png --help
+xtal2png --help
 ```
 
 > ```bash
-> usage: xtal2png [-h] [--version] [-p STRING] [-s STRING] [--encode] [--decode] [-v] [-vv]
+>Usage: xtal2png [OPTIONS]
 >
-> Crystal to PNG encoder/decoder.
+>  xtal2png command line interface.
 >
-> optional arguments:
->   -h, --help            show this help message and exit
->   --version             show program's version number and exit
->   -p STRING, --path STRING
->                         Crystallographic information file (CIF) filepath
->                         (extension must be .cif or .CIF) or path to directory
->                         containing .cif files or processed PNG filepath or path
->                         to directory containing processed .png files (extension
->                         must be .png or .PNG). Assumes CIFs if --encode flag is
->                         used. Assumes PNGs if --decode flag is used.
->   -s STRING, --save-dir STRING
->                         Directory to save processed PNG files or decoded CIFs to.
->   --encode              Encode CIF files as PNG images.
->   --decode              Decode PNG images as CIF files.
->   -v, --verbose         set loglevel to INFO
->   -vv, --very-verbose   set loglevel to DEBUG
+>Options:
+>  --version                 Show version.
+>  -p, --path PATH           Crystallographic information file (CIF) filepath
+>                            (extension must be .cif or .CIF) or path to
+>                            directory containing .cif files or processed PNG
+>                            filepath or path to directory containing processed
+>                            .png files (extension must be .png or .PNG).
+>                            Assumes CIFs if --encode flag is used. Assumes
+>                            PNGs if --decode flag is used.
+>  -s, --save-dir PATH       Encode CIF files as PNG images.
+>  --encode                  Encode CIF files as PNG images.
+>  --decode                  Decode PNG images to CIF files.
+>  -v, --verbose TEXT        Set loglevel to INFO.
+>  -vv, --very-verbose TEXT  Set loglevel to INFO.
+>  --help                    Show this message and exit.
 > ```
 
 ### Examples
