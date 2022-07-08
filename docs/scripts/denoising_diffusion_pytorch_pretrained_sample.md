@@ -1,6 +1,6 @@
 # Denoising Diffusion PyTorch Pretrained Sample
 
-```{literalinclude} ../../scripts/denoising_diffusion_pytorch_pretained_sample.py
+```{literalinclude} ../../scripts/denoising_diffusion_pytorch_pretrained_sample.py
 :language: python
 :linenos:
 ```
