@@ -321,7 +321,7 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, S = self.process_filepaths_or_structures(structures)
+        self.savenames, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
         self.data, self.id_data, self.id_mapper = self.structures_to_arrays(S)
@@ -342,7 +342,7 @@ class XtalConverter:
 
         # convert to PNG images. Save and/or show, if applicable
         imgs: List[Image.Image] = []
-        for d, save_name in zip(self.data, save_names):
+        for d, save_name in zip(self.data, self.savenames):
             mode = get_image_mode(d)
             d = np.squeeze(d)
             if mode == "RGB":
@@ -463,7 +463,7 @@ class XtalConverter:
 
         Returns
         -------
-        save_names : List[str]
+        savenames : List[str]
             Save names of the files if filepaths are passed, otherwise some relatively
             unique names (due to 4 random characters being appended at the end) for each
             structure. See ``construct_save_name``.
@@ -487,9 +487,9 @@ class XtalConverter:
 
         Examples
         --------
-        >>> save_names, structures = process_filepaths_or_structures(structures)
+        >>> savenames, structures = process_filepaths_or_structures(structures)
         """
-        save_names: List[str] = []
+        savenames: List[str] = []
 
         first_is_structure = isinstance(structures[0], Structure)
         for i, s in enumerate(structures):
@@ -500,7 +500,7 @@ class XtalConverter:
                     )
 
                 structures[i] = Structure.from_file(s)
-                save_names.append(Path(str(s)).stem)
+                savenames.append(Path(str(s)).stem)
 
             elif isinstance(s, Structure):
                 if not first_is_structure:
@@ -509,7 +509,7 @@ class XtalConverter:
                     )
 
                 structures[i] = s
-                save_names.append(construct_save_name(s))
+                savenames.append(construct_save_name(s))
             else:
                 raise ValueError(
                     f"structures should be of type `str`, `os.PathLike` or `pymatgen.core.structure.Structure`, not {type(structures[i])} (entry {i})"  # noqa
@@ -521,7 +521,7 @@ class XtalConverter:
             ), f"structures[{i}]: {type(s)}, expected: Structure"
             assert not isinstance(s, str) and not isinstance(s, PathLike)
 
-        return save_names, structures  # type: ignore
+        return savenames, structures  # type: ignore
 
     def png2xtal(
         self, images: List[Union[Image.Image, "PathLike"]], save: bool = False
