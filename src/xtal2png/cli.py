@@ -35,7 +35,7 @@ def check_path(path, extension):
     if path is None:
         raise UsageError(
             f"Please specify a path to a {extension} file or "
-            "directory containing {extension} files."
+            f"directory containing {extension} files."
         )
 
 
@@ -84,7 +84,8 @@ def check_files(path, extension):
 )
 @click.option("--verbose", "-v", help="Set loglevel to INFO.")
 @click.option("--very-verbose", "-vv", help="Set loglevel to INFO.")
-def cli(version, path, save_dir, runtype, verbose, very_verbose):
+@click.pass_context
+def cli(ctx, version, path, save_dir, runtype, verbose, very_verbose):
     """
     xtal2png command line interface.
     """
@@ -96,7 +97,7 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
     if very_verbose:
         setup_logging(loglevel=logging.DEBUG)
 
-    if not runtype:
+    if not runtype and (path or save_dir):
         raise UsageError("Please specify --encode or --decode.")
 
     _logger.debug("Beginning conversion to PNG format")
@@ -109,6 +110,8 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
 
         xc = XtalConverter(save_dir=save_dir)
         xc.xtal2png(files, save=True)
+        return
+
     elif runtype == "decode":
         check_path(path, "PNG")
         check_save_dir(save_dir)
@@ -117,6 +120,9 @@ def cli(version, path, save_dir, runtype, verbose, very_verbose):
 
         xc = XtalConverter(save_dir=save_dir)
         xc.png2xtal(files, save=True)
+        return
+
+    click.echo(ctx.get_help())
 
 
 if __name__ == "__main__":
