@@ -4,7 +4,7 @@ Encode/decode a crystal structure to/from a grayscale PNG image for direct use w
 
 [![Open In
 Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sparks-baird/xtal2png/blob/main/notebooks/1.0-xtal2png-tutorial.ipynb)
-[![status](https://joss.theoj.org/papers/0c704f6ae9739c1e97e05ae0ad57aecb/status.svg)](https://github.com/openjournals/joss-papers/blob/joss.04465/joss.04465/10.21105.joss.04465.pdf)
+[![status](https://joss.theoj.org/papers/0c704f6ae9739c1e97e05ae0ad57aecb/status.svg)](https://joss.theoj.org/papers/0c704f6ae9739c1e97e05ae0ad57aecb)
 [![PyPI -
 Downloads](https://img.shields.io/pypi/dm/xtal2png)](https://pypi.org/project/xtal2png)
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/xtal2png?style=flat&color=blue&label=Conda%20Downloads)](https://anaconda.org/conda-forge/xtal2png)
@@ -26,15 +26,15 @@ short-term memory networks (LSTMs) and transformers or image processing such as 
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
 diffusion models; however, transfering these advances to adjacent domains such as
 materials informatics often takes years. `xtal2png` encodes and decodes crystal
-structures via grayscale PNG images (see e.g. \autoref{fig:64-bit}) by writing and
-reading the necessary information for crystal reconstruction (unit cell, atomic
-elements, atomic coordinates) as a square matrix of numbers, respectively. This is akin
-to making/reading a QR code for crystal structures, where the `xtal2png` representation
-is invertible. The ability to feed these images directly into image-based pipelines
-allows you, as a materials informatics practitioner, to get streamlined results for new
-state-of-the-art image-based machine learning models applied to crystal structure.
+structures via grayscale PNG images by writing and reading the necessary information for
+crystal reconstruction (unit cell, atomic elements, atomic coordinates) as a square
+matrix of numbers, respectively. This is akin to making/reading a QR code for crystal
+structures, where the `xtal2png` representation is invertible. The ability to feed these
+images directly into image-based pipelines allows you, as a materials informatics
+practitioner, to get streamlined results for new state-of-the-art image-based machine
+learning models applied to crystal structure.
 
-> Manuscript coming soon!
+> Results manuscript coming soon!
 
  <!-- ![GitHub Repo stars](https://img.shields.io/github/stars/sparks-baird/xtal2png?style=social) ![GitHub followers](https://img.shields.io/github/followers/sgbaird?style=social) ![GitHub issues](https://img.shields.io/github/issues-raw/sparks-baird/xtal2png) ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/sparks-baird/xtal2png) -->
 
