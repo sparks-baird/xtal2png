@@ -1,6 +1,10 @@
 """Test decoding functionality using default kwargs and assert matches."""
 
 
+from os import path
+
+from PIL import Image
+
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import assert_structures_approximate_match, example_structures
 
@@ -67,21 +71,16 @@ def test_png2xtal_rgb_image():
     return decoded_structures
 
 
-# def test_png2xtal_from_loaded_images():
-#     # TODO: implement this once API is stable (i.e. 1.0.0+)
-#     imgs = []
-#     with Image.open("tests/V4Ni2Se8,volume=243,uid=8b92.png") as img:
-#         datum = list(img.getdata())
-#         imgs.append(img)
-#     with Image.open("tests/Zn8B8Pb4O24,volume=623,uid=b62a.png") as img:
-#         datum2 = list(img.getdata())
-#         imgs.append(img)
+def test_png2xtal_from_saved_images():
+    xc = XtalConverter()
+    xc.xtal2png(example_structures, show=False, save=True)
+    fpaths = [path.join(xc.save_dir, savename) for savename in xc.savenames]
+    saved_imgs = []
+    for fpath in fpaths:
+        with Image.open(fpath) as img:
+            saved_imgs.append(img)
 
-#     data = [datum, datum2]
-
-#     xc = XtalConverter()
-#     decoded_structures = xc.png2xtal(imgs)
-#     assert_structures_approximate_match(
-#         example_structures, decoded_structures, tol_multiplier=2.0
-#     )
-#     return decoded_structures
+    decoded_structures = xc.png2xtal(saved_imgs)
+    assert_structures_approximate_match(
+        example_structures, decoded_structures, tol_multiplier=2.0
+    )

@@ -321,7 +321,7 @@ class XtalConverter:
         >>> xc = XtalConverter()
         >>> xc.xtal2png(structures, show=False, save=True)
         """
-        save_names, S = self.process_filepaths_or_structures(structures)
+        self.save_names, S = self.process_filepaths_or_structures(structures)
 
         # convert structures to 3D NumPy Matrices
         self.data, self.id_data, self.id_mapper = self.structures_to_arrays(S)
@@ -342,7 +342,7 @@ class XtalConverter:
 
         # convert to PNG images. Save and/or show, if applicable
         imgs: List[Image.Image] = []
-        for d, save_name in zip(self.data, save_names):
+        for d, save_name in zip(self.data, self.save_names):
             mode = get_image_mode(d)
             d = np.squeeze(d)
             if mode == "RGB":
