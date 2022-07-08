@@ -1191,28 +1191,3 @@ def setup_logging(loglevel):
     logging.basicConfig(
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
-
-
-# %% Code Graveyard
-# relax_results = relaxer.relax()
-# final_structure = relax_results["final_structure"]
-# final_energy = relax_results["trajectory"].energies[-1] / 2
-
-# print(
-#     f"Relaxed lattice parameter is
-#     {final_structure.lattice.abc[0]:.3f} Å"
-# )
-# # TODO: print the initial energy as well (assuming it's available)
-# print(f"Final energy is {final_energy.item(): .3f} eV/atom")
-
-# uae = np.array(unscaled_atom_encodings[i][:ns])
-# site_ids = np.where(uae > 0)
-
-# at = at[site_ids]
-# fr = fr[site_ids]
-
-# # TODO: apply num_sites mask
-# _, num_sites_upp = self.num_sites_range
-# mask = np.zeros(self.max_sites, dtype=bool)
-# mask[:num_sites_upp, :num_sites_upp] = True
-# mask = ~mask
