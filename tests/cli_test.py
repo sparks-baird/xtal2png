@@ -48,7 +48,7 @@ def test_disordered_structure():
     args = ["--encode", "--path", fpath, "--save-dir", "tmp"]
     runner = CliRunner()
     result = runner.invoke(cli, args, catch_exceptions=True)
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert isinstance(result.exception, ValueError)
     assert "xtal2png does not support disordered structures." in str(result.exception)
 
