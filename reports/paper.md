@@ -78,11 +78,10 @@ implementation was being developed concurrently in a different research group wi
 slightly later public release [@wangCompositionallyrestrictedAttentionbasedNetwork2020]
 and publication [@wangCompositionallyRestrictedAttentionbased2021] dates. Another
 example of a state-of-the-art algorithm domain transfer is refactoring image-processing
-models for crystal structure applications, with the introduction of domain transfer
-(preprint), and peer-reviewed domain transferred publication dates of Sep 2016, Oct
-2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
-[@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
-respectively. Here, we focus on the latter application: state-of-the-art domain transfer
+models for crystal structure applications, which was first introduced in a preprint
+([@kipfSemisupervisedClassificationGraph2016]) and published with application for materials' property prediction
+in a peer-reviewed journal over a year later ([@xieCrystalGraphConvolutional2018]).
+Here, we focus on the latter application: state-of-the-art domain transfer
 from image processing to crystal structure.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
