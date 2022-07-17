@@ -121,7 +121,6 @@ An example comparing an original vs. decoded structure is given in
 There are some limitations and design considerations for `xtal2png` which are described
 in `xtal2png`'s [documentation](https://xtal2png.readthedocs.io/en/latest/index.html) in
 the Overview section.
-
 At this time, it is unclear to what extent deviation from the aforementioned design
 choices will affect performance. We intend to use hyperparameter optimization to
 determine an optimal configuration for crystal structure generation tasks using the
