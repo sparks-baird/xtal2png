@@ -638,7 +638,7 @@ class XtalConverter:
         """
 
         for s in structures:
-            if isinstance(s, Structure):
+            if not isinstance(s, Structure):
                 raise ValueError(
                     "`structures` should be a list of pymatgen Structure(s)"
                 )
