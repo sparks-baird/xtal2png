@@ -82,7 +82,8 @@ models for crystal structure applications, which was first introduced in a prepr
 ([@kipfSemisupervisedClassificationGraph2016]) and published with application for materials' property prediction
 in a peer-reviewed journal over a year later ([@xieCrystalGraphConvolutional2018]).
 Here, we focus on the latter application: state-of-the-art domain transfer
-from image processing to crystal structure.
+from image processing to crystal structure to enable materials science practitioners
+to leverage the most advanced image processing models for materials' property prediction and inverse design.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
 and a PNG image for direct use with image-based machine learning models. Let's take
