@@ -90,8 +90,8 @@ and a PNG image for direct use with image-based machine learning models. Let's t
 [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
-generation, conditional inpainting, and conditional image restoration tasks with
-corresponding applications in crystal generation, structure prediction, and structure
+generation, conditional inpainting, and conditional image restoration, which are modeling tasks
+that can be used in crystal generation, structure prediction, and structure
 relaxation, respectively. Rather than dig into the code and spending hours, days, or
 weeks modifying, debugging, and playing GitHub phone tag with the developers before you
 can (maybe) get preliminary results, `xtal2png` lets you get those results using the
