@@ -68,7 +68,7 @@ image-based machine learning models applied to crystal structures.
 
 Using a state-of-the-art method in a separate domain with a custom data representation
 is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYou2017
-introduced the revolutionary natural language processing transformer architecture in Jun
+introduced the revolutionary natural language processing transformer architecture in June
 2017; yet the application of transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019 [@goodallPredictingMaterialsProperties2019], approximately two-and-a-half years
