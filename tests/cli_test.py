@@ -24,7 +24,7 @@ def test_encode_dir():
         "--save-dir",
         path.join("tmp", "tmp"),
         "--max-sites",
-        "100",
+        "1000",
     ]
     runner = CliRunner()
     result = runner.invoke(cli, args)
