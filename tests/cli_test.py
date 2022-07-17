@@ -44,11 +44,11 @@ def test_decode_dir():
 
 
 def test_disordered_structure():
-    fpath = path.join(THIS_DIR, "test_files" "disordered_structure.cif")
+    fpath = path.join(THIS_DIR, "test_files", "disordered_structure.cif")
     args = ["--encode", "--path", fpath, "--save-dir", "tmp"]
     runner = CliRunner()
     result = runner.invoke(cli, args, catch_exceptions=True)
-    assert result.exit_code == 2
+    assert result.exit_code == 1
     assert isinstance(result.exception, ValueError)
     assert "xtal2png does not support disordered structures." in str(result.exception)
 
@@ -58,3 +58,4 @@ if __name__ == "__main__":
     test_encode_dir()
     test_decode_single()
     test_decode_dir()
+    test_disordered_structure()
