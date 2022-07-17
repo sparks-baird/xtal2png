@@ -94,8 +94,7 @@ generation, conditional inpainting, and conditional image restoration, which are
 that can be used in crystal generation, structure prediction, and structure
 relaxation, respectively. Rather than dig into the code and spending hours, days, or
 weeks modifying, debugging, and playing GitHub phone tag with the developers before you
-can (maybe) get preliminary results, `xtal2png` lets you get those results using the
-default instructions on the repository, assuming the instructions can be run without
+can (maybe) get preliminary results, `xtal2png` lets you get comparable results using the default parameters, assuming the instructions can be run without
 error. While there are other invertible representations for crystal structures
 [@xieCrystalDiffusionVariational2022;@renInvertibleCrystallographicRepresentation2022a]
 as well as cross-domain conversions such as converting between molecules and strings
