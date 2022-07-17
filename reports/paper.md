@@ -128,7 +128,7 @@ determine an optimal configuration for crystal structure generation tasks using 
 `xtal2png` representation.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
-[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $Zn_2B_2PbO_6$. Images were generated using [ase visualizations](https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html). \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / Zn$_2$B$_2$PbO$_6$. Images were generated using [ase visualizations](https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html). \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the representation lies in being able to directly use the PNG
 representation with image-based models which often do not directly support custom
