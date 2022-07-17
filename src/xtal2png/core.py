@@ -517,6 +517,12 @@ class XtalConverter:
                 s, Structure
             ), f"structures[{i}]: {type(s)}, expected: Structure"
             assert not isinstance(s, str) and not isinstance(s, PathLike)
+            if not s.is_ordered:
+                raise ValueError(
+                    "xtal2png does not support disordered structures. "
+                    "Your input structure seems to contain partial occupancies. "
+                    "Please resolve those and try again."
+                )
 
         return savenames, structures  # type: ignore
 
