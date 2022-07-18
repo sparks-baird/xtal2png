@@ -6,5 +6,16 @@
     - https://docs.pytest.org/en/stable/fixture.html
     - https://docs.pytest.org/en/stable/writing_plugins.html
 """
+import os
 
-# import pytest
+import pytest
+from pymatgen.core import Structure
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+@pytest.fixture(scope="session")
+def get_disordered_structure():
+    return Structure.from_file(
+        os.path.join(THIS_DIR, "test_files", "disordered_structure.cif")
+    )

@@ -3,6 +3,7 @@
 
 import numpy as np
 import plotly.express as px
+import pytest
 
 from xtal2png.core import XtalConverter
 from xtal2png.utils.data import example_structures
@@ -60,9 +61,16 @@ def test_structures_to_arrays_zero_one():
     return data
 
 
+def test_disordered_fail(get_disordered_structure):
+    xc = XtalConverter(relax_on_decode=False)
+    with pytest.raises(ValueError):
+        xc.structures_to_arrays([get_disordered_structure])
+
+
 if __name__ == "__main__":
     test_xtal2png_three_channels()
     imgs = test_xtal2png()
     imgs = test_xtal2png_single()
     test_xtal2png_single()
     test_structures_to_arrays_single()
+    test_disordered_fail()

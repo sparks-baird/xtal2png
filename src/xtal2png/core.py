@@ -517,6 +517,12 @@ class XtalConverter:
                 s, Structure
             ), f"structures[{i}]: {type(s)}, expected: Structure"
             assert not isinstance(s, str) and not isinstance(s, PathLike)
+            if not s.is_ordered:
+                raise ValueError(
+                    "xtal2png does not support disordered structures. "
+                    "Your input structure seems to contain partial occupancies. "
+                    "Please resolve those and try again."
+                )
 
         return savenames, structures  # type: ignore
 
@@ -630,8 +636,18 @@ class XtalConverter:
         >>> data = xc.structures_to_arrays(structures)
         OUTPUT
         """
-        if isinstance(structures, Structure):
-            raise ValueError("`structures` should be a list of pymatgen Structure(s)")
+
+        for s in structures:
+            if not isinstance(s, Structure):
+                raise ValueError(
+                    "`structures` should be a list of pymatgen Structure(s)"
+                )
+            if not s.is_ordered:
+                raise ValueError(
+                    "xtal2png does not support disordered structures. "
+                    "Your input structure seems to contain partial occupancies. "
+                    "Please resolve those and try again."
+                )
 
         # extract crystallographic information
         element_encoding: List[List[int]] = []
