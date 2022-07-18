@@ -83,8 +83,15 @@ def check_files(path, extension):
 )
 @click.option("--verbose", "-v", help="Set loglevel to INFO.")
 @click.option("--very-verbose", "-vv", help="Set loglevel to INFO.")
+@click.option(
+    "--max-sites",
+    "-ms",
+    type=int,
+    default=52,
+    help="Maximum number of sites to accomodate in encoding, by default 52",
+)
 @click.pass_context
-def cli(ctx, version, path, save_dir, runtype, verbose, very_verbose):
+def cli(ctx, version, path, save_dir, runtype, verbose, very_verbose, max_sites):
     """
     xtal2png command line interface.
     """
@@ -107,7 +114,7 @@ def cli(ctx, version, path, save_dir, runtype, verbose, very_verbose):
 
         files = check_files(path, "cif")
 
-        xc = XtalConverter(save_dir=save_dir)
+        xc = XtalConverter(save_dir=save_dir, max_sites=max_sites)
         xc.xtal2png(files, save=True)
         return
 
@@ -117,7 +124,7 @@ def cli(ctx, version, path, save_dir, runtype, verbose, very_verbose):
 
         files = check_files(path, "png")
 
-        xc = XtalConverter(save_dir=save_dir)
+        xc = XtalConverter(save_dir=save_dir, max_sites=max_sites)
         xc.png2xtal(files, save=True)
         return
 

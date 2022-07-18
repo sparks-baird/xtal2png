@@ -19,7 +19,15 @@ def test_encode_single():
 
 def test_encode_dir():
     fpath = path.abspath(path.join("src", "xtal2png", "utils"))
-    args = ["--encode", "--path", fpath, "--save-dir", path.join("tmp", "tmp")]
+    args = [
+        "--encode",
+        "--path",
+        fpath,
+        "--save-dir",
+        path.join("tmp", "tmp"),
+        "--max-sites",
+        "1000",
+    ]
     runner = CliRunner()
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
