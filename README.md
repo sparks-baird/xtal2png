@@ -58,11 +58,11 @@ decoded_structures = xc.png2xtal(data, save=False)
 print(example_structures[0], decoded_structures[0], relaxed_decoded_structures[0])
 ```
 
+
+
 <table>
 <tr>
 <th> Original </th>
-<th> Decoded </th>
-<th> Relaxed Decoded </th>
 </tr>
 <tr>
 <td>
@@ -80,8 +80,14 @@ PeriodicSite: Zn2+ (0.9120, 5.7699, 9.1255) [0.1812, 0.5007, 0.8496]
 PeriodicSite: Zn2+ (4.1218, 5.7531, 1.6156) [0.8188, 0.4993, 0.1504]
 ...
 ```
-
 </td>
+</table>
+
+<table>
+<tr>
+<th> Decoded </th>
+</tr>
+<tr>
 <td>
 
 ```python
@@ -99,6 +105,13 @@ PeriodicSite: Zn (4.1235, 5.7554, 6.9988) [0.8206, 0.4990, 0.6480]
 ```
 
 </td>
+</table>
+
+<table>
+<tr>
+<th> Relaxed Decoded </th>
+</tr>
+<tr>
 <td>
 
 ```python
