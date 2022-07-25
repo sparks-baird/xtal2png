@@ -74,7 +74,6 @@ jobs:
           pipx run tox
           --installpkg '${{ needs.prepare.outputs.wheel-distribution }}'
           -- -rFEx --durations 10 --color yes
-          python -m doctest README.md
       - name: Generate coverage report
         run: pipx run coverage lcov -o coverage.lcov
       - name: Upload partial coverage report
@@ -84,6 +83,8 @@ jobs:
           github-token: ${{ secrets.github_token }}
           flag-name: ${{ matrix.platform }} - py${{ matrix.python }}
           parallel: true
+      - name: Doctest
+        run: python -m doctest README.md
 
   finalize:
     needs: test
