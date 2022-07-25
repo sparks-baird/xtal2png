@@ -83,8 +83,6 @@ jobs:
           github-token: ${{ secrets.github_token }}
           flag-name: ${{ matrix.platform }} - py${{ matrix.python }}
           parallel: true
-      - name: Doctest
-        run: python -m doctest README.md
 
   finalize:
     needs: test
