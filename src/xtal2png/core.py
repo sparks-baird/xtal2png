@@ -24,6 +24,7 @@ from pymatgen.io.cif import CifWriter
 from tqdm import tqdm
 
 from xtal2png.utils.data import (
+    _get_space_group,
     dummy_structures,
     element_wise_scaler,
     element_wise_unscaler,
@@ -86,7 +87,7 @@ SUPPORTED_MASK_KEYS = [
 
 def construct_save_name(s: Structure) -> str:
     """Construct savename based on formula, space group, and a uid."""
-    save_name = f"{s.formula.replace(' ', '')},space-group={int(np.round(s.get_space_group_info()[1]))},uid={str(uuid4())[0:4]}"  # noqa: E501
+    save_name = f"{s.formula.replace(' ', '')},space-group={_get_space_group(s)},uid={str(uuid4())[0:4]}"  # noqa: E501
     return save_name
 
 
@@ -390,7 +391,7 @@ class XtalConverter:
         a = [s.lattice.a for s in S]
         b = [s.lattice.b for s in S]
         c = [s.lattice.c for s in S]
-        space_group = [s.get_space_group_info()[1] for s in S]
+        space_group = [_get_space_group(s) for s in S]
         num_sites = [s.num_sites for s in S]
         distance = [s.distance_matrix for s in S]
 
@@ -687,7 +688,7 @@ class XtalConverter:
             latt_c.append(s._lattice.c)
             angles.append(list(s._lattice.angles))
             num_sites.append(s.num_sites)
-            space_group.append(s.get_space_group_info()[1])
+            space_group.append(_get_space_group(s))
 
             if n_sites != s.distance_matrix.shape[0]:
                 raise ValueError(
