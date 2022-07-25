@@ -24,6 +24,18 @@ for cif in EXAMPLE_CIFS:
     example_structures.append(Structure.from_str(cif_str, "cif"))
 
 
+# ToDo: potentially expose tolerance options
+def _get_space_group(s: Structure) -> int:
+    """Get space group from structure.
+    See issue https://github.com/sparks-baird/xtal2png/issues/184
+    """
+    try:
+        return int(np.round(s.get_space_group_info()[1]))
+    except TypeError:
+        # 0 should be fine as it is not taken
+        return 0
+
+
 def element_wise_scaler(
     X: ArrayLike,
     feature_range: Optional[Sequence] = None,
@@ -325,7 +337,7 @@ def assert_structures_approximate_match(
         angles_check = s._lattice.angles
         atomic_numbers_check = s.atomic_numbers
         frac_coords_check = s.frac_coords
-        space_group_check = s.get_space_group_info()[1]
+        space_group_check = _get_space_group(s)
 
         latt_a = s2._lattice.a
         latt_b = s2._lattice.b
@@ -333,7 +345,7 @@ def assert_structures_approximate_match(
         angles = s2._lattice.angles
         atomic_numbers = s2.atomic_numbers
         frac_coords = s2.frac_coords
-        space_group = s.get_space_group_info()[1]
+        space_group = _get_space_group(s)
 
         assert_allclose(
             a_check,
