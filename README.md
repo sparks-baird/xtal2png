@@ -164,7 +164,7 @@ See the [docs](https://xtal2png.readthedocs.io/en/latest/api/xtal2png.html#xtal2
 
 ## Installation
 
-### Anaconda (`conda`) installation (recommended)
+<!-- ### Anaconda (`conda`) installation (recommended)
 
 (2022-05-23, conda-forge installation still pending, fallback to `pip install xtal2png` as separate command)
 
@@ -181,14 +181,14 @@ Alternatively, in an already activated environment:
 conda install -c conda-forge xtal2png
 ```
 
-If you run into conflicts with packages you are integrating with `xtal2png`, please try installing all packages in a single line of code (or two if mixing `conda` and `pip` packages in the same environment) and/or installing with `mamba` ([source](https://stackoverflow.com/a/69137255/13697228)).
+If you run into conflicts with packages you are integrating with `xtal2png`, please try installing all packages in a single line of code (or two if mixing `conda` and `pip` packages in the same environment) and/or installing with `mamba` ([source](https://stackoverflow.com/a/69137255/13697228)). -->
 
 ### PyPI (`pip`) installation
 
 Create and activate a new `conda` environment named `xtal2png` (`-n`) with `python==3.9.*` or your preferred Python version, then install `xtal2png` via `pip`.
 
 ```bash
-conda env create -n xtal2png python==3.9.*
+conda create -n xtal2png python==3.9.*
 conda activate xtal2png
 pip install xtal2png
 ```
