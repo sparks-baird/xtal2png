@@ -68,7 +68,7 @@ image-based machine learning models applied to crystal structures.
 
 Using a state-of-the-art method in a separate domain with a custom data representation
 is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYou2017
-introduced the revolutionary natural language processing transformer architecture in Jun
+introduced the revolutionary natural language processing transformer architecture in June
 2017; yet the application of transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019 [@goodallPredictingMaterialsProperties2019], approximately two-and-a-half years
@@ -78,24 +78,23 @@ implementation was being developed concurrently in a different research group wi
 slightly later public release [@wangCompositionallyrestrictedAttentionbasedNetwork2020]
 and publication [@wangCompositionallyRestrictedAttentionbased2021] dates. Another
 example of a state-of-the-art algorithm domain transfer is refactoring image-processing
-models for crystal structure applications, with the introduction of domain transfer
-(preprint), and peer-reviewed domain transferred publication dates of Sep 2016, Oct
-2017, and Apr 2018 ([@kipfSemisupervisedClassificationGraph2016],
-[@xieCrystalGraphConvolutional2017], and [@xieCrystalGraphConvolutional2018]),
-respectively. Here, we focus on the latter application: state-of-the-art domain transfer
-from image processing to crystal structure.
+models for crystal structure applications, which was first introduced in a preprint
+([@kipfSemisupervisedClassificationGraph2016]) and published with application for materials' property prediction
+in a peer-reviewed journal over a year later ([@xieCrystalGraphConvolutional2018]).
+Here, we focus on the latter application: state-of-the-art domain transfer
+from image processing to crystal structure to enable materials science practitioners
+to leverage the most advanced image processing models for materials' property prediction and inverse design.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
 and a PNG image for direct use with image-based machine learning models. Let's take
 [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
 [@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
-generation, conditional inpainting, and conditional image restoration tasks with
-corresponding applications in crystal generation, structure prediction, and structure
+generation, conditional inpainting, and conditional image restoration, which are modeling tasks
+that can be used in crystal generation, structure prediction, and structure
 relaxation, respectively. Rather than dig into the code and spending hours, days, or
 weeks modifying, debugging, and playing GitHub phone tag with the developers before you
-can (maybe) get preliminary results, `xtal2png` lets you get those results using the
-default instructions on the repository, assuming the instructions can be run without
+can (maybe) get preliminary results, `xtal2png` lets you get comparable results using the default parameters, assuming the instructions can be run without
 error. While there are other invertible representations for crystal structures
 [@xieCrystalDiffusionVariational2022;@renInvertibleCrystallographicRepresentation2022a]
 as well as cross-domain conversions such as converting between molecules and strings
@@ -122,14 +121,13 @@ An example comparing an original vs. decoded structure is given in
 There are some limitations and design considerations for `xtal2png` which are described
 in `xtal2png`'s [documentation](https://xtal2png.readthedocs.io/en/latest/index.html) in
 the Overview section.
-
 At this time, it is unclear to what extent deviation from the aforementioned design
 choices will affect performance. We intend to use hyperparameter optimization to
 determine an optimal configuration for crystal structure generation tasks using the
 `xtal2png` representation.
 
 ![(a) Original and (b) `xtal2png` decoded visualizations of
-[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / $Zn_2B_2PbO_6$. Images were generated using [ase visualizations](https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html). \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
+[`mp-560471`](https://materialsproject.org/materials/mp-560471/) / Zn$_2$B$_2$PbO$_6$. Images were generated using [ase visualizations](https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html). \label{fig:original-decoded}](figures/original-decoded.png){ width=50% }
 
 The significance of the representation lies in being able to directly use the PNG
 representation with image-based models which often do not directly support custom
