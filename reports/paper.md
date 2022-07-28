@@ -84,7 +84,7 @@ example of a state-of-the-art algorithm domain transfer is refactoring image-pro
 models for crystal structure applications, which was first introduced in a preprint
 [@kipfSemisupervisedClassificationGraph2016] and published with application for
 materials' property prediction in a peer-reviewed journal over a year later
-[@xieCrystalGraphConvolutional2018]. Similarly, variational autoencoders (VAEs) were
+[@xieCrystalGraphConvolutional2018]. Similarly, VAEs were
 introduced in 2013 [@kingmaAutoEncodingVariationalBayes2014a] and implemented for
 molecules in 2016 [@gomez-bombarelliAutomaticChemicalDesign2018] and denoising
 diffusion probabilistic models (DDPMs) were introduced in 2015
