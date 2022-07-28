@@ -23,7 +23,7 @@ authors:
     orcid: 0000-0002-6583-7755
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
-  - name: Faris M. Khan
+  - name: Mohammed Faris Khan
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Colton Seegmiller
