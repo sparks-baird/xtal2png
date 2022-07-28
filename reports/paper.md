@@ -53,7 +53,7 @@ bibliography: paper.bib
 
 # Summary
 
-The latest advances in machine learning are often in natural language such as with long
+The latest advances in machine learning are often in natural language processing such as with long
 short-term memory networks (LSTMs) and transformers or image processing such as with
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
 diffusion models. `xtal2png` encodes and decodes crystal structures via PNG
@@ -85,14 +85,15 @@ models for crystal structure applications, which was first introduced in a prepr
 ([@kipfSemisupervisedClassificationGraph2016]) and published with application for
 materials' property prediction in a peer-reviewed journal over a year later
 ([@xieCrystalGraphConvolutional2018]). Similarly, variational autoencoders (VAEs) were
-introduced in 2013 ([@kingmaAutoEncodingVariationalBayes2014a]) and implemented for molecules in 2016
-([@gomez-bombarelliAutomaticChemicalDesign2018]) and denoising diffusion probabilistic models (DDPMs) were
-introduced in 2015 ([@sohl-dicksteinDeepUnsupervisedLearning2015]) and implemented for
-crystal structures in 2021 ([@xieCrystalDiffusionVariational2021]). Here, we focus on
-the latter application: state-of-the-art domain transfer (especially of generative
-models) from image processing to crystal structure to enable materials science
-practitioners to leverage the most advanced image processing models for materials'
-property prediction and inverse design.
+introduced in 2013 ([@kingmaAutoEncodingVariationalBayes2014a]) and implemented for
+molecules in 2016 ([@gomez-bombarelliAutomaticChemicalDesign2018]) and denoising
+diffusion probabilistic models (DDPMs) were introduced in 2015
+([@sohl-dicksteinDeepUnsupervisedLearning2015]) and implemented for crystal structures
+in 2021 ([@xieCrystalDiffusionVariational2021]). Here, we focus on the latter
+application: state-of-the-art domain transfer (especially of generative models) from
+image processing to crystal structure to enable materials science practitioners to
+leverage the most advanced image processing models for materials' property prediction
+and inverse design.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
 and a PNG image for direct use with image-based machine learning models. Let's take
