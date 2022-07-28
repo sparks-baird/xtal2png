@@ -26,6 +26,9 @@ authors:
     orcid: 0000-0001-9511-2918
     equal-contrib: false
     affiliation: "4" # (Multiple affiliations must be quoted)
+  - name: Berend Smit
+    orcid: 0000-0003-4653-8562
+    affiliation: "3"
   - name: Taylor D. Sparks
     orcid: 0000-0001-8020-7711
     equal-contrib: false
