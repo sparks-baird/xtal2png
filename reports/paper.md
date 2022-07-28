@@ -10,18 +10,22 @@ authors:
   - name: Sterling G. Baird
     orcid: 0000-0002-4491-6876
     equal-contrib: false
+    corresponding: true
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Kevin M. Jablonka
     orcid: 0000-0003-4894-4660
     affiliation: "3"
-  - name: Hasan M. Sayeed
-    orcid: 0000-0002-6583-7755
-    equal-contrib: false
-    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
     affiliation: "1,2" # (Multiple affiliations must be quoted)
+  - name: Hasan M. Sayeed
+    orcid: 0000-0002-6583-7755
+    equal-contrib: false
+    affiliation: "1" # (Multiple affiliations must be quoted)
+  - name: Mohammed Faris Khan
+    equal-contrib: false
+    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Colton Seegmiller
     orcid: 0000-0001-9511-2918
     equal-contrib: false
@@ -42,7 +46,7 @@ affiliations:
    index: 3
  - name: Computer Science, Utah Valley University, USA
    index: 4
-date: 9 June 2022
+date: 28 July 2022
 bibliography: paper.bib
 
 # # Optional fields if submitting to a AAS journal too, see this blog post:
