@@ -15,14 +15,14 @@ authors:
   - name: Kevin M. Jablonka
     orcid: 0000-0003-4894-4660
     affiliation: "3"
-  - name: Hasan M. Sayeed
-    orcid: 0000-0002-6583-7755
-    equal-contrib: false
-    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
     affiliation: "1,2" # (Multiple affiliations must be quoted)
+  - name: Hasan M. Sayeed
+    orcid: 0000-0002-6583-7755
+    equal-contrib: false
+    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Faris M. Khan
     equal-contrib: false
     affiliation: "1" # (Multiple affiliations must be quoted)
