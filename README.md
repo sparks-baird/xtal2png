@@ -45,13 +45,11 @@ class with and without optional relaxation via
 >>> xc = XtalConverter(relax_on_decode=True)
 >>> data = xc.xtal2png(example_structures, show=True, save=True)
 >>> relaxed_decoded_structures = xc.png2xtal(data, save=False)
-
 assert len(decoded_structures) == len(example_structures)
 
 >>> xc = XtalConverter(relax_on_decode=False)  # default behavior
 >>> data = xc.xtal2png(example_structures, show=True, save=True)
 >>> decoded_structures = xc.png2xtal(data, save=False)
-
 assert len(decoded_structures) == len(example_structures)
 ```
 
