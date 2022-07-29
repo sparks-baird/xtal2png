@@ -25,6 +25,7 @@ authors:
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Mohammed Faris Khan
     equal-contrib: false
+    orcid: 0000-0001-7527-6368
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Colton Seegmiller
     orcid: 0000-0001-9511-2918
