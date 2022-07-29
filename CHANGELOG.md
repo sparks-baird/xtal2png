@@ -1,26 +1,16 @@
 # CHANGELOG
 
+## [v0.9.3](https://github.com/sparks-baird/xtal2png/releases/tag/v0.9.3) - 2022-07-29 21:25:35
+
+<!-- Release notes generated using configuration in .github/release.yml at v0.9.3 -->
+
+Fixup references for JOSS manuscript. https://github.com/openjournals/joss-reviews/issues/4528#issuecomment-1199942110
+
+**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.9.2...v0.9.3
+
 ## [v0.9.2](https://github.com/sparks-baird/xtal2png/releases/tag/v0.9.2) - 2022-07-29 16:21:51
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.9.2 -->
-
-## What's Changed
-* avoid repeat calculations of distance_matrix by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/199
-
-### Other Changes
-* update authors, including adding Faris Khan by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/194
-* grant acknowledgements for Hasan and Colton by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/195
-* docs: update affiliation and acknowledgements by @kjappelbaum in https://github.com/sparks-baird/xtal2png/pull/196
-* chore: test example by @kjappelbaum in https://github.com/sparks-baird/xtal2png/pull/188
-* add T.D.S. in acknowledgment statements by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/197
-
-
-**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.9.1...v0.9.2
-
-### Documentation
-
-- general:
-  - update affiliation and acknowledgements ([7e5d8b5](https://github.com/sparks-baird/xtal2png/commit/7e5d8b5a841caea7d20a75ee6ee33900a7dd2168)) ([#196](https://github.com/sparks-baird/xtal2png/pull/196))
 
 ## [v0.9.1](https://github.com/sparks-baird/xtal2png/releases/tag/v0.9.1) - 2022-07-28 22:06:22
 
