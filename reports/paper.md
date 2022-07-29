@@ -43,7 +43,7 @@ affiliations:
    index: 1
  - name: Computer Science, University of Southern California, USA
    index: 2
- - name: École Polytechnique Fédérale de Lausanne, Switzerland
+ - name: Laboratory of Molecular Simulation (LSMO), Institut des Sciences et Ingénierie Chimique, École Polytechnique Fédérale de Lausanne, Switzerland
    index: 3
  - name: Computer Science, Utah Valley University, USA
    index: 4
@@ -199,6 +199,6 @@ Figure sizes can be customized by adding an optional second parameter:
 
 # Acknowledgements
 
-S.G.B. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1651668. H.M.S. acknowledges support by the National Science Foundation, USA under Grant No. OMA-1936383. C.S. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1950589.
+S.G.B. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1651668. H.M.S. acknowledges support by the National Science Foundation, USA under Grant No. OMA-1936383. C.S. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1950589.  K.M.J. and B.S. acknowledge support by the MARVEL National Centre for Competence in Research funded by the Swiss National Science Foundation (grant agreement ID 51NF40-182892).
 
 # References
