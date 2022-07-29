@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [v0.9.4](https://github.com/sparks-baird/xtal2png/releases/tag/v0.9.4) - 2022-07-29 21:41:07
+
+<!-- Release notes generated using configuration in .github/release.yml at v0.9.4 -->
+
+## What's Changed
+
+* fixup REF for JOSS by @sgbaird in https://github.com/sparks-baird/xtal2png/pull/201
+
+
+**Full Changelog**: https://github.com/sparks-baird/xtal2png/compare/v0.9.3...v0.9.4
+
+### Bug Fixes
+
+- general:
+  - fixup ref (add "a") ([0a7014f](https://github.com/sparks-baird/xtal2png/commit/0a7014f53bae820c421f58384c85594b50574df0)) ([#201](https://github.com/sparks-baird/xtal2png/pull/201))
+
 ## [v0.9.3](https://github.com/sparks-baird/xtal2png/releases/tag/v0.9.3) - 2022-07-29 21:25:35
 
 <!-- Release notes generated using configuration in .github/release.yml at v0.9.3 -->
