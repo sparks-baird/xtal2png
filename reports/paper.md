@@ -103,7 +103,7 @@ and inverse design.
 and a PNG image for direct use with image-based machine learning models. Let's take
 [Google's image-to-image diffusion model,
 Palette](https://iterative-refinement.github.io/palette/)
-[@sahariaPaletteImagetoImageDiffusion2022], which supports unconditional image
+[@sahariaPaletteImagetoImageDiffusion2022a], which supports unconditional image
 generation, conditional inpainting, and conditional image restoration, which are modeling tasks
 that can be used in crystal generation, structure prediction, and structure
 relaxation, respectively. Rather than dig into the code and spending hours, days, or
