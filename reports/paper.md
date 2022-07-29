@@ -199,6 +199,6 @@ Figure sizes can be customized by adding an optional second parameter:
 
 # Acknowledgements
 
-This work was supported by the National Science Foundation, USA under Grant No. DMR-1651668.
+S.G.B. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1651668. H.M.S. acknowledges support by the National Science Foundation, USA under Grant No. OMA-1936383. C.S. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1950589.
 
 # References
