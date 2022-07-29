@@ -690,14 +690,15 @@ class XtalConverter:
             num_sites.append(s.num_sites)
             space_group.append(_get_space_group(s))
 
-            if n_sites != s.distance_matrix.shape[0]:
+            dm = s.distance_matrix  # avoid repeat calculation
+            if n_sites != dm.shape[0]:
                 raise ValueError(
-                    f"len(atomic_numbers) {n_sites} and distance_matrix.shape[0] {s.distance_matrix.shape[0]} do not match"  # noqa
+                    f"len(atomic_numbers) {n_sites} and distance_matrix.shape[0] {dm.shape[0]} do not match"  # noqa
                 )  # noqa
 
             # assume that distance matrix is square
             padwidth = (0, self.max_sites - n_sites)
-            distance_matrix_tmp.append(np.pad(s.distance_matrix, padwidth))
+            distance_matrix_tmp.append(np.pad(dm, padwidth))
             # [0:max_sites, 0:max_sites]
 
         frac_coords = np.stack(frac_coords_tmp)
