@@ -199,6 +199,11 @@ Figure sizes can be customized by adding an optional second parameter:
 
 # Acknowledgements
 
-S.G.B. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1651668. H.M.S. acknowledges support by the National Science Foundation, USA under Grant No. OMA-1936383. C.S. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1950589.  K.M.J. and B.S. acknowledge support by the MARVEL National Centre for Competence in Research funded by the Swiss National Science Foundation (grant agreement ID 51NF40-182892).
+S.G.B. and T.D.S. acknowledge support by the National Science Foundation, USA under
+Grant No. DMR-1651668. H.M.S.and T.D.S.  acknowledge support by the National Science
+Foundation, USA under Grant No. OMA-1936383. C.S. and T.D.S. acknowledge support by the
+National Science Foundation, USA under Grant No. DMR-1950589.  K.M.J. and B.S.
+acknowledge support by the MARVEL National Centre for Competence in Research funded by
+the Swiss National Science Foundation (grant agreement ID 51NF40-182892).
 
 # References
