@@ -10,18 +10,23 @@ authors:
   - name: Sterling G. Baird
     orcid: 0000-0002-4491-6876
     equal-contrib: false
+    corresponding: true
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Kevin M. Jablonka
     orcid: 0000-0003-4894-4660
     affiliation: "3"
-  - name: Hasan M. Sayeed
-    orcid: 0000-0002-6583-7755
-    equal-contrib: false
-    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Michael D. Alverson
     orcid: 0000-0002-4857-7584
     equal-contrib: false
     affiliation: "1,2" # (Multiple affiliations must be quoted)
+  - name: Hasan M. Sayeed
+    orcid: 0000-0002-6583-7755
+    equal-contrib: false
+    affiliation: "1" # (Multiple affiliations must be quoted)
+  - name: Mohammed Faris Khan
+    equal-contrib: false
+    orcid: 0000-0001-7527-6368
+    affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Colton Seegmiller
     orcid: 0000-0001-9511-2918
     equal-contrib: false
@@ -42,7 +47,7 @@ affiliations:
    index: 3
  - name: Computer Science, Utah Valley University, USA
    index: 4
-date: 9 June 2022
+date: 28 July 2022
 bibliography: paper.bib
 
 # # Optional fields if submitting to a AAS journal too, see this blog post:
@@ -53,13 +58,13 @@ bibliography: paper.bib
 
 # Summary
 
-The latest advances in machine learning are often in natural language such as with long
-short-term memory networks (LSTMs) and transformers or image processing such as with
+The latest advances in machine learning are often in natural language processing such as with long
+short-term memory networks (LSTMs) and Transformers, or image processing such as with
 generative adversarial networks (GANs), variational autoencoders (VAEs), and guided
 diffusion models. `xtal2png` encodes and decodes crystal structures via PNG
 images (see e.g. \autoref{fig:64-bit}) by writing and reading the necessary information
 for crystal reconstruction (unit cell, atomic elements, atomic coordinates) as a square
-matrix of numbers, respectively. This is akin to making/reading a QR code for crystal
+matrix of numbers. This is akin to making/reading a QR code for crystal
 structures, where the `xtal2png` representation is an invertible representation. The
 ability to feed these images directly into image-based pipelines allows you, as a
 materials informatics practitioner, to get streamlined results for new state-of-the-art
@@ -70,9 +75,9 @@ image-based machine learning models applied to crystal structures.
 # Statement of need
 
 Using a state-of-the-art method in a separate domain with a custom data representation
-is often an expensive and drawn-out process. For example, @vaswaniAttentionAllYou2017
-introduced the revolutionary natural language processing transformer architecture in June
-2017; yet the application of transformers to the adjacent domain of materials
+is often an expensive and drawn-out process. For example, [@vaswaniAttentionAllYou2017]
+introduced the revolutionary natural language processing Transformer architecture in
+June 2017, yet the application of Transformers to the adjacent domain of materials
 informatics (chemical-formula-based predictions) was not publicly realized until late
 2019 [@goodallPredictingMaterialsProperties2019], approximately two-and-a-half years
 later, with peer-reviewed publications dating to late 2020
@@ -82,11 +87,17 @@ slightly later public release [@wangCompositionallyrestrictedAttentionbasedNetwo
 and publication [@wangCompositionallyRestrictedAttentionbased2021] dates. Another
 example of a state-of-the-art algorithm domain transfer is refactoring image-processing
 models for crystal structure applications, which was first introduced in a preprint
-([@kipfSemisupervisedClassificationGraph2016]) and published with application for materials' property prediction
-in a peer-reviewed journal over a year later ([@xieCrystalGraphConvolutional2018]).
-Here, we focus on the latter application: state-of-the-art domain transfer
-from image processing to crystal structure to enable materials science practitioners
-to leverage the most advanced image processing models for materials' property prediction and inverse design.
+[@kipfSemisupervisedClassificationGraph2016] and published with application for
+materials' property prediction in a peer-reviewed journal over a year later
+[@xieCrystalGraphConvolutional2018]. Similarly, VAEs were introduced in 2013
+[@kingmaAutoEncodingVariationalBayes2014a] and implemented for molecules in 2016
+[@gomez-bombarelliAutomaticChemicalDesign2016], and denoising diffusion probabilistic
+models (DDPMs) were introduced in 2015 [@sohl-dicksteinDeepUnsupervisedLearning2015] and
+implemented for crystal structures in 2021 [@xieCrystalDiffusionVariational2021]. Here,
+we focus on state-of-the-art domain transfer (especially of generative models) from
+image processing to crystal structure to enable materials science practitioners to
+leverage the most advanced image processing models for materials' property prediction
+and inverse design.
 
 `xtal2png` is a Python package that allows you to convert between a crystal structure
 and a PNG image for direct use with image-based machine learning models. Let's take
@@ -121,7 +132,7 @@ numerical values as PNG images (allowable values are integers between 0 and
 An example comparing an original vs. decoded structure is given in
 \autoref{fig:original-decoded}.
 
-There are some limitations and design considerations for `xtal2png` which are described
+There are some limitations and design considerations for `xtal2png` that are described
 in `xtal2png`'s [documentation](https://xtal2png.readthedocs.io/en/latest/index.html) in
 the Overview section.
 At this time, it is unclear to what extent deviation from the aforementioned design
@@ -188,6 +199,6 @@ Figure sizes can be customized by adding an optional second parameter:
 
 # Acknowledgements
 
-This work was supported by the National Science Foundation, USA under Grant No. DMR-1651668.
+S.G.B. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1651668. H.M.S. acknowledges support by the National Science Foundation, USA under Grant No. OMA-1936383. C.S. acknowledges support by the National Science Foundation, USA under Grant No. DMR-1950589.
 
 # References
