@@ -51,6 +51,7 @@ assert len(decoded_structures) == len(example_structures)
 >>> data = xc.xtal2png(example_structures, show=True, save=True)
 >>> decoded_structures = xc.png2xtal(data, save=False)
 assert len(decoded_structures) == len(example_structures)
+
 ```
 
 ### Output
