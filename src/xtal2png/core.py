@@ -150,13 +150,15 @@ class XtalConverter:
     encode_cell_type : Optional[str], optional
         Encode structures as-is (None), or after applying a certain tranformation. Uses
         ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
-        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
-        None
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``.
+        "primitive_standard", "conventional_standard", "refined", "reduced", and None.
+        By default None
     decode_cell_type : Optional[str], optional
         Decode structures as-is (None), or after applying a certain tranformation. Uses
         ``symprec`` if ``symprec`` is of type float, else uses ``symprec[0]`` if
-        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``. By default
-        None
+        ``symprec`` is of type tuple. Same applies for ``angle_tolerance``.
+        "primitive_standard", "conventional_standard", "refined", "reduced", and None.
+        By default None
     relax_on_decode: bool, optional
         Use m3gnet to relax the decoded crystal structures.
     channels : int, optional
@@ -602,8 +604,11 @@ class XtalConverter:
 
         Parameters
         ----------
-        S : Sequence[Structure]
+        structures : Sequence[Structure]
             Sequence (e.g. list) of pymatgen Structure object(s)
+
+        rgb_scaling : Whether to scale the arrays to RGB values (0-255), otherwise
+        assume scaled between (0-1), by default True.
 
         Returns
         -------
@@ -634,7 +639,7 @@ class XtalConverter:
         Examples
         --------
         >>> xc = XtalConverter()
-        >>> data = xc.structures_to_arrays(structures)
+        >>> data, id_data, id_mapper = xc.structures_to_arrays(structures)
         OUTPUT
         """
 
@@ -988,6 +993,9 @@ class XtalConverter:
         id_mapper : ArrayLike
             Dictionary containing the legend/key between the names of the blocks and the
             corresponding numbers in ``id_data``.
+
+        rgb_scaling : Whether the input arrays are scaled to RGB values (0-255),
+        otherwise assume scaled between (0-1), by default True.
         """
         if not isinstance(data, np.ndarray):
             raise ValueError(
