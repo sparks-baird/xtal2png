@@ -119,8 +119,10 @@ def test_distance_mask():
 def test_lower_tri_mask():
     xc = XtalConverter(mask_types=["lower_tri"])
     imgs = xc.xtal2png(example_structures)
-    if not np.all(xc.data[np.tril(xc.data[0, 0])] == 0):
-        raise ValueError("Lower triangle mask not applied correctly")
+    for d in xc.data:
+        for sq in d:
+            if not np.all(sq[np.tril_indices(sq.shape[0])] == 0):
+                raise ValueError("Lower triangle mask not applied correctly")
 
     return imgs
 
