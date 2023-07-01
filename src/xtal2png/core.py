@@ -840,7 +840,8 @@ class XtalConverter:
                         raise ValueError(
                             f"Expected square matrix in last two dimensions, received {d.shape}"  # noqa: E501
                         )
-                    d[np.tril_indices(d.shape[1])] = 0.0
+                    for sq in d:
+                        sq[np.tril_indices(d.shape[1])] = 0.0
             else:
                 data[id_data == id_mapper[mask_type]] = 0.0
 
