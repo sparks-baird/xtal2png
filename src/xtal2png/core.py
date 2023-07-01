@@ -186,8 +186,8 @@ class XtalConverter:
     mask_types : List[str], optional
         List of information types to mask out (assign as 0) from the array/image. values
         are "atom", "frac", "a", "b", "c", "angles", "num_sites", "space_group",
-        "distance", "diagonal", and None. If None, then no masking is applied. If
-        "diagonal" is present, then zeros out the lower triangle. By default, None.
+        "distance", "lower_tri", and None. If None, then no masking is applied. If
+        "lower_tri" is present, then zeros out the lower triangle. By default, None.
 
     Examples
     --------
@@ -840,7 +840,7 @@ class XtalConverter:
                         raise ValueError(
                             f"Expected square matrix in last two dimensions, received {d.shape}"  # noqa: E501
                         )
-                    d[:, np.mask_indices(d.shape[1], np.tril)] = 0.0
+                    d[np.tril_indices(d.shape[1])] = 0.0
             else:
                 data[id_data == id_mapper[mask_type]] = 0.0
 
